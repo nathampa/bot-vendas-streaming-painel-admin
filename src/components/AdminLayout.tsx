@@ -1,102 +1,292 @@
-import { Outlet, Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-
-// --- IMPORTAÇÕES ADICIONADAS DO MUI ---
-import Box from '@mui/material/Box';
-import Drawer from '@mui/material/Drawer';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Typography from '@mui/material/Typography';
-import Divider from '@mui/material/Divider';
-import Button from '@mui/material/Button';
-
-// Ícones
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
-import InventoryIcon from '@mui/icons-material/Inventory';
-import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
-import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
-// --- FIM DAS IMPORTAÇÕES ---
-
-const drawerWidth = 240; // Largura da barra lateral
+import { useState } from 'react';
 
 export const AdminLayout = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  // Lista dos nossos links do menu
+  const isActive = (path: string) => location.pathname === path;
+
   const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Produtos', icon: <ShoppingBagIcon />, path: '/produtos' },
-    { text: 'Estoque', icon: <InventoryIcon />, path: '/estoque' },
-    { text: 'Tickets', icon: <ConfirmationNumberIcon />, path: '/tickets' },
-    { text: 'Gift Cards', icon: <CardGiftcardIcon />, path: '/giftcards' },
-    { text: 'Sugestões', icon: <LightbulbIcon />, path: '/sugestoes' },
+    { path: '/dashboard', icon: '📊', label: 'Dashboard' },
+    { path: '/produtos', icon: '🛍️', label: 'Produtos' },
+    { path: '/estoque', icon: '📦', label: 'Estoque' },
+    { path: '/tickets', icon: '🎟️', label: 'Tickets' },
+    { path: '/giftcards', icon: '🎁', label: 'Gift Cards' },
+    { path: '/sugestoes', icon: '💡', label: 'Sugestões' },
   ];
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      {/* 1. A Barra Lateral (Sidebar) agora é um "Drawer" */}
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: drawerWidth,
-            boxSizing: 'border-box',
-          },
-        }}
-      >
-        <Box sx={{ padding: 2 }}>
-          <Typography variant="h5" component="h1">
-            Ferreira Streamings
-          </Typography>
-          <Typography variant="caption">Painel de Admin</Typography>
-        </Box>
-        <Divider />
+    <div style={styles.container}>
+      {/* Sidebar */}
+      <aside style={{
+        ...styles.sidebar,
+        transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
+      }}>
+        <div style={styles.sidebarHeader}>
+          <div style={styles.logo}>
+            <span style={styles.logoIcon}>🎬</span>
+            <div style={styles.logoText}>
+              <h2 style={styles.logoTitle}>Ferreira Streamings</h2>
+              <p style={styles.logoSubtitle}>Painel Admin</p>
+            </div>
+          </div>
+        </div>
 
-        {/* Lista de Links de Navegação */}
-        <List>
+        <nav style={styles.nav}>
           {menuItems.map((item) => (
-            <ListItem key={item.text} disablePadding>
-              {/* O 'component={RouterLink}' faz o botão do MUI funcionar
-                  como um link do React Router */}
-              <ListItemButton component={RouterLink} to={item.path}>
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItemButton>
-            </ListItem>
+            <Link
+              key={item.path}
+              to={item.path}
+              style={{
+                ...styles.navLink,
+                ...(isActive(item.path) ? styles.navLinkActive : {}),
+              }}
+              onClick={() => setSidebarOpen(false)}
+            >
+              <span style={styles.navIcon}>{item.icon}</span>
+              <span>{item.label}</span>
+            </Link>
           ))}
-        </List>
+        </nav>
 
-        <Divider />
+        <div style={styles.sidebarFooter}>
+          <button onClick={handleLogout} style={styles.logoutButton}>
+            <span style={styles.navIcon}>🚪</span>
+            <span>Sair</span>
+          </button>
+        </div>
+      </aside>
 
-        {/* Botão de Sair (Logout) */}
-        <Box sx={{ padding: 2, marginTop: 'auto' }}>
-          <Button variant="contained" color="error" onClick={handleLogout} fullWidth>
-            Sair
-          </Button>
-        </Box>
-      </Drawer>
+      {/* Overlay para mobile */}
+      {sidebarOpen && (
+        <div 
+          style={styles.overlay} 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-      {/* 2. Conteúdo Principal da Página */}
-      <Box
-        component="main"
-        sx={{ flexGrow: 1, p: 3 /* p: 3 é o 'padding: 24px' */ }}
-      >
-        {/* O <Outlet> injeta a página (Dashboard, Produtos, etc.) aqui */}
-        <Outlet />
-      </Box>
-    </Box>
+      {/* Main Content */}
+      <div style={styles.mainWrapper}>
+        {/* Top Bar */}
+        <header style={styles.topBar}>
+          <button 
+            style={styles.menuButton}
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            ☰
+          </button>
+          <div style={styles.topBarContent}>
+            <h1 style={styles.pageTitle}>
+              {menuItems.find(item => item.path === location.pathname)?.label || 'Admin'}
+            </h1>
+            <div style={styles.userInfo}>
+              <span style={styles.userIcon}>👤</span>
+              <span style={styles.userName}>Administrador</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main style={styles.content}>
+          <Outlet />
+        </main>
+      </div>
+    </div>
   );
 };
+
+const styles: Record<string, React.CSSProperties> = {
+  container: {
+    display: 'flex',
+    minHeight: '100vh',
+    backgroundColor: '#f5f7fa',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  },
+  sidebar: {
+    position: 'fixed',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: '260px',
+    backgroundColor: '#1a1d29',
+    color: '#fff',
+    display: 'flex',
+    flexDirection: 'column',
+    boxShadow: '2px 0 10px rgba(0,0,0,0.1)',
+    zIndex: 1000,
+    transition: 'transform 0.3s ease',
+  },
+  sidebarHeader: {
+    padding: '24px 20px',
+    borderBottom: '1px solid rgba(255,255,255,0.1)',
+  },
+  logo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  logoIcon: {
+    fontSize: '32px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoText: {
+    flex: 1,
+  },
+  logoTitle: {
+    margin: 0,
+    fontSize: '16px',
+    fontWeight: 600,
+    color: '#fff',
+  },
+  logoSubtitle: {
+    margin: '2px 0 0 0',
+    fontSize: '12px',
+    color: '#8b92a7',
+  },
+  nav: {
+    flex: 1,
+    padding: '20px 12px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+  navLink: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '12px 16px',
+    textDecoration: 'none',
+    color: '#8b92a7',
+    borderRadius: '8px',
+    transition: 'all 0.2s ease',
+    fontSize: '14px',
+    fontWeight: 500,
+  },
+  navLinkActive: {
+    backgroundColor: '#2d3142',
+    color: '#fff',
+  },
+  navIcon: {
+    fontSize: '18px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '24px',
+  },
+  sidebarFooter: {
+    padding: '20px 12px',
+    borderTop: '1px solid rgba(255,255,255,0.1)',
+  },
+  logoutButton: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '12px 16px',
+    backgroundColor: 'transparent',
+    border: '1px solid rgba(255,255,255,0.1)',
+    color: '#8b92a7',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: 500,
+    transition: 'all 0.2s ease',
+  },
+  mainWrapper: {
+    flex: 1,
+    marginLeft: '260px',
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: '100vh',
+  },
+  topBar: {
+    backgroundColor: '#fff',
+    borderBottom: '1px solid #e5e7eb',
+    padding: '16px 24px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+    position: 'sticky',
+    top: 0,
+    zIndex: 100,
+  },
+  menuButton: {
+    display: 'none',
+    backgroundColor: 'transparent',
+    border: 'none',
+    fontSize: '24px',
+    cursor: 'pointer',
+    padding: '8px',
+    color: '#1a1d29',
+  },
+  topBarContent: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  pageTitle: {
+    margin: 0,
+    fontSize: '20px',
+    fontWeight: 600,
+    color: '#1a1d29',
+  },
+  userInfo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '8px 16px',
+    backgroundColor: '#f5f7fa',
+    borderRadius: '8px',
+  },
+  userIcon: {
+    fontSize: '18px',
+  },
+  userName: {
+    fontSize: '14px',
+    fontWeight: 500,
+    color: '#1a1d29',
+  },
+  content: {
+    flex: 1,
+    padding: '24px',
+  },
+  overlay: {
+    position: 'fixed',
+    inset: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    zIndex: 999,
+    display: 'none',
+  },
+};
+
+// Media queries via JavaScript
+if (typeof window !== 'undefined') {
+  const mediaQuery = window.matchMedia('(max-width: 768px)');
+  
+  if (mediaQuery.matches) {
+    styles.mainWrapper = {
+      ...styles.mainWrapper,
+      marginLeft: 0,
+    };
+    styles.menuButton = {
+      ...styles.menuButton,
+      display: 'block',
+    };
+    styles.overlay = {
+      ...styles.overlay,
+      display: 'block',
+    };
+  }
+}

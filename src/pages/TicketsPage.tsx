@@ -1,32 +1,20 @@
 import { useState, useEffect } from 'react';
-// 1. Importa as 3 funções da API que usaremos
-import { 
-  getAdminTickets, 
-  getTicketDetalhes, 
-  resolverTicket 
-} from '../services/apiClient';
-// 2. Importa os tipos que acabamos de definir
+import { getAdminTickets, getTicketDetalhes, resolverTicket } from '../services/apiClient';
 import type { ITicketLista, ITicketDetalhes } from '../types/api.types';
 
 type TicketStatus = 'ABERTO' | 'EM_ANALISE' | 'RESOLVIDO' | 'FECHADO' | null;
 
-// --- O Componente da Página ---
 export const TicketsPage = () => {
-
-  // Estados para os dados da API
   const [tickets, setTickets] = useState<ITicketLista[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<ITicketDetalhes | null>(null);
-
-  // Estados de UI
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<TicketStatus>('ABERTO');
 
-  // 3. Função para carregar a LISTA de tickets
   const carregarTickets = async (status: TicketStatus) => {
     setIsLoadingList(true);
-    setSelectedTicket(null); // Fecha os detalhes ao mudar o filtro
+    setSelectedTicket(null);
     try {
       const response = await getAdminTickets(status);
       setTickets(response.data);
@@ -39,12 +27,10 @@ export const TicketsPage = () => {
     }
   };
 
-  // 4. Efeito que roda UMA VEZ e sempre que o 'filterStatus' mudar
   useEffect(() => {
     carregarTickets(filterStatus);
-  }, [filterStatus]); // Re-carrega a lista quando o filtro muda
+  }, [filterStatus]);
 
-  // 5. Função para ver os DETALHES de um ticket
   const handleVerDetalhes = async (ticketId: string) => {
     setIsLoadingDetails(true);
     setError(null);
@@ -52,165 +38,594 @@ export const TicketsPage = () => {
       const response = await getTicketDetalhes(ticketId);
       setSelectedTicket(response.data);
     } catch (err) {
-      console.error("Erro ao buscar detalhes do ticket:", err);
-      setError("Falha ao carregar detalhes do ticket.");
+      console.error("Erro ao buscar detalhes:", err);
+      setError("Falha ao carregar detalhes.");
     } finally {
       setIsLoadingDetails(false);
     }
   };
 
-  // 6. Função para RESOLVER um ticket (Troca, Reembolso, etc.)
   const handleResolver = async (acao: 'TROCAR_CONTA' | 'REEMBOLSAR_CARTEIRA' | 'FECHAR_MANUALMENTE') => {
     if (!selectedTicket) return;
 
-    const ticketId = selectedTicket.id;
-
     const confirmMsg = 
       acao === 'TROCAR_CONTA' ? "Tem certeza que deseja alocar uma NOVA conta para este usuário?" :
-      acao === 'REEMBOLSAR_CARTEIRA' ? "Tem certeza que deseja REEMBOLSAR o valor para a carteira deste usuário?" :
+      acao === 'REEMBOLSAR_CARTEIRA' ? "Tem certeza que deseja REEMBOLSAR o valor para a carteira?" :
       "Tem certeza que deseja fechar este ticket manualmente?";
 
-    if (!window.confirm(confirmMsg)) {
-      return; // Admin cancelou
-    }
+    if (!window.confirm(confirmMsg)) return;
 
-    setIsLoadingDetails(true); // Reutilizamos o loading
+    setIsLoadingDetails(true);
     try {
-      // Chama a API, que vai enfileirar a tarefa no Celery
-      await resolverTicket(ticketId, acao);
-
-      alert("Solicitação de resolução enviada! O worker Celery está processando. A lista será atualizada.");
-
-      // Fecha os detalhes e recarrega a lista
+      await resolverTicket(selectedTicket.id, acao);
+      alert("✅ Solicitação enviada! Processando...");
       setSelectedTicket(null);
-      // O ticket aparecerá como 'EM_ANALISE'
-      setFilterStatus('EM_ANALISE'); 
-      // (Se o worker for rápido, ele já estará RESOLVIDO quando a lista recarregar)
+      setFilterStatus('EM_ANALISE');
       carregarTickets('EM_ANALISE');
-
     } catch (err: any) {
       console.error("Erro ao resolver ticket:", err);
       const errorMsg = err.response?.data?.detail || "Falha ao enviar solicitação.";
-      alert(`Erro: ${errorMsg}`);
+      alert(`❌ Erro: ${errorMsg}`);
     } finally {
       setIsLoadingDetails(false);
     }
   };
 
-  // --- 7. Lógica de Renderização ---
+  const getStatusBadge = (status: string) => {
+    const badges: Record<string, { color: string; bg: string; label: string }> = {
+      ABERTO: { color: '#f59e0b', bg: '#fef3c7', label: '🔴 Aberto' },
+      EM_ANALISE: { color: '#3b82f6', bg: '#dbeafe', label: '🔵 Em Análise' },
+      RESOLVIDO: { color: '#10b981', bg: '#d1fae5', label: '✅ Resolvido' },
+      FECHADO: { color: '#6b7280', bg: '#f3f4f6', label: '⚫ Fechado' },
+    };
+    return badges[status] || badges.ABERTO;
+  };
+
+  const getMotivoLabel = (motivo: string) => {
+    const motivos: Record<string, string> = {
+      LOGIN_INVALIDO: '🔐 Login Inválido',
+      SEM_ASSINATURA: '📭 Sem Assinatura',
+      CONTA_CAIU: '💥 Conta Caiu',
+      OUTRO: '❓ Outro',
+    };
+    return motivos[motivo] || motivo;
+  };
+
   return (
-    <div style={{ fontFamily: 'sans-serif', display: 'flex', gap: '20px' }}>
-
-      {/* Coluna da Lista de Tickets */}
-      <div style={{ flex: 1 }}>
-        <h1>🎟️ Fila de Suporte (Tickets)</h1>
-        <p>Aqui você irá ver e resolver os tickets abertos pelos usuários.</p>
-
-        {/* Filtros de Status */}
-        <div style={{ marginBottom: '20px' }}>
-          Filtar por:
-          <button onClick={() => setFilterStatus('ABERTO')} style={{ background: filterStatus === 'ABERTO' ? '#ddd' : 'white' }}>Abertos</button>
-          <button onClick={() => setFilterStatus('EM_ANALISE')} style={{ background: filterStatus === 'EM_ANALISE' ? '#ddd' : 'white' }}>Em Análise</button>
-          <button onClick={() => setFilterStatus('RESOLVIDO')} style={{ background: filterStatus === 'RESOLVIDO' ? '#ddd' : 'white' }}>Resolvidos</button>
-          <button onClick={() => setFilterStatus(null)} style={{ background: filterStatus === null ? '#ddd' : 'white' }}>Todos</button>
+    <div style={styles.container}>
+      {/* Header */}
+      <div style={styles.header}>
+        <div>
+          <h1 style={styles.title}>🎟️ Tickets de Suporte</h1>
+          <p style={styles.subtitle}>Gerencie e resolva os tickets dos usuários</p>
         </div>
-
-        {/* Tabela de Tickets */}
-        {isLoadingList ? (
-          <p>Carregando tickets...</p>
-        ) : error ? (
-          <p style={{ color: 'red' }}>{error}</p>
-        ) : (
-          <table border={1} cellPadding={5} style={{ borderCollapse: 'collapse', width: '100%' }}>
-            <thead>
-              <tr>
-                <th>Status</th>
-                <th>Motivo</th>
-                <th>Data</th>
-                <th>Ação</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tickets.length === 0 ? (
-                <tr>
-                  <td colSpan={4} style={{ textAlign: 'center' }}>Nenhum ticket encontrado para este filtro.</td>
-                </tr>
-              ) : (
-                tickets.map((ticket) => (
-                  <tr key={ticket.id} style={{ 
-                    background: selectedTicket?.id === ticket.id ? '#e0e0ff' : 'white',
-                    cursor: 'pointer'
-                  }}
-                    onClick={() => handleVerDetalhes(ticket.id)}
-                  >
-                    <td>{ticket.status}</td>
-                    <td>{ticket.motivo}</td>
-                    <td>{new Date(ticket.criado_em).toLocaleString('pt-BR')}</td>
-                    <td><button>Ver Detalhes</button></td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        )}
       </div>
 
-      {/* Coluna de Detalhes do Ticket (Condicional) */}
-      <div style={{ width: '400px', borderLeft: '2px solid #ccc', paddingLeft: '20px' }}>
-        <h2>Detalhes do Ticket</h2>
-        {isLoadingDetails ? (
-          <p>Carregando detalhes...</p>
-        ) : !selectedTicket ? (
-          <p>Selecione um ticket da lista para ver os detalhes.</p>
-        ) : (
+      {/* Stats */}
+      <div style={styles.statsGrid}>
+        <div style={styles.statCard}>
+          <span style={{...styles.statIcon, backgroundColor: '#fef3c7', color: '#92400e'}}>🔴</span>
           <div>
-            <p><strong>ID:</strong> {selectedTicket.id}</p>
-            <p><strong>Status:</strong> {selectedTicket.status}</p>
-            <p><strong>Usuário (Telegram ID):</strong> {selectedTicket.usuario_telegram_id}</p>
-            <p><strong>Produto:</strong> {selectedTicket.produto_nome}</p>
-            <p><strong>Motivo:</strong> {selectedTicket.motivo}</p>
-            {selectedTicket.descricao_outros && <p><strong>Descrição:</strong> {selectedTicket.descricao_outros}</p>}
+            <p style={styles.statLabel}>Abertos</p>
+            <h3 style={styles.statValue}>{tickets.filter(t => t.status === 'ABERTO').length}</h3>
+          </div>
+        </div>
+        <div style={styles.statCard}>
+          <span style={{...styles.statIcon, backgroundColor: '#dbeafe', color: '#1e40af'}}>🔵</span>
+          <div>
+            <p style={styles.statLabel}>Em Análise</p>
+            <h3 style={styles.statValue}>{tickets.filter(t => t.status === 'EM_ANALISE').length}</h3>
+          </div>
+        </div>
+        <div style={styles.statCard}>
+          <span style={{...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46'}}>✅</span>
+          <div>
+            <p style={styles.statLabel}>Resolvidos</p>
+            <h3 style={styles.statValue}>{tickets.filter(t => t.status === 'RESOLVIDO').length}</h3>
+          </div>
+        </div>
+      </div>
 
-            <hr />
-            <h4>Conta Problemática:</h4>
-            <p><strong>Login:</strong> {selectedTicket.conta_problematica.login}</p>
-            <p><strong>Senha:</strong> {selectedTicket.conta_problematica.senha} (descriptografada)</p>
-            <p><strong>(Slots:</strong> {selectedTicket.conta_problematica.slots_ocupados} / {selectedTicket.conta_problematica.max_slots})</p>
+      {/* Main Content */}
+      <div style={styles.mainContent}>
+        {/* Left: Tickets List */}
+        <div style={styles.leftPanel}>
+          <div style={styles.panelCard}>
+            {/* Filters */}
+            <div style={styles.filtersContainer}>
+              <button
+                onClick={() => setFilterStatus('ABERTO')}
+                style={{...styles.filterButton, ...(filterStatus === 'ABERTO' && styles.filterButtonActive)}}
+              >
+                Abertos
+              </button>
+              <button
+                onClick={() => setFilterStatus('EM_ANALISE')}
+                style={{...styles.filterButton, ...(filterStatus === 'EM_ANALISE' && styles.filterButtonActive)}}
+              >
+                Em Análise
+              </button>
+              <button
+                onClick={() => setFilterStatus('RESOLVIDO')}
+                style={{...styles.filterButton, ...(filterStatus === 'RESOLVIDO' && styles.filterButtonActive)}}
+              >
+                Resolvidos
+              </button>
+              <button
+                onClick={() => setFilterStatus(null)}
+                style={{...styles.filterButton, ...(filterStatus === null && styles.filterButtonActive)}}
+              >
+                Todos
+              </button>
+            </div>
 
-            <hr />
-
-            {/* Botões de Ação (só aparecem se o ticket estiver aberto) */}
-            {selectedTicket.status === 'ABERTO' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <strong>Ações de Resolução:</strong>
-                <button 
-                  style={{ background: '#a0e0a0' }}
-                  onClick={() => handleResolver('TROCAR_CONTA')}
-                >
-                  🔁 Trocar Conta (Hot-Swap)
-                </button>
-                <button 
-                  style={{ background: '#a0a0e0' }}
-                  onClick={() => handleResolver('REEMBOLSAR_CARTEIRA')}
-                >
-                  💰 Reembolsar na Carteira
-                </button>
-                <button 
-                  style={{ background: '#e0a0a0' }}
-                  onClick={() => handleResolver('FECHAR_MANUALMENTE')}
-                >
-                  Manual (Apenas Fechar Ticket)
-                </button>
+            {/* List */}
+            {isLoadingList ? (
+              <div style={styles.loadingSmall}>
+                <div style={styles.spinnerSmall} />
+                <p>Carregando tickets...</p>
+              </div>
+            ) : tickets.length === 0 ? (
+              <div style={styles.emptyList}>
+                <span style={{fontSize: '48px', opacity: 0.5}}>🎟️</span>
+                <p style={{margin: 0, color: '#6b7280'}}>Nenhum ticket encontrado</p>
+              </div>
+            ) : (
+              <div style={styles.ticketsList}>
+                {tickets.map((ticket) => {
+                  const badge = getStatusBadge(ticket.status);
+                  const isSelected = selectedTicket?.id === ticket.id;
+                  
+                  return (
+                    <div
+                      key={ticket.id}
+                      onClick={() => handleVerDetalhes(ticket.id)}
+                      style={{
+                        ...styles.ticketItem,
+                        ...(isSelected && styles.ticketItemActive)
+                      }}
+                    >
+                      <div style={styles.ticketItemHeader}>
+                        <span style={{...styles.ticketBadge, backgroundColor: badge.bg, color: badge.color}}>
+                          {badge.label}
+                        </span>
+                        <span style={styles.ticketDate}>
+                          {new Date(ticket.criado_em).toLocaleDateString('pt-BR')}
+                        </span>
+                      </div>
+                      <p style={styles.ticketMotivo}>{getMotivoLabel(ticket.motivo)}</p>
+                      <span style={styles.ticketId}>ID: {ticket.id.substring(0, 8)}...</span>
+                    </div>
+                  );
+                })}
               </div>
             )}
-
-            <button onClick={() => setSelectedTicket(null)} style={{ marginTop: '20px' }}>
-              Fechar Detalhes
-            </button>
           </div>
-        )}
-      </div>
+        </div>
 
+        {/* Right: Ticket Details */}
+        <div style={styles.rightPanel}>
+          <div style={styles.panelCard}>
+            {isLoadingDetails ? (
+              <div style={styles.loadingSmall}>
+                <div style={styles.spinnerSmall} />
+                <p>Carregando detalhes...</p>
+              </div>
+            ) : !selectedTicket ? (
+              <div style={styles.emptyDetails}>
+                <span style={{fontSize: '64px', opacity: 0.3}}>👈</span>
+                <h3 style={{margin: '16px 0 8px 0', color: '#1a1d29'}}>Selecione um Ticket</h3>
+                <p style={{margin: 0, color: '#6b7280', fontSize: '14px'}}>
+                  Clique em um ticket da lista para ver os detalhes
+                </p>
+              </div>
+            ) : (
+              <div style={styles.detailsContent}>
+                {/* Header */}
+                <div style={styles.detailsHeader}>
+                  <h2 style={styles.detailsTitle}>Detalhes do Ticket</h2>
+                  <button onClick={() => setSelectedTicket(null)} style={styles.closeButton}>
+                    ✕
+                  </button>
+                </div>
+
+                {/* Info Cards */}
+                <div style={styles.infoGrid}>
+                  <div style={styles.infoCard}>
+                    <span style={styles.infoLabel}>Status</span>
+                    <span style={{
+                      ...styles.ticketBadge,
+                      ...{backgroundColor: getStatusBadge(selectedTicket.status).bg, color: getStatusBadge(selectedTicket.status).color}
+                    }}>
+                      {getStatusBadge(selectedTicket.status).label}
+                    </span>
+                  </div>
+                  <div style={styles.infoCard}>
+                    <span style={styles.infoLabel}>Usuário</span>
+                    <span style={styles.infoValue}>{selectedTicket.usuario_telegram_id}</span>
+                  </div>
+                  <div style={styles.infoCard}>
+                    <span style={styles.infoLabel}>Produto</span>
+                    <span style={styles.infoValue}>{selectedTicket.produto_nome}</span>
+                  </div>
+                  <div style={styles.infoCard}>
+                    <span style={styles.infoLabel}>Motivo</span>
+                    <span style={styles.infoValue}>{getMotivoLabel(selectedTicket.motivo)}</span>
+                  </div>
+                </div>
+
+                {selectedTicket.descricao_outros && (
+                  <div style={styles.descricaoCard}>
+                    <span style={styles.descricaoLabel}>Descrição</span>
+                    <p style={styles.descricaoText}>{selectedTicket.descricao_outros}</p>
+                  </div>
+                )}
+
+                {/* Conta Problemática */}
+                <div style={styles.contaCard}>
+                  <h3 style={styles.contaTitle}>🔐 Conta Problemática</h3>
+                  <div style={styles.contaInfo}>
+                    <div style={styles.contaRow}>
+                      <span style={styles.contaLabel}>Login:</span>
+                      <span style={styles.contaValue}>{selectedTicket.conta_problematica.login}</span>
+                    </div>
+                    <div style={styles.contaRow}>
+                      <span style={styles.contaLabel}>Senha:</span>
+                      <span style={{...styles.contaValue, fontFamily: 'monospace'}}>
+                        {selectedTicket.conta_problematica.senha}
+                      </span>
+                    </div>
+                    <div style={styles.contaRow}>
+                      <span style={styles.contaLabel}>Slots:</span>
+                      <span style={styles.contaValue}>
+                        {selectedTicket.conta_problematica.slots_ocupados} / {selectedTicket.conta_problematica.max_slots}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                {selectedTicket.status === 'ABERTO' && (
+                  <div style={styles.actionsSection}>
+                    <h3 style={styles.actionsTitle}>Ações de Resolução</h3>
+                    <div style={styles.actionsGrid}>
+                      <button
+                        onClick={() => handleResolver('TROCAR_CONTA')}
+                        style={{...styles.actionButton, ...styles.actionButtonSwap}}
+                      >
+                        🔁 Trocar Conta
+                      </button>
+                      <button
+                        onClick={() => handleResolver('REEMBOLSAR_CARTEIRA')}
+                        style={{...styles.actionButton, ...styles.actionButtonRefund}}
+                      >
+                        💰 Reembolsar
+                      </button>
+                      <button
+                        onClick={() => handleResolver('FECHAR_MANUALMENTE')}
+                        style={{...styles.actionButton, ...styles.actionButtonClose}}
+                      >
+                        ✓ Fechar Manual
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
+};
+
+const styles: Record<string, React.CSSProperties> = {
+  container: {
+    maxWidth: '1600px',
+    margin: '0 auto',
+  },
+  header: {
+    marginBottom: '32px',
+  },
+  title: {
+    margin: '0 0 4px 0',
+    fontSize: '28px',
+    fontWeight: 700,
+    color: '#1a1d29',
+  },
+  subtitle: {
+    margin: 0,
+    fontSize: '15px',
+    color: '#6b7280',
+  },
+  statsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '16px',
+    marginBottom: '32px',
+  },
+  statCard: {
+    backgroundColor: '#fff',
+    borderRadius: '12px',
+    padding: '20px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+  },
+  statIcon: {
+    width: '48px',
+    height: '48px',
+    borderRadius: '10px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '24px',
+  },
+  statLabel: {
+    margin: '0 0 4px 0',
+    fontSize: '13px',
+    color: '#6b7280',
+  },
+  statValue: {
+    margin: 0,
+    fontSize: '24px',
+    fontWeight: 700,
+    color: '#1a1d29',
+  },
+  mainContent: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1.5fr',
+    gap: '24px',
+  },
+  leftPanel: {
+    minHeight: '600px',
+  },
+  rightPanel: {
+    minHeight: '600px',
+  },
+  panelCard: {
+    backgroundColor: '#fff',
+    borderRadius: '12px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  filtersContainer: {
+    display: 'flex',
+    gap: '8px',
+    padding: '16px',
+    borderBottom: '1px solid #e5e7eb',
+    flexWrap: 'wrap',
+  },
+  filterButton: {
+    padding: '8px 16px',
+    fontSize: '13px',
+    fontWeight: 600,
+    backgroundColor: '#f9fafb',
+    color: '#6b7280',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  filterButtonActive: {
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: '#fff',
+  },
+  ticketsList: {
+    flex: 1,
+    overflowY: 'auto',
+    padding: '8px',
+  },
+  ticketItem: {
+    padding: '16px',
+    marginBottom: '8px',
+    borderRadius: '8px',
+    backgroundColor: '#f9fafb',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    border: '2px solid transparent',
+  },
+  ticketItemActive: {
+    backgroundColor: '#ede9fe',
+    borderColor: '#667eea',
+  },
+  ticketItemHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '8px',
+  },
+  ticketBadge: {
+    padding: '4px 10px',
+    fontSize: '11px',
+    fontWeight: 600,
+    borderRadius: '6px',
+  },
+  ticketDate: {
+    fontSize: '12px',
+    color: '#6b7280',
+  },
+  ticketMotivo: {
+    margin: '8px 0',
+    fontSize: '14px',
+    fontWeight: 600,
+    color: '#1a1d29',
+  },
+  ticketId: {
+    fontSize: '11px',
+    color: '#9ca3af',
+  },
+  loadingSmall: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '60px 20px',
+    gap: '12px',
+  },
+  spinnerSmall: {
+    width: '32px',
+    height: '32px',
+    border: '3px solid #e5e7eb',
+    borderTop: '3px solid #667eea',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+  },
+  emptyList: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '60px 20px',
+    gap: '12px',
+  },
+  emptyDetails: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+    padding: '40px',
+    textAlign: 'center',
+  },
+  detailsContent: {
+    padding: '24px',
+    overflowY: 'auto',
+  },
+  detailsHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '24px',
+  },
+  detailsTitle: {
+    margin: 0,
+    fontSize: '20px',
+    fontWeight: 700,
+    color: '#1a1d29',
+  },
+  closeButton: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '8px',
+    backgroundColor: '#f5f7fa',
+    color: '#6b7280',
+    border: 'none',
+    fontSize: '18px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '12px',
+    marginBottom: '20px',
+  },
+  infoCard: {
+    padding: '12px',
+    backgroundColor: '#f9fafb',
+    borderRadius: '8px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  },
+  infoLabel: {
+    fontSize: '12px',
+    color: '#6b7280',
+    fontWeight: 500,
+  },
+  infoValue: {
+    fontSize: '14px',
+    color: '#1a1d29',
+    fontWeight: 600,
+  },
+  descricaoCard: {
+    padding: '16px',
+    backgroundColor: '#fef3c7',
+    borderRadius: '8px',
+    marginBottom: '20px',
+  },
+  descricaoLabel: {
+    fontSize: '12px',
+    color: '#92400e',
+    fontWeight: 600,
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+  },
+  descricaoText: {
+    margin: '8px 0 0 0',
+    fontSize: '14px',
+    color: '#78350f',
+    lineHeight: 1.5,
+  },
+  contaCard: {
+    padding: '16px',
+    backgroundColor: '#f9fafb',
+    borderRadius: '8px',
+    marginBottom: '20px',
+  },
+  contaTitle: {
+    margin: '0 0 12px 0',
+    fontSize: '16px',
+    fontWeight: 600,
+    color: '#1a1d29',
+  },
+  contaInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+  },
+  contaRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  contaLabel: {
+    fontSize: '13px',
+    color: '#6b7280',
+    fontWeight: 500,
+  },
+  contaValue: {
+    fontSize: '14px',
+    color: '#1a1d29',
+    fontWeight: 600,
+  },
+  actionsSection: {
+    paddingTop: '20px',
+    borderTop: '2px solid #e5e7eb',
+  },
+  actionsTitle: {
+    margin: '0 0 16px 0',
+    fontSize: '16px',
+    fontWeight: 600,
+    color: '#1a1d29',
+  },
+  actionsGrid: {
+    display: 'grid',
+    gap: '12px',
+  },
+  actionButton: {
+    padding: '14px',
+    fontSize: '14px',
+    fontWeight: 600,
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    color: '#fff',
+  },
+  actionButtonSwap: {
+    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+  },
+  actionButtonRefund: {
+    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+  },
+  actionButtonClose: {
+    background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+  },
 };

@@ -1,38 +1,27 @@
 import { useState, useEffect } from 'react';
-// 1. Importa as funções da nossa API
 import { getAdminGiftCards, createGiftCard } from '../services/apiClient';
-// 2. Importa o tipo que acabamos de definir (usando 'import type')
 import type { IGiftCardAdminRead } from '../types/api.types';
 
-// Tipo para o filtro
 type FilterStatus = 'todos' | 'usados' | 'nao_usados';
 
-// --- O Componente da Página ---
 export const GiftCardsPage = () => {
-
-  // Estados para os dados da API
   const [giftCards, setGiftCards] = useState<IGiftCardAdminRead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Estado para o filtro da tabela
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('nao_usados');
-
-  // Estados para o formulário de NOVO GIFT CARD
   const [showForm, setShowForm] = useState(false);
-  const [novoValor, setNovoValor] = useState(10);
-  const [novaQuantidade, setNovaQuantidade] = useState(1);
-  const [novoCodigo, setNovoCodigo] = useState(''); // Para código personalizado
 
-  // 3. Função para carregar os dados da API
+  // Form states
+  const [novoValor, setNovoValor] = useState('10');
+  const [novaQuantidade, setNovaQuantidade] = useState(1);
+  const [novoCodigo, setNovoCodigo] = useState('');
+
   const carregarGiftCards = async (status: FilterStatus) => {
     setIsLoading(true);
     try {
-      // Converte o nosso filtro de string para o booleano que a API espera
       const params: { is_utilizado?: boolean } = {};
       if (status === 'usados') params.is_utilizado = true;
       if (status === 'nao_usados') params.is_utilizado = false;
-      // Se for 'todos', não envia o parâmetro
 
       const response = await getAdminGiftCards(params);
       setGiftCards(response.data);
@@ -45,149 +34,583 @@ export const GiftCardsPage = () => {
     }
   };
 
-  // 4. Efeito que roda UMA VEZ e sempre que o 'filterStatus' mudar
   useEffect(() => {
     carregarGiftCards(filterStatus);
-  }, [filterStatus]); // Re-carrega a lista quando o filtro muda
+  }, [filterStatus]);
 
-  // 5. Função para lidar com a criação de um novo gift card
   const handleCreateGiftCard = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const data = {
-      valor: novoValor,
-      quantidade: novoCodigo ? 1 : novaQuantidade, // Se for código personalizado, quantidade é 1
-      codigo_personalizado: novoCodigo || undefined // Envia 'undefined' se estiver vazio
+      valor: parseFloat(novoValor),
+      quantidade: novoCodigo ? 1 : novaQuantidade,
+      codigo_personalizado: novoCodigo || undefined
     };
 
     try {
       const response = await createGiftCard(data);
-
       alert(
-        `Gift Card(s) criado com sucesso!\n\n` +
+        `✅ Gift Card(s) criado com sucesso!\n\n` +
         `Códigos: ${response.data.codigos_gerados.join(', ')}`
       );
 
-      // Limpa o formulário e recarrega a lista
-      setNovoValor(10);
+      setNovoValor('10');
       setNovaQuantidade(1);
       setNovoCodigo('');
       setShowForm(false);
-      setFilterStatus('nao_usados'); // Volta para o filtro "Não Usados"
-      carregarGiftCards('nao_usados'); // Atualiza a tabela
-
+      setFilterStatus('nao_usados');
+      carregarGiftCards('nao_usados');
     } catch (err: any) {
       console.error("Erro ao criar gift card:", err);
       const errorMsg = err.response?.data?.detail || "Falha ao criar gift card.";
-      alert(`Erro: ${errorMsg}`);
+      alert(`❌ Erro: ${errorMsg}`);
     }
   };
 
-  // --- 6. Lógica de Renderização ---
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    alert('📋 Código copiado!');
+  };
+
+  if (isLoading) {
+    return (
+      <div style={styles.loadingContainer}>
+        <div style={styles.spinner} />
+        <p style={styles.loadingText}>Carregando gift cards...</p>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ fontFamily: 'sans-serif' }}>
-      <h1>🎁 Gerenciamento de Gift Cards</h1>
-      <p>Crie e gerencie os códigos de presente para seus usuários.</p>
+    <div style={styles.container}>
+      {/* Header */}
+      <div style={styles.header}>
+        <div>
+          <h1 style={styles.title}>🎁 Gift Cards</h1>
+          <p style={styles.subtitle}>Crie e gerencie códigos de presente</p>
+        </div>
+        <button onClick={() => setShowForm(!showForm)} style={styles.addButton}>
+          {showForm ? '✕ Cancelar' : '➕ Novo Gift Card'}
+        </button>
+      </div>
 
-      <button onClick={() => setShowForm(!showForm)}>
-        {showForm ? 'Cancelar' : '➕ Novo Gift Card'}
-      </button>
+      {/* Error Alert */}
+      {error && (
+        <div style={styles.alert}>
+          <span style={styles.alertIcon}>⚠️</span>
+          <span>{error}</span>
+        </div>
+      )}
 
-      {/* --- Formulário de Novo Gift Card (Condicional) --- */}
+      {/* Form */}
       {showForm && (
-        <div style={{ padding: '20px', border: '1px solid #ccc', margin: '20px 0' }}>
-          <h3>Criar Novo(s) Gift Card(s)</h3>
-          <form onSubmit={handleCreateGiftCard}>
+        <div style={styles.formCard}>
+          <h3 style={styles.formTitle}>Criar Novo(s) Gift Card(s)</h3>
+          <form onSubmit={handleCreateGiftCard} style={styles.form}>
+            <div style={styles.inputRow}>
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>Valor (R$)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="1"
+                  value={novoValor}
+                  onChange={(e) => setNovoValor(e.target.value)}
+                  required
+                  style={styles.input}
+                  placeholder="10.00"
+                />
+              </div>
 
-            <div style={{ marginBottom: '10px' }}>
-              <label>Valor (R$): </label>
-              <input 
-                type="number" 
-                step="0.01" 
-                min="1"
-                value={novoValor}
-                onChange={(e) => setNovoValor(parseFloat(e.target.value))}
-                required 
-              />
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>Quantidade</label>
+                <input
+                  type="number"
+                  step="1"
+                  min="1"
+                  value={novaQuantidade}
+                  onChange={(e) => setNovaQuantidade(parseInt(e.target.value))}
+                  required
+                  disabled={!!novoCodigo}
+                  style={{...styles.input, opacity: novoCodigo ? 0.5 : 1}}
+                  placeholder="1"
+                />
+              </div>
             </div>
 
-            <div style={{ marginBottom: '10px' }}>
-              <label>Quantidade: </label>
-              <input 
-                type="number" 
-                step="1" 
-                min="1"
-                value={novaQuantidade}
-                onChange={(e) => setNovaQuantidade(parseInt(e.target.value))}
-                required
-                disabled={!!novoCodigo} // Desabilita se estiver a usar código personalizado
-              />
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label>Código Personalizado (Opcional): </label>
-              <input 
-                type="text" 
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Código Personalizado (Opcional)</label>
+              <input
+                type="text"
                 value={novoCodigo}
                 onChange={(e) => setNovoCodigo(e.target.value)}
+                style={styles.input}
                 placeholder="Ex: NATAL2025"
               />
-              <br />
-              <small>(Se preenchido, a quantidade será 1)</small>
+              <small style={styles.inputHint}>
+                Se preenchido, a quantidade será ignorada (1 código personalizado)
+              </small>
             </div>
 
-            <button type="submit">Gerar Código(s)</button>
+            <div style={styles.formActions}>
+              <button type="button" onClick={() => setShowForm(false)} style={styles.cancelButton}>
+                Cancelar
+              </button>
+              <button type="submit" style={styles.submitButton}>
+                Gerar Código(s)
+              </button>
+            </div>
           </form>
         </div>
       )}
 
-      <hr style={{ margin: '20px 0' }} />
-
-      {/* --- Tabela de Gift Cards --- */}
-      <h3>Códigos Gerados</h3>
-
-      {/* Filtros de Status */}
-      <div style={{ marginBottom: '20px' }}>
-        Filtar por:
-        <button onClick={() => setFilterStatus('nao_usados')} style={{ background: filterStatus === 'nao_usados' ? '#ddd' : 'white' }}>Não Usados</button>
-        <button onClick={() => setFilterStatus('usados')} style={{ background: filterStatus === 'usados' ? '#ddd' : 'white' }}>Usados</button>
-        <button onClick={() => setFilterStatus('todos')} style={{ background: filterStatus === 'todos' ? '#ddd' : 'white' }}>Todos</button>
+      {/* Stats */}
+      <div style={styles.statsGrid}>
+        <div style={styles.statCard}>
+          <span style={{...styles.statIcon, backgroundColor: '#dbeafe', color: '#1e40af'}}>🎫</span>
+          <div>
+            <p style={styles.statLabel}>Total de Códigos</p>
+            <h3 style={styles.statValue}>{giftCards.length}</h3>
+          </div>
+        </div>
+        <div style={styles.statCard}>
+          <span style={{...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46'}}>✓</span>
+          <div>
+            <p style={styles.statLabel}>Códigos Usados</p>
+            <h3 style={styles.statValue}>{giftCards.filter(gc => gc.is_utilizado).length}</h3>
+          </div>
+        </div>
+        <div style={styles.statCard}>
+          <span style={{...styles.statIcon, backgroundColor: '#fef3c7', color: '#92400e'}}>⏳</span>
+          <div>
+            <p style={styles.statLabel}>Disponíveis</p>
+            <h3 style={styles.statValue}>{giftCards.filter(gc => !gc.is_utilizado).length}</h3>
+          </div>
+        </div>
       </div>
 
-      {isLoading ? (
-        <p>Carregando gift cards...</p>
-      ) : error ? (
-        <p style={{ color: 'red' }}>{error}</p>
-      ) : (
-        <table border={1} cellPadding={5} style={{ borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Valor (R$)</th>
-              <th>Status</th>
-              <th>Data de Criação</th>
-              <th>Usado por (Telegram ID)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {giftCards.length === 0 ? (
-              <tr>
-                <td colSpan={5} style={{ textAlign: 'center' }}>Nenhum gift card encontrado para este filtro.</td>
-              </tr>
-            ) : (
-              giftCards.map((gc) => (
-                <tr key={gc.id}>
-                  <td><strong>{gc.codigo}</strong></td>
-                  <td>R$ {gc.valor}</td>
-                  <td>{gc.is_utilizado ? '✅ Usado' : 'Não usado'}</td>
-                  <td>{new Date(gc.criado_em).toLocaleString('pt-BR')}</td>
-                  <td>{gc.utilizado_por_telegram_id || '---'}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      )}
+      {/* Filters */}
+      <div style={styles.filtersContainer}>
+        <span style={styles.filtersLabel}>Filtrar por:</span>
+        <button
+          onClick={() => setFilterStatus('nao_usados')}
+          style={{...styles.filterButton, ...(filterStatus === 'nao_usados' && styles.filterButtonActive)}}
+        >
+          Não Usados
+        </button>
+        <button
+          onClick={() => setFilterStatus('usados')}
+          style={{...styles.filterButton, ...(filterStatus === 'usados' && styles.filterButtonActive)}}
+        >
+          Usados
+        </button>
+        <button
+          onClick={() => setFilterStatus('todos')}
+          style={{...styles.filterButton, ...(filterStatus === 'todos' && styles.filterButtonActive)}}
+        >
+          Todos
+        </button>
+      </div>
+
+      {/* Gift Cards Grid */}
+      <div style={styles.giftCardsGrid}>
+        {giftCards.length === 0 ? (
+          <div style={styles.emptyState}>
+            <span style={styles.emptyIcon}>🎁</span>
+            <h3 style={styles.emptyTitle}>Nenhum gift card encontrado</h3>
+            <p style={styles.emptyText}>
+              {filterStatus === 'nao_usados' ? 'Nenhum código disponível no momento' :
+               filterStatus === 'usados' ? 'Nenhum código foi usado ainda' :
+               'Comece criando seu primeiro gift card'}
+            </p>
+          </div>
+        ) : (
+          giftCards.map((gc) => (
+            <div
+              key={gc.id}
+              style={{
+                ...styles.giftCard,
+                borderColor: gc.is_utilizado ? '#d1d5db' : '#10b981'
+              }}
+            >
+              {/* Header */}
+              <div style={styles.cardHeader}>
+                <span style={styles.cardValue}>R$ {gc.valor}</span>
+                <span style={{
+                  ...styles.badge,
+                  ...(gc.is_utilizado ? styles.badgeUsed : styles.badgeAvailable)
+                }}>
+                  {gc.is_utilizado ? '✓ Usado' : '⏳ Disponível'}
+                </span>
+              </div>
+
+              {/* Code */}
+              <div style={styles.codeContainer}>
+                <div style={styles.codeBox} onClick={() => copyToClipboard(gc.codigo)}>
+                  <span style={styles.codeText}>{gc.codigo}</span>
+                  <button style={styles.copyButton} title="Copiar código">
+                    📋
+                  </button>
+                </div>
+              </div>
+
+              {/* Info */}
+              <div style={styles.cardInfo}>
+                <div style={styles.infoRow}>
+                  <span style={styles.infoLabel}>Criado em:</span>
+                  <span style={styles.infoValue}>
+                    {new Date(gc.criado_em).toLocaleDateString('pt-BR')}
+                  </span>
+                </div>
+                {gc.is_utilizado && (
+                  <>
+                    <div style={styles.infoRow}>
+                      <span style={styles.infoLabel}>Usado em:</span>
+                      <span style={styles.infoValue}>
+                        {gc.utilizado_em ? new Date(gc.utilizado_em).toLocaleDateString('pt-BR') : '---'}
+                      </span>
+                    </div>
+                    <div style={styles.infoRow}>
+                      <span style={styles.infoLabel}>Usuário ID:</span>
+                      <span style={styles.infoValue}>
+                        {gc.utilizado_por_telegram_id || '---'}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div style={styles.cardFooter}>
+                <span style={styles.cardId}>ID: {gc.id.substring(0, 8)}...</span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
+};
+
+const styles: Record<string, React.CSSProperties> = {
+  container: {
+    maxWidth: '1400px',
+    margin: '0 auto',
+  },
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '400px',
+    gap: '16px',
+  },
+  spinner: {
+    width: '48px',
+    height: '48px',
+    border: '4px solid #e5e7eb',
+    borderTop: '4px solid #667eea',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+  },
+  loadingText: {
+    fontSize: '16px',
+    color: '#6b7280',
+  },
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '32px',
+    flexWrap: 'wrap',
+    gap: '16px',
+  },
+  title: {
+    margin: '0 0 4px 0',
+    fontSize: '28px',
+    fontWeight: 700,
+    color: '#1a1d29',
+  },
+  subtitle: {
+    margin: 0,
+    fontSize: '15px',
+    color: '#6b7280',
+  },
+  addButton: {
+    padding: '12px 24px',
+    fontSize: '14px',
+    fontWeight: 600,
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+  },
+  alert: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '14px 16px',
+    backgroundColor: '#fee2e2',
+    border: '1px solid #fecaca',
+    borderRadius: '8px',
+    color: '#991b1b',
+    marginBottom: '24px',
+  },
+  alertIcon: {
+    fontSize: '18px',
+  },
+  formCard: {
+    backgroundColor: '#fff',
+    borderRadius: '12px',
+    padding: '24px',
+    marginBottom: '32px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+  },
+  formTitle: {
+    margin: '0 0 20px 0',
+    fontSize: '18px',
+    fontWeight: 700,
+    color: '#1a1d29',
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+  },
+  inputRow: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '16px',
+  },
+  inputGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  label: {
+    fontSize: '14px',
+    fontWeight: 600,
+    color: '#374151',
+  },
+  input: {
+    padding: '12px 16px',
+    fontSize: '15px',
+    border: '2px solid #e5e7eb',
+    borderRadius: '8px',
+    outline: 'none',
+    width: '100%',
+    fontFamily: 'inherit',
+  },
+  inputHint: {
+    fontSize: '12px',
+    color: '#6b7280',
+    fontStyle: 'italic',
+  },
+  formActions: {
+    display: 'flex',
+    gap: '12px',
+    justifyContent: 'flex-end',
+  },
+  cancelButton: {
+    padding: '12px 24px',
+    fontSize: '14px',
+    fontWeight: 600,
+    backgroundColor: '#f5f7fa',
+    color: '#1a1d29',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+  },
+  submitButton: {
+    padding: '12px 24px',
+    fontSize: '14px',
+    fontWeight: 600,
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+  },
+  statsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '16px',
+    marginBottom: '32px',
+  },
+  statCard: {
+    backgroundColor: '#fff',
+    borderRadius: '12px',
+    padding: '20px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+  },
+  statIcon: {
+    width: '48px',
+    height: '48px',
+    borderRadius: '10px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '24px',
+  },
+  statLabel: {
+    margin: '0 0 4px 0',
+    fontSize: '13px',
+    color: '#6b7280',
+  },
+  statValue: {
+    margin: 0,
+    fontSize: '24px',
+    fontWeight: 700,
+    color: '#1a1d29',
+  },
+  filtersContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    marginBottom: '24px',
+    flexWrap: 'wrap',
+  },
+  filtersLabel: {
+    fontSize: '14px',
+    fontWeight: 600,
+    color: '#6b7280',
+  },
+  filterButton: {
+    padding: '8px 16px',
+    fontSize: '13px',
+    fontWeight: 600,
+    backgroundColor: '#f9fafb',
+    color: '#6b7280',
+    border: '2px solid transparent',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  filterButtonActive: {
+    backgroundColor: '#ede9fe',
+    borderColor: '#667eea',
+    color: '#667eea',
+  },
+  giftCardsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+    gap: '20px',
+  },
+  giftCard: {
+    backgroundColor: '#fff',
+    borderRadius: '12px',
+    padding: '20px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    border: '2px solid',
+    transition: 'all 0.2s ease',
+  },
+  cardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '16px',
+  },
+  cardValue: {
+    fontSize: '28px',
+    fontWeight: 700,
+    color: '#10b981',
+  },
+  badge: {
+    padding: '4px 10px',
+    fontSize: '11px',
+    fontWeight: 600,
+    borderRadius: '6px',
+  },
+  badgeAvailable: {
+    backgroundColor: '#d1fae5',
+    color: '#065f46',
+  },
+  badgeUsed: {
+    backgroundColor: '#f3f4f6',
+    color: '#6b7280',
+  },
+  codeContainer: {
+    marginBottom: '16px',
+  },
+  codeBox: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '12px 16px',
+    backgroundColor: '#f9fafb',
+    borderRadius: '8px',
+    border: '2px dashed #d1d5db',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  codeText: {
+    fontSize: '18px',
+    fontWeight: 700,
+    fontFamily: 'monospace',
+    color: '#1a1d29',
+    letterSpacing: '1px',
+  },
+  copyButton: {
+    background: 'none',
+    border: 'none',
+    fontSize: '18px',
+    cursor: 'pointer',
+    padding: '4px',
+  },
+  cardInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    marginBottom: '16px',
+  },
+  infoRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  infoLabel: {
+    fontSize: '13px',
+    color: '#6b7280',
+  },
+  infoValue: {
+    fontSize: '13px',
+    color: '#1a1d29',
+    fontWeight: 600,
+  },
+  cardFooter: {
+    paddingTop: '12px',
+    borderTop: '1px solid #e5e7eb',
+  },
+  cardId: {
+    fontSize: '11px',
+    color: '#9ca3af',
+  },
+  emptyState: {
+    gridColumn: '1 / -1',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '80px 20px',
+    gap: '16px',
+  },
+  emptyIcon: {
+    fontSize: '64px',
+    opacity: 0.5,
+  },
+  emptyTitle: {
+    margin: 0,
+    fontSize: '20px',
+    color: '#1a1d29',
+  },
+  emptyText: {
+    margin: 0,
+    fontSize: '14px',
+    color: '#6b7280',
+    textAlign: 'center',
+  },
 };
