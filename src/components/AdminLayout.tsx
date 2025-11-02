@@ -26,11 +26,14 @@ export const AdminLayout = () => {
 
   return (
     <div style={styles.container}>
+      {/* Inject mobile styles */}
+      <style>{mobileStyles}</style>
+
       {/* Sidebar */}
-      <aside style={{
-        ...styles.sidebar,
-        transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
-      }}>
+      <aside 
+        className={`sidebar-mobile ${sidebarOpen ? 'open' : ''}`}
+        style={styles.sidebar}
+      >
         <div style={styles.sidebarHeader}>
           <div style={styles.logo}>
             <span style={styles.logoIcon}>🎬</span>
@@ -69,16 +72,18 @@ export const AdminLayout = () => {
       {/* Overlay para mobile */}
       {sidebarOpen && (
         <div 
+          className="overlay-mobile"
           style={styles.overlay} 
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Main Content */}
-      <div style={styles.mainWrapper}>
+      <div className="main-wrapper-mobile" style={styles.mainWrapper}>
         {/* Top Bar */}
         <header style={styles.topBar}>
           <button 
+            className="menu-button-mobile"
             style={styles.menuButton}
             onClick={() => setSidebarOpen(!sidebarOpen)}
           >
@@ -271,22 +276,23 @@ const styles: Record<string, React.CSSProperties> = {
   },
 };
 
-// Media queries via JavaScript
-if (typeof window !== 'undefined') {
-  const mediaQuery = window.matchMedia('(max-width: 768px)');
-  
-  if (mediaQuery.matches) {
-    styles.mainWrapper = {
-      ...styles.mainWrapper,
-      marginLeft: 0,
-    };
-    styles.menuButton = {
-      ...styles.menuButton,
-      display: 'block',
-    };
-    styles.overlay = {
-      ...styles.overlay,
-      display: 'block',
-    };
+// Estilos responsivos para mobile via CSS-in-JS
+const mobileStyles = `
+  @media (max-width: 768px) {
+    .sidebar-mobile {
+      transform: translateX(-100%) !important;
+    }
+    .sidebar-mobile.open {
+      transform: translateX(0) !important;
+    }
+    .main-wrapper-mobile {
+      margin-left: 0 !important;
+    }
+    .menu-button-mobile {
+      display: block !important;
+    }
+    .overlay-mobile {
+      display: block !important;
+    }
   }
-}
+`;
