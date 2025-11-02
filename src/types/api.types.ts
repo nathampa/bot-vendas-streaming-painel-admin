@@ -33,3 +33,13 @@ export interface ITicketDetalhes extends ITicketLista {
   produto_nome: string;
   conta_problematica: IEstoqueDetalhes;
 }
+
+export interface IGiftCardAdminRead {
+  id: string;
+  codigo: string;
+  valor: string; // A API retorna Decimal como string
+  is_utilizado: boolean;
+  criado_em: string;
+  utilizado_em: string | null;
+  utilizado_por_telegram_id: number | null;
+}
