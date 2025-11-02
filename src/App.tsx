@@ -1,32 +1,36 @@
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
+
+// 1. Importa o Layout
+import { AdminLayout } from './components/AdminLayout';
+
+// 2. Importa todas as nossas Páginas (ATUALIZADO)
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
-// Remove os imports de CSS e logo do Vite que não precisamos mais
-// import './App.css'; 
+import { ProdutosPage } from './pages/ProdutosPage';
+import { EstoquePage } from './pages/EstoquePage';
+import { TicketsPage } from './pages/TicketsPage';
+
+// --- IMPORTAÇÕES ADICIONADAS ---
+import { GiftCardsPage } from './pages/GiftCardsPage'; 
+import { SugestoesPage } from './pages/SugestoesPage';
+// --- FIM DAS IMPORTAÇÕES ---
 
 /**
  * Componente "Protetor" (Wrapper)
- * Verifica se o admin está logado. Se não, redireciona para /login.
+ * (Exatamente o mesmo de antes)
  */
 const ProtectedRoute = () => {
-  const { isAdmin, token } = useAuth(); // Pega o estado do nosso contexto
-
-  // (Poderíamos adicionar uma verificação de 'isLoading' aqui também)
-
+  const { isAdmin, token } = useAuth();
   if (!isAdmin || !token) {
-    // Se não é admin, redireciona para a página de login
     return <Navigate to="/login" replace />;
   }
-
-  // Se é admin, renderiza a página que está "dentro" (o <Outlet />)
-  return <Outlet />; 
+  return <Outlet />; // Renderiza as rotas "filhas"
 };
 
 /**
  * Componente "Público"
- * Se o admin já está logado, redireciona para o dashboard
- * (impede o admin de ver a página de login de novo).
+ * (Exatamente o mesmo de antes)
  */
 const PublicRoute = () => {
   const { isAdmin } = useAuth();
@@ -37,8 +41,7 @@ const PublicRoute = () => {
 };
 
 /**
- * Componente principal da Aplicação
- * Define todas as URLs (rotas)
+ * Componente principal da Aplicação (Atualizado)
  */
 function App() {
   return (
@@ -50,15 +53,23 @@ function App() {
 
       {/* Rotas Protegidas (Privadas do Admin) */}
       <Route element={<ProtectedRoute />}>
-        <Route path="/dashboard" element={<DashboardPage />} />
-        {/* No futuro, adicionaremos mais rotas protegidas aqui: */}
-        {/* <Route path="/produtos" element={<ProdutosPage />} /> */}
-        {/* <Route path="/estoque" element={<EstoquePage />} /> */}
-        {/* <Route path="/tickets" element={<TicketsPage />} /> */}
+        <Route element={<AdminLayout />}> 
+
+          {/* Rotas existentes */}
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/produtos" element={<ProdutosPage />} />
+          <Route path="/estoque" element={<EstoquePage />} />
+          <Route path="/tickets" element={<TicketsPage />} />
+          <Route path="/giftcards" element={<GiftCardsPage />} />
+          <Route path="/sugestoes" element={<SugestoesPage />} />
+
+          {/* Rota de fallback (índice) */}
+          <Route index element={<Navigate to="/dashboard" replace />} />
+
+        </Route>
       </Route>
 
       {/* Rota Padrão (Catch-all) */}
-      {/* Se entrar em qualquer outra URL, redireciona para o login */}
       <Route 
         path="*"
         element={<Navigate to="/login" replace />}
