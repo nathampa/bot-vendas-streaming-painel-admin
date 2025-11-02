@@ -1,0 +1,141 @@
+import axios from 'axios';
+
+// 1. Pega a URL da API do nosso arquivo .env
+const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+/**
+ * Função auxiliar para pegar o token do localStorage
+ * e montar o cabeçalho de autorização.
+ */
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('authToken');
+  return {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
+};
+
+// -----------------------------------------------------------------
+// PILAR 8: Autenticação
+// -----------------------------------------------------------------
+
+/**
+ * Faz o login. Nota: esta é a ÚNICA função que não usa getAuthHeaders().
+ * Ela também envia 'FormData' em vez de JSON, como o FastAPI espera.
+ */
+export const loginAdmin = (formData: FormData) => {
+  return axios.post(`${VITE_API_BASE_URL}/admin/login`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
+
+// -----------------------------------------------------------------
+// PILAR 9: Dashboard
+// -----------------------------------------------------------------
+export const getDashboardKPIs = () => {
+  return axios.get(`${VITE_API_BASE_URL}/admin/dashboard/kpis`, {
+    headers: getAuthHeaders(),
+  });
+};
+
+export const getTopProdutos = () => {
+  return axios.get(`${VITE_API_BASE_URL}/admin/dashboard/top-produtos`, {
+    headers: getAuthHeaders(),
+  });
+};
+
+export const getEstoqueBaixo = (limite: number = 5) => {
+  return axios.get(`${VITE_API_BASE_URL}/admin/dashboard/estoque-baixo`, {
+    headers: getAuthHeaders(),
+    params: { limite },
+  });
+};
+
+// -----------------------------------------------------------------
+// PILAR 1: Produtos
+// -----------------------------------------------------------------
+export const getAdminProdutos = () => {
+  return axios.get(`${VITE_API_BASE_URL}/admin/produtos/`, {
+    headers: getAuthHeaders(),
+  });
+};
+
+export const createProduto = (data: { nome: string; descricao: string; preco: number; is_ativo: boolean }) => {
+  return axios.post(`${VITE_API_BASE_URL}/admin/produtos/`, data, {
+    headers: getAuthHeaders(),
+  });
+};
+
+// TODO: Adicionar updateProduto, etc.
+
+// -----------------------------------------------------------------
+// PILAR 5: Estoque
+// -----------------------------------------------------------------
+export const getAdminEstoque = (params?: { produto_id?: string; requer_atencao?: boolean }) => {
+  return axios.get(`${VITE_API_BASE_URL}/admin/estoque/`, {
+    headers: getAuthHeaders(),
+    params: params,
+  });
+};
+
+export const getEstoqueDetalhes = (estoqueId: string) => {
+  return axios.get(`${VITE_API_BASE_URL}/admin/estoque/${estoqueId}`, {
+    headers: getAuthHeaders(),
+  });
+};
+
+export const createEstoque = (data: { produto_id: string; login: string; senha: string; max_slots: number }) => {
+  return axios.post(`${VITE_API_BASE_URL}/admin/estoque/`, data, {
+    headers: getAuthHeaders(),
+  });
+};
+
+// TODO: Adicionar updateEstoque, deleteEstoque, etc.
+
+// -----------------------------------------------------------------
+// PILAR 6: Tickets
+// -----------------------------------------------------------------
+export const getAdminTickets = (status: 'ABERTO' | 'EM_ANALISE' | 'RESOLVIDO' | 'FECHADO' | null) => {
+  return axios.get(`${VITE_API_BASE_URL}/admin/tickets/`, {
+    headers: getAuthHeaders(),
+    params: { status: status },
+  });
+};
+
+export const getTicketDetalhes = (ticketId: string) => {
+  return axios.get(`${VITE_API_BASE_URL}/admin/tickets/${ticketId}`, {
+    headers: getAuthHeaders(),
+  });
+};
+
+export const resolverTicket = (ticketId: string, acao: 'TROCAR_CONTA' | 'REEMBOLSAR_CARTEIRA' | 'FECHAR_MANUALMENTE') => {
+  return axios.post(`${VITE_API_BASE_URL}/admin/tickets/${ticketId}/resolver`, { acao }, {
+    headers: getAuthHeaders(),
+  });
+};
+
+// -----------------------------------------------------------------
+// PILAR 7: Gift Cards
+// -----------------------------------------------------------------
+export const getAdminGiftCards = (params?: { is_utilizado: boolean }) => {
+  return axios.get(`${VITE_API_BASE_URL}/admin/giftcards/`, {
+    headers: getAuthHeaders(),
+    params: params,
+  });
+};
+
+export const createGiftCard = (data: { valor: number; quantidade: number; codigo_personalizado?: string }) => {
+  return axios.post(`${VITE_API_BASE_URL}/admin/giftcards/`, data, {
+    headers: getAuthHeaders(),
+  });
+};
+
+// -----------------------------------------------------------------
+// PILAR 4: Sugestões
+// -----------------------------------------------------------------
+export const getAdminSugestoes = () => {
+  return axios.get(`${VITE_API_BASE_URL}/admin/sugestoes/`, {
+    headers: getAuthHeaders(),
+  });
+};
