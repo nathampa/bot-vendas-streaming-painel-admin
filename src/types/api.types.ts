@@ -43,3 +43,9 @@ export interface IGiftCardAdminRead {
   utilizado_em: string | null;
   utilizado_por_telegram_id: number | null;
 }
+
+export interface ISugestaoAdminRead {
+  nome_streaming: string;
+  contagem: number;
+  status: string;
+}
