@@ -1,69 +1,102 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext'; // Para o botão Sair
+import { Outlet, Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
-// Estilos simples (CSS-in-JS) para o layout
-const layoutStyle: React.CSSProperties = {
-  display: 'flex',
-  minHeight: '100vh',
-};
+// --- IMPORTAÇÕES ADICIONADAS DO MUI ---
+import Box from '@mui/material/Box';
+import Drawer from '@mui/material/Drawer';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
+import Button from '@mui/material/Button';
 
-const sidebarStyle: React.CSSProperties = {
-  width: '220px',
-  background: '#f4f4f4',
-  padding: '20px',
-  borderRight: '1px solid #ccc',
-};
+// Ícones
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
+// --- FIM DAS IMPORTAÇÕES ---
 
-const contentStyle: React.CSSProperties = {
-  flex: 1, // Ocupa o resto do espaço
-  padding: '20px',
-};
+const drawerWidth = 240; // Largura da barra lateral
 
-const navLinkStyle: React.CSSProperties = {
-  display: 'block',
-  padding: '10px',
-  textDecoration: 'none',
-  color: '#333',
-  borderRadius: '5px',
-};
-
-// --- O Componente de Layout ---
 export const AdminLayout = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    navigate('/login'); // Redireciona para o login após sair
+    navigate('/login');
   };
 
+  // Lista dos nossos links do menu
+  const menuItems = [
+    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
+    { text: 'Produtos', icon: <ShoppingBagIcon />, path: '/produtos' },
+    { text: 'Estoque', icon: <InventoryIcon />, path: '/estoque' },
+    { text: 'Tickets', icon: <ConfirmationNumberIcon />, path: '/tickets' },
+    { text: 'Gift Cards', icon: <CardGiftcardIcon />, path: '/giftcards' },
+    { text: 'Sugestões', icon: <LightbulbIcon />, path: '/sugestoes' },
+  ];
+
   return (
-    <div style={layoutStyle}>
-      {/* 1. Barra Lateral (Sidebar) */}
-      <nav style={sidebarStyle}>
-        <h2>Ferreira Streamings</h2>
-        <p>Painel de Admin</p>
-        <hr />
+    <Box sx={{ display: 'flex' }}>
+      {/* 1. A Barra Lateral (Sidebar) agora é um "Drawer" */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+          },
+        }}
+      >
+        <Box sx={{ padding: 2 }}>
+          <Typography variant="h5" component="h1">
+            Ferreira Streamings
+          </Typography>
+          <Typography variant="caption">Painel de Admin</Typography>
+        </Box>
+        <Divider />
 
-        {/* Links de Navegação (ATUALIZADO) */}
-        <Link to="/dashboard" style={navLinkStyle}>📊 Dashboard</Link>
-        <Link to="/produtos" style={navLinkStyle}>🛍️ Produtos</Link>
-        <Link to="/estoque" style={navLinkStyle}>📦 Estoque</Link>
-        <Link to="/tickets" style={navLinkStyle}>🎟️ Tickets</Link>
-        <Link to="/giftcards" style={navLinkStyle}>🎁 Gift Cards</Link>
-        <Link to="/sugestoes" style={navLinkStyle}>💡 Sugestões</Link>
+        {/* Lista de Links de Navegação */}
+        <List>
+          {menuItems.map((item) => (
+            <ListItem key={item.text} disablePadding>
+              {/* O 'component={RouterLink}' faz o botão do MUI funcionar
+                  como um link do React Router */}
+              <ListItemButton component={RouterLink} to={item.path}>
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
 
+        <Divider />
 
         {/* Botão de Sair (Logout) */}
-        <button onClick={handleLogout} style={{ marginTop: '30px' }}>
-          Sair (Logout)
-        </button>
-      </nav>
+        <Box sx={{ padding: 2, marginTop: 'auto' }}>
+          <Button variant="contained" color="error" onClick={handleLogout} fullWidth>
+            Sair
+          </Button>
+        </Box>
+      </Drawer>
 
       {/* 2. Conteúdo Principal da Página */}
-      <main style={contentStyle}>
+      <Box
+        component="main"
+        sx={{ flexGrow: 1, p: 3 /* p: 3 é o 'padding: 24px' */ }}
+      >
+        {/* O <Outlet> injeta a página (Dashboard, Produtos, etc.) aqui */}
         <Outlet />
-      </main>
-    </div>
+      </Box>
+    </Box>
   );
 };
