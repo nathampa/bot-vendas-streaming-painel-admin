@@ -10,6 +10,7 @@ export const PedidosPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   const carregarPedidos = async () => {
+    // ... (função carregarPedidos, sem alteração) ...
     setIsLoadingList(true);
     try {
       const response = await getAdminPedidos();
@@ -28,6 +29,7 @@ export const PedidosPage = () => {
   }, []);
 
   const handleVerDetalhes = async (pedidoId: string) => {
+    // ... (função handleVerDetalhes, sem alteração) ...
     setIsLoadingDetails(true);
     setError(null);
     try {
@@ -43,6 +45,7 @@ export const PedidosPage = () => {
   };
   
   const formatarData = (dataIso: string) => {
+    // ... (função formatarData, sem alteração) ...
     return new Date(dataIso).toLocaleString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
@@ -53,11 +56,13 @@ export const PedidosPage = () => {
   };
 
   const copyToClipboard = (text: string) => {
+    // ... (função copyToClipboard, sem alteração) ...
     navigator.clipboard.writeText(text);
     alert('📋 Copiado!');
   };
 
   if (isLoadingList) {
+    // ... (bloco loading, sem alteração) ...
     return (
       <div style={styles.loadingContainer}>
         <div style={styles.spinner} />
@@ -78,6 +83,7 @@ export const PedidosPage = () => {
       
       {/* Error Alert */}
       {error && (
+        // ... (bloco error, sem alteração) ...
         <div style={styles.alert}>
           <span style={styles.alertIcon}>⚠️</span>
           <span>{error}</span>
@@ -87,6 +93,7 @@ export const PedidosPage = () => {
       {/* Tabela de Pedidos */}
       <div style={styles.tableContainer}>
         {pedidos.length === 0 ? (
+          // ... (bloco emptyState, sem alteração) ...
           <div style={styles.emptyState}>
             <span style={styles.emptyIcon}>🧾</span>
             <h3 style={styles.emptyTitle}>Nenhum pedido encontrado</h3>
@@ -99,6 +106,7 @@ export const PedidosPage = () => {
                 <th style={styles.th}>Data</th>
                 <th style={styles.th}>Produto</th>
                 <th style={styles.th}>Usuário</th>
+                <th style={styles.th}>Email Cliente</th>
                 <th style={styles.th}>Valor</th>
                 <th style={styles.th}>Ações</th>
               </tr>
@@ -113,6 +121,15 @@ export const PedidosPage = () => {
                       <span>{pedido.usuario_nome_completo}</span>
                       <span style={styles.userId}>ID: {pedido.usuario_telegram_id}</span>
                     </div>
+                  </td>
+                  <td style={styles.td}>
+                    {pedido.email_cliente ? (
+                      <span style={styles.emailText} title={pedido.email_cliente}>
+                        {pedido.email_cliente}
+                      </span>
+                    ) : (
+                      <span style={styles.noData}>N/A</span>
+                    )}
                   </td>
                   <td style={styles.td}>
                     <span style={styles.price}>R$ {pedido.valor_pago}</span>
@@ -132,7 +149,7 @@ export const PedidosPage = () => {
         )}
       </div>
 
-      {/* Modal de Detalhes do Pedido */}
+      {/* Modal de Detalhes do Pedido (MODIFICADO) */}
       {(selectedPedido || isLoadingDetails) && (
         <div style={styles.modalOverlay} onClick={() => !isLoadingDetails && setSelectedPedido(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -142,6 +159,7 @@ export const PedidosPage = () => {
             </div>
             
             {isLoadingDetails ? (
+              // ... (bloco loading, sem alteração) ...
               <div style={styles.loadingContainer}>
                 <div style={styles.spinner} />
                 <p style={styles.loadingText}>Carregando conta...</p>
@@ -151,6 +169,7 @@ export const PedidosPage = () => {
                 <div style={styles.modalBody}>
                   {/* Informações do Pedido */}
                   <div style={styles.infoGrid}>
+                    {/* ... (info boxes, sem alteração) ... */}
                     <div style={styles.infoBox}>
                       <span style={styles.infoLabel}>Produto</span>
                       <span style={styles.infoValue}>{selectedPedido.produto_nome}</span>
@@ -168,25 +187,46 @@ export const PedidosPage = () => {
                       <span style={styles.infoValue}>{formatarData(selectedPedido.criado_em)}</span>
                     </div>
                   </div>
+
+                  {/* --- LÓGICA IF/ELSE ADICIONADA AQUI --- */}
                   
-                  {/* Credenciais da Conta */}
-                  <div style={styles.contaCard}>
-                    <h4 style={styles.contaTitle}>🔐 Credenciais Entregues</h4>
-                    <div style={styles.contaRow}>
-                      <span style={styles.contaLabel}>Login:</span>
-                      <div style={styles.copyBox} onClick={() => copyToClipboard(selectedPedido.conta.login)}>
-                        <span style={styles.contaValue}>{selectedPedido.conta.login}</span>
-                        <button style={styles.copyButton} title="Copiar login">📋</button>
+                  {selectedPedido.conta ? (
+                    // 1. Se HÁ uma conta (entrega automática)
+                    <div style={styles.contaCard}>
+                      <h4 style={styles.contaTitle}>🔐 Credenciais Entregues</h4>
+                      <div style={styles.contaRow}>
+                        <span style={styles.contaLabel}>Login:</span>
+                        <div style={styles.copyBox} onClick={() => copyToClipboard(selectedPedido.conta.login)}>
+                          <span style={styles.contaValue}>{selectedPedido.conta.login}</span>
+                          <button style={styles.copyButton} title="Copiar login">📋</button>
+                        </div>
+                      </div>
+                      <div style={styles.contaRow}>
+                        <span style={styles.contaLabel}>Senha:</span>
+                        <div style={styles.copyBox} onClick={() => copyToClipboard(selectedPedido.conta.senha)}>
+                          <span style={styles.contaValue}>{selectedPedido.conta.senha}</span>
+                          <button style={styles.copyButton} title="Copiar senha">📋</button>
+                        </div>
                       </div>
                     </div>
-                    <div style={styles.contaRow}>
-                      <span style={styles.contaLabel}>Senha:</span>
-                      <div style={styles.copyBox} onClick={() => copyToClipboard(selectedPedido.conta.senha)}>
-                        <span style={styles.contaValue}>{selectedPedido.conta.senha}</span>
-                        <button style={styles.copyButton} title="Copiar senha">📋</button>
+                  ) : (
+                    // 2. Se NÃO HÁ conta (entrega manual)
+                    <div style={styles.contaCard}>
+                      <h4 style={styles.contaTitle}>📧 Entrega Manual</h4>
+                      <div style={styles.contaRow}>
+                        <span style={styles.contaLabel}>Email do Cliente (copie e envie o convite):</span>
+                        <div style={styles.copyBox} onClick={() => copyToClipboard(selectedPedido.email_cliente || '')}>
+                          <span style={styles.contaValue}>{selectedPedido.email_cliente}</span>
+                          <button style={styles.copyButton} title="Copiar email">📋</button>
+                        </div>
+                      </div>
+                      <div style={styles.manualInfo}>
+                        <span style={styles.manualInfoIcon}>ℹ️</span>
+                        <span>Este pedido é de entrega manual. Use o email acima para enviar o convite da plataforma (ex: Youtube, Canva).</span>
                       </div>
                     </div>
-                  </div>
+                  )}
+                  {/* --- FIM DA LÓGICA IF/ELSE --- */}
                   
                   {/* ID do Pedido */}
                   <div style={styles.idFooter}>
@@ -202,7 +242,7 @@ export const PedidosPage = () => {
   );
 };
 
-// Estilos
+// Adicionei estilos para 'emailText', 'noData', 'manualInfo', 'manualInfoIcon'
 const styles: Record<string, React.CSSProperties> = {
   container: { maxWidth: '1400px', margin: '0 auto' },
   loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '16px' },
@@ -213,11 +253,11 @@ const styles: Record<string, React.CSSProperties> = {
   subtitle: { margin: 0, fontSize: '15px', color: '#6b7280' },
   alert: { display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', backgroundColor: '#fee2e2', border: '1px solid #fecaca', borderRadius: '8px', color: '#991b1b', marginBottom: '24px' },
   alertIcon: { fontSize: '18px' },
-  tableContainer: { backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' },
-  table: { width: '100%', borderCollapse: 'collapse' },
+  tableContainer: { backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'auto' }, // overflow: 'auto'
+  table: { width: '100%', borderCollapse: 'collapse', minWidth: '800px' }, // minWidth
   th: { padding: '14px 18px', textAlign: 'left', fontWeight: 600, fontSize: '13px', color: '#6b7280', backgroundColor: '#f9fafb', borderBottom: '2px solid #e5e7eb', textTransform: 'uppercase', letterSpacing: '0.5px' },
-  td: { padding: '16px 18px', borderBottom: '1px solid #f5f7fa', color: '#1a1d29', fontSize: '14px' },
-  userCell: { display: 'flex', flexDirection: 'column', gap: '2px' },
+  td: { padding: '16px 18px', borderBottom: '1px solid #f5f7fa', color: '#1a1d29', fontSize: '14px', whiteSpace: 'nowrap' }, // whiteSpace
+  userCell: { display: 'flex', flexDirection: 'column', gap: '2px', whiteSpace: 'normal' }, // whiteSpace
   userId: { fontSize: '12px', color: '#6b7280' },
   price: { fontSize: '14px', fontWeight: 600, color: '#10b981' },
   detailsButton: { padding: '8px 16px', fontSize: '13px', fontWeight: 600, backgroundColor: '#f5f7fa', color: '#374151', border: 'none', borderRadius: '8px', cursor: 'pointer' },
@@ -226,7 +266,38 @@ const styles: Record<string, React.CSSProperties> = {
   emptyTitle: { margin: 0, fontSize: '20px', color: '#1a1d29' },
   emptyText: { margin: 0, fontSize: '14px', color: '#6b7280' },
   
-  // Estilos do Modal (reutilizados)
+  // --- NOVOS ESTILOS ---
+  emailText: {
+    fontFamily: 'monospace',
+    fontSize: '13px',
+    backgroundColor: '#f5f7fa',
+    padding: '4px 8px',
+    borderRadius: '6px',
+    color: '#374151',
+  },
+  noData: {
+    color: '#9ca3af',
+    fontStyle: 'italic',
+  },
+  manualInfo: {
+    marginTop: '16px',
+    padding: '12px',
+    backgroundColor: '#dbeafe',
+    color: '#1e40af',
+    borderRadius: '8px',
+    display: 'flex',
+    gap: '10px',
+    alignItems: 'flex-start',
+    fontSize: '13px',
+    lineHeight: 1.5,
+  },
+  manualInfoIcon: {
+    fontSize: '18px',
+    flexShrink: 0,
+  },
+  // --- FIM DOS NOVOS ESTILOS ---
+
+  // Estilos do Modal
   modalOverlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' },
   modal: { backgroundColor: '#fff', borderRadius: '16px', maxWidth: '550px', width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)', minHeight: '300px' },
   modalHeader: { padding: '24px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },

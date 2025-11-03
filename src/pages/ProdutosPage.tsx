@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getAdminProdutos, createProduto, updateProduto, deleteProduto } from '../services/apiClient';
 
+// 1. Interface atualizada
 interface IProduto {
   id: string;
   nome: string;
@@ -8,6 +9,7 @@ interface IProduto {
   preco: string;
   is_ativo: boolean;
   criado_em: string;
+  requer_email_cliente: boolean; // <-- CAMPO ADICIONADO
 }
 
 export const ProdutosPage = () => {
@@ -23,6 +25,8 @@ export const ProdutosPage = () => {
   const [novoDescricao, setNovoDescricao] = useState('');
   const [novoPreco, setNovoPreco] = useState('');
   const [novoIsAtivo, setNovoIsAtivo] = useState(true);
+  // 2. Novo state para o checkbox
+  const [novoRequerEmail, setNovoRequerEmail] = useState(false); 
 
   const carregarProdutos = async () => {
     setIsLoading(true);
@@ -42,15 +46,18 @@ export const ProdutosPage = () => {
     carregarProdutos();
   }, []);
 
+  // 3. resetForm atualizado
   const resetForm = () => {
     setNovoNome('');
     setNovoDescricao('');
     setNovoPreco('');
     setNovoIsAtivo(true);
+    setNovoRequerEmail(false); // <-- ADICIONADO
     setEditingProduct(null);
     setShowForm(false);
   };
 
+  // 4. handleCreateOrUpdate atualizado
   const handleCreateOrUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -59,6 +66,7 @@ export const ProdutosPage = () => {
       descricao: novoDescricao,
       preco: parseFloat(novoPreco),
       is_ativo: novoIsAtivo,
+      requer_email_cliente: novoRequerEmail, // <-- ADICIONADO
     };
 
     try {
@@ -78,18 +86,19 @@ export const ProdutosPage = () => {
     }
   };
 
+  // 5. handleEdit atualizado
   const handleEdit = (produto: IProduto) => {
     setEditingProduct(produto);
     setNovoNome(produto.nome);
     setNovoDescricao(produto.descricao);
     setNovoPreco(produto.preco);
     setNovoIsAtivo(produto.is_ativo);
+    setNovoRequerEmail(produto.requer_email_cliente); // <-- ADICIONADO
     setShowForm(true);
   };
 
   const handleDelete = async () => {
     if (!deletingProduct) return;
-
     try {
       await deleteProduto(deletingProduct.id);
       alert("✅ Produto excluído com sucesso!");
@@ -139,7 +148,8 @@ export const ProdutosPage = () => {
           <h3 style={styles.formTitle}>
             {editingProduct ? '✏️ Editar Produto' : '➕ Criar Novo Produto'}
           </h3>
-          <div style={styles.form}>
+          {/* 6. Mudado de <div> para <form> */}
+          <form onSubmit={handleCreateOrUpdate} style={styles.form}>
             <div style={styles.inputGroup}>
               <label style={styles.label}>Nome do Produto</label>
               <input
@@ -168,6 +178,7 @@ export const ProdutosPage = () => {
                 <input
                   type="number"
                   step="0.01"
+                  min="0"
                   value={novoPreco}
                   onChange={(e) => setNovoPreco(e.target.value)}
                   required
@@ -189,15 +200,32 @@ export const ProdutosPage = () => {
               </div>
             </div>
 
+            {/* --- 7. NOVO CAMPO CHECKBOX ADICIONADO --- */}
+            <div style={styles.checkboxGroup}>
+              <input
+                type="checkbox"
+                id="requer_email"
+                checked={novoRequerEmail}
+                onChange={(e) => setNovoRequerEmail(e.target.checked)}
+                style={styles.checkbox}
+              />
+              <label htmlFor="requer_email" style={styles.checkboxLabel}>
+                Este produto requer o email do cliente? (Ex: Link Convite)
+              </label>
+            </div>
+            {/* --- FIM DO NOVO CAMPO --- */}
+
+
             <div style={styles.formActions}>
               <button type="button" onClick={resetForm} style={styles.cancelButton}>
                 Cancelar
               </button>
-              <button type="submit" onClick={handleCreateOrUpdate} style={styles.submitButton}>
+              {/* 8. Botão agora é type="submit" */}
+              <button type="submit" style={styles.submitButton}>
                 {editingProduct ? 'Salvar Alterações' : 'Criar Produto'}
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
 
@@ -214,12 +242,22 @@ export const ProdutosPage = () => {
             <div key={produto.id} style={styles.productCard}>
               <div style={styles.productHeader}>
                 <h3 style={styles.productName}>{produto.nome}</h3>
-                <span style={{
-                  ...styles.badge,
-                  ...(produto.is_ativo ? styles.badgeActive : styles.badgeInactive)
-                }}>
-                  {produto.is_ativo ? '✓ Ativo' : '✕ Inativo'}
-                </span>
+                {/* 9. Wrapper de Badges adicionado */}
+                <div style={styles.badges}>
+                  <span style={{
+                    ...styles.badge,
+                    ...(produto.is_ativo ? styles.badgeActive : styles.badgeInactive)
+                  }}>
+                    {produto.is_ativo ? '✓ Ativo' : '✕ Inativo'}
+                  </span>
+                  {/* --- NOVO BADGE ADICIONADO --- */}
+                  {produto.requer_email_cliente && (
+                    <span style={{...styles.badge, ...styles.badgeEmail}}>
+                      @ Requer Email
+                    </span>
+                  )}
+                  {/* --- FIM DO NOVO BADGE --- */}
+                </div>
               </div>
               
               {produto.descricao && (
@@ -294,6 +332,7 @@ export const ProdutosPage = () => {
   );
 };
 
+// 10. Novos estilos adicionados ao final do objeto 'styles'
 const styles: Record<string, React.CSSProperties> = {
   container: { maxWidth: '1400px', margin: '0 auto' },
   loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '16px' },
@@ -312,6 +351,29 @@ const styles: Record<string, React.CSSProperties> = {
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
   label: { fontSize: '14px', fontWeight: 600, color: '#374151' },
   input: { padding: '12px 16px', fontSize: '15px', border: '2px solid #e5e7eb', borderRadius: '8px', outline: 'none', width: '100%', fontFamily: 'inherit' },
+  
+  // --- NOVOS ESTILOS CHECKBOX ---
+  checkboxGroup: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '12px',
+    backgroundColor: '#f9fafb',
+    borderRadius: '8px',
+  },
+  checkbox: {
+    width: '16px',
+    height: '16px',
+    cursor: 'pointer',
+  },
+  checkboxLabel: {
+    fontSize: '14px',
+    fontWeight: 500,
+    color: '#374151',
+    cursor: 'pointer',
+  },
+  // --- FIM DOS NOVOS ESTILOS ---
+
   formActions: { display: 'flex', gap: '12px', justifyContent: 'flex-end' },
   cancelButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#f5f7fa', color: '#1a1d29', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   submitButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
@@ -319,9 +381,21 @@ const styles: Record<string, React.CSSProperties> = {
   productCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '2px solid transparent' },
   productHeader: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px', gap: '12px' },
   productName: { margin: 0, fontSize: '18px', fontWeight: 600, color: '#1a1d29', flex: 1 },
+  
+  // --- NOVOS ESTILOS BADGES ---
+  badges: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+    alignItems: 'flex-end',
+    flexShrink: 0,
+  },
   badge: { padding: '4px 10px', fontSize: '12px', fontWeight: 600, borderRadius: '6px', whiteSpace: 'nowrap' },
   badgeActive: { backgroundColor: '#d1fae5', color: '#065f46' },
   badgeInactive: { backgroundColor: '#fee2e2', color: '#991b1b' },
+  badgeEmail: { backgroundColor: '#dbeafe', color: '#1e40af' },
+  // --- FIM DOS NOVOS ESTILOS ---
+
   productDescription: { margin: '0 0 16px 0', fontSize: '14px', color: '#6b7280', lineHeight: 1.5 },
   productFooter: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid #e5e7eb', marginBottom: '12px' },
   priceTag: { display: 'flex', flexDirection: 'column', gap: '2px' },

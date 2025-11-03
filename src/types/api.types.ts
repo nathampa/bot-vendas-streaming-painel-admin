@@ -66,6 +66,7 @@ export interface IPedidoAdminList {
   produto_nome: string;
   usuario_nome_completo: string;
   usuario_telegram_id: number;
+  email_cliente: string | null;
 }
 
 export interface IPedidoAdminConta {
@@ -74,5 +75,5 @@ export interface IPedidoAdminConta {
 }
 
 export interface IPedidoAdminDetails extends IPedidoAdminList {
-  conta: IPedidoAdminConta;
+  conta: IPedidoAdminConta | null;
 }
