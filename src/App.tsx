@@ -10,6 +10,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { ProdutosPage } from './pages/ProdutosPage';
 import { EstoquePage } from './pages/EstoquePage';
 import { TicketsPage } from './pages/TicketsPage';
+import { PedidosPage } from './pages/PedidosPage';
 
 // --- IMPORTAÇÕES ADICIONADAS ---
 import { GiftCardsPage } from './pages/GiftCardsPage'; 
@@ -62,6 +63,7 @@ function App() {
           <Route path="/tickets" element={<TicketsPage />} />
           <Route path="/giftcards" element={<GiftCardsPage />} />
           <Route path="/sugestoes" element={<SugestoesPage />} />
+          <Route path="/pedidos" element={<PedidosPage />} />
 
           {/* Rota de fallback (índice) */}
           <Route index element={<Navigate to="/dashboard" replace />} />

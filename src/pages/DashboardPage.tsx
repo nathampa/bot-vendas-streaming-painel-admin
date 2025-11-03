@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getDashboardKPIs, getTopProdutos } from '../services/apiClient';
+import { getDashboardKPIs, getTopProdutos, getRecentPedidos } from '../services/apiClient';
+import type { IDashboardRecentPedido } from '../types/api.types'; 
 
 interface IKPIs {
   faturamento_24h: string;
@@ -17,18 +18,21 @@ interface ITopProduto {
 export const DashboardPage = () => {
   const [kpis, setKpis] = useState<IKPIs | null>(null);
   const [topProdutos, setTopProdutos] = useState<ITopProduto[]>([]);
+  const [recentPedidos, setRecentPedidos] = useState<IDashboardRecentPedido[]>([]); 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const [kpiResponse, topProdutosResponse] = await Promise.all([
+        const [kpiResponse, topProdutosResponse, recentPedidosResponse] = await Promise.all([
           getDashboardKPIs(),
-          getTopProdutos()
+          getTopProdutos(),
+          getRecentPedidos()
         ]);
         setKpis(kpiResponse.data);
         setTopProdutos(topProdutosResponse.data);
+        setRecentPedidos(recentPedidosResponse.data);
         setError(null);
       } catch (err: any) {
         console.error("Erro ao buscar dados do dashboard:", err);
@@ -39,7 +43,18 @@ export const DashboardPage = () => {
     })();
   }, []);
 
+  const formatarData = (dataIso: string) => {
+    return new Date(dataIso).toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   if (isLoading) {
+    // ... (bloco isLoading) ...
     return (
       <div style={styles.loadingContainer}>
         <div style={styles.spinner}>⏳</div>
@@ -49,6 +64,7 @@ export const DashboardPage = () => {
   }
 
   if (error) {
+    // ... (bloco error) ...
     return (
       <div style={styles.errorContainer}>
         <span style={styles.errorIcon}>⚠️</span>
@@ -62,6 +78,7 @@ export const DashboardPage = () => {
     <div style={styles.container}>
       {/* Welcome Section */}
       <div style={styles.welcomeSection}>
+        {/* ... (código de welcome) ... */}
         <div>
           <h1 style={styles.welcomeTitle}>Bem-vindo de volta! 👋</h1>
           <p style={styles.welcomeText}>Aqui está um resumo das últimas 24 horas</p>
@@ -70,6 +87,7 @@ export const DashboardPage = () => {
 
       {/* KPI Cards */}
       <div style={styles.kpiGrid}>
+        {/* ... (código dos kpis) ... */}
         <div style={{...styles.kpiCard, ...styles.kpiCard1}}>
           <div style={styles.kpiIcon}>💰</div>
           <div style={styles.kpiContent}>
@@ -78,7 +96,6 @@ export const DashboardPage = () => {
             <span style={styles.kpiBadge}>Últimas 24h</span>
           </div>
         </div>
-
         <div style={{...styles.kpiCard, ...styles.kpiCard2}}>
           <div style={styles.kpiIcon}>🛒</div>
           <div style={styles.kpiContent}>
@@ -87,7 +104,6 @@ export const DashboardPage = () => {
             <span style={styles.kpiBadge}>Últimas 24h</span>
           </div>
         </div>
-
         <div style={{...styles.kpiCard, ...styles.kpiCard3}}>
           <div style={styles.kpiIcon}>👥</div>
           <div style={styles.kpiContent}>
@@ -96,7 +112,6 @@ export const DashboardPage = () => {
             <span style={styles.kpiBadge}>Últimas 24h</span>
           </div>
         </div>
-
         <div style={{...styles.kpiCard, ...styles.kpiCard4}}>
           <div style={styles.kpiIcon}>🎟️</div>
           <div style={styles.kpiContent}>
@@ -109,48 +124,103 @@ export const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Top Products Section */}
-      <div style={styles.section}>
-        <div style={styles.sectionHeader}>
-          <h2 style={styles.sectionTitle}>🏆 Produtos Mais Vendidos</h2>
-          <span style={styles.sectionSubtitle}>Por faturamento total</span>
-        </div>
+      {/* SEÇÃO DE CONTEÚDO DUPLO */}
+      <div style={styles.dualGrid}>
+        {/* Top Products Section */}
+        <div style={styles.section}>
+          {/* ... (código /top-produtos) ... */}
+          <div style={styles.sectionHeader}>
+            <h2 style={styles.sectionTitle}>🏆 Produtos Mais Vendidos</h2>
+            <span style={styles.sectionSubtitle}>Por faturamento total</span>
+          </div>
 
-        {topProdutos.length > 0 ? (
-          <div style={styles.productsGrid}>
-            {topProdutos.map((produto, index) => (
-              <div key={produto.produto_nome} style={styles.productCard}>
-                <div style={styles.productRank}>#{index + 1}</div>
-                <div style={styles.productInfo}>
-                  <h3 style={styles.productName}>{produto.produto_nome}</h3>
-                  <div style={styles.productStats}>
-                    <div style={styles.productStat}>
-                      <span style={styles.productStatLabel}>Vendas</span>
-                      <span style={styles.productStatValue}>{produto.total_vendas}</span>
-                    </div>
-                    <div style={styles.productStat}>
-                      <span style={styles.productStatLabel}>Faturamento</span>
-                      <span style={styles.productStatValue}>R$ {produto.faturamento_total}</span>
+          {topProdutos.length > 0 ? (
+            <div style={styles.productsGrid}>
+              {topProdutos.map((produto, index) => (
+                <div key={produto.produto_nome} style={styles.productCard}>
+                  <div style={{...styles.productRank, backgroundColor: '#667eea'}}>
+                    #{index + 1}
+                  </div>
+                  <div style={styles.productInfo}>
+                    <h3 style={styles.productName}>{produto.produto_nome}</h3>
+                    <div style={styles.productStats}>
+                      <div style={styles.productStat}>
+                        <span style={styles.productStatLabel}>Vendas</span>
+                        <span style={styles.productStatValue}>{produto.total_vendas}</span>
+                      </div>
+                      <div style={styles.productStat}>
+                        <span style={styles.productStatLabel}>Faturamento</span>
+                        <span style={styles.productStatValue}>R$ {produto.faturamento_total}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          ) : (
+            <div style={styles.emptyState}>
+              <span style={styles.emptyIcon}>📦</span>
+              <p style={styles.emptyText}>Nenhuma venda registrada ainda</p>
+            </div>
+          )}
+        </div>
+
+        {/* --- SEÇÃO DE ÚLTIMOS PEDIDOS (MODIFICADA) --- */}
+        <div style={styles.section}>
+          <div style={styles.sectionHeader}>
+            <h2 style={styles.sectionTitle}>🕓 Últimos Pedidos</h2>
+            <span style={styles.sectionSubtitle}>Os 5 pedidos mais recentes</span>
           </div>
-        ) : (
-          <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>📦</span>
-            <p style={styles.emptyText}>Nenhuma venda registrada ainda</p>
-          </div>
-        )}
+
+          {recentPedidos.length > 0 ? (
+            <div style={styles.productsGrid}>
+              {recentPedidos.map((pedido) => (
+                <div key={pedido.id} style={styles.productCard}>
+                  <div style={{...styles.productRank, backgroundColor: '#10b981'}}>
+                    🛒
+                  </div>
+                  <div style={styles.productInfo}>
+                    <h3 style={styles.productName}>{pedido.produto_nome}</h3>
+                    <div style={styles.productStats}>
+                      <div style={styles.productStat}>
+                        <span style={styles.productStatLabel}>Valor</span>
+                        <span style={styles.productStatValue}>R$ {pedido.valor_pago}</span>
+                      </div>
+                      <div style={styles.productStat}>
+                        <span style={styles.productStatLabel}>Usuário</span>
+                        {/* --- ALTERAÇÃO AQUI --- */}
+                        <span 
+                          style={styles.productStatValue} 
+                          title={`${pedido.nome_completo} (${pedido.usuario_telegram_id})`}
+                        >
+                          {pedido.nome_completo} ({pedido.usuario_telegram_id})
+                        </span>
+                        {/* --- FIM DA ALTERAÇÃO --- */}
+                      </div>
+                    </div>
+                    <span style={styles.pedidoData}>
+                      {formatarData(pedido.criado_em)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={styles.emptyState}>
+              <span style={styles.emptyIcon}>🛒</span>
+              <p style={styles.emptyText}>Nenhum pedido recente</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
+// ... (bloco de 'styles' - permanece igual) ...
 const styles: Record<string, React.CSSProperties> = {
   container: {
-    maxWidth: '1400px',
+    maxWidth: '1600px', 
     margin: '0 auto',
   },
   loadingContainer: {
@@ -268,11 +338,18 @@ const styles: Record<string, React.CSSProperties> = {
   alertBadge: {
     color: '#f59e0b',
   },
+  dualGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr', 
+    gap: '24px',
+  },
   section: {
     backgroundColor: '#fff',
     borderRadius: '12px',
     padding: '24px',
     boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    display: 'flex', 
+    flexDirection: 'column',
   },
   sectionHeader: {
     marginBottom: '24px',
@@ -292,6 +369,7 @@ const styles: Record<string, React.CSSProperties> = {
   productsGrid: {
     display: 'grid',
     gap: '16px',
+    flex: 1, 
   },
   productCard: {
     display: 'flex',
@@ -306,22 +384,27 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '40px',
-    height: '40px',
+    width: '48px',
+    height: '48px',
     backgroundColor: '#667eea',
     color: '#fff',
-    borderRadius: '8px',
-    fontSize: '18px',
+    borderRadius: '10px',
+    fontSize: '20px',
     fontWeight: 700,
+    flexShrink: 0,
   },
   productInfo: {
     flex: 1,
+    overflow: 'hidden',
   },
   productName: {
     margin: '0 0 8px 0',
     fontSize: '16px',
     fontWeight: 600,
     color: '#1a1d29',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   productStats: {
     display: 'flex',
@@ -331,6 +414,8 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     flexDirection: 'column',
     gap: '2px',
+    // Adicionado para limitar o tamanho
+    minWidth: 0,
   },
   productStatLabel: {
     fontSize: '12px',
@@ -340,6 +425,16 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '14px',
     fontWeight: 600,
     color: '#1a1d29',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  pedidoData: {
+    marginTop: '8px',
+    fontSize: '12px',
+    color: '#6b7280',
+    fontWeight: 500,
+    display: 'block',
   },
   emptyState: {
     display: 'flex',
@@ -348,6 +443,7 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'center',
     padding: '60px 20px',
     gap: '16px',
+    flex: 1,
   },
   emptyIcon: {
     fontSize: '64px',
@@ -357,5 +453,6 @@ const styles: Record<string, React.CSSProperties> = {
     margin: 0,
     fontSize: '16px',
     color: '#6b7280',
+    textAlign: 'center',
   },
 };

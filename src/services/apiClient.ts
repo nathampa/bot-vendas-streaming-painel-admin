@@ -43,6 +43,12 @@ export const getEstoqueBaixo = (limite: number = 5) => {
   });
 };
 
+export const getRecentPedidos = () => {
+  return axios.get(`${VITE_API_BASE_URL}/admin/dashboard/recentes-pedidos`, {
+    headers: getAuthHeaders(),
+  });
+};
+
 // -----------------------------------------------------------------
 // PILAR 1: Produtos
 // -----------------------------------------------------------------
@@ -58,7 +64,6 @@ export const createProduto = (data: { nome: string; descricao: string; preco: nu
   });
 };
 
-// ==================== NOVOS ENDPOINTS ====================
 export const updateProduto = (produtoId: string, data: any) => {
   return axios.put(`${VITE_API_BASE_URL}/admin/produtos/${produtoId}`, data, {
     headers: getAuthHeaders(),
@@ -93,7 +98,7 @@ export const createEstoque = (data: { produto_id: string; login: string; senha: 
   });
 };
 
-// ==================== NOVOS ENDPOINTS ====================
+
 export const updateEstoque = (estoqueId: string, data: any) => {
   return axios.put(`${VITE_API_BASE_URL}/admin/estoque/${estoqueId}`, data, {
     headers: getAuthHeaders(),
@@ -144,7 +149,6 @@ export const createGiftCard = (data: { valor: number; quantidade: number; codigo
   });
 };
 
-// ==================== NOVO ENDPOINT ====================
 export const deleteGiftCard = (giftcardId: string) => {
   return axios.delete(`${VITE_API_BASE_URL}/admin/giftcards/${giftcardId}`, {
     headers: getAuthHeaders(),
@@ -156,6 +160,18 @@ export const deleteGiftCard = (giftcardId: string) => {
 // -----------------------------------------------------------------
 export const getAdminSugestoes = () => {
   return axios.get(`${VITE_API_BASE_URL}/admin/sugestoes/`, {
+    headers: getAuthHeaders(),
+  });
+};
+
+export const getAdminPedidos = () => {
+  return axios.get(`${VITE_API_BASE_URL}/admin/pedidos/`, {
+    headers: getAuthHeaders(),
+  });
+};
+
+export const getPedidoDetalhes = (pedidoId: string) => {
+  return axios.get(`${VITE_API_BASE_URL}/admin/pedidos/${pedidoId}/detalhes`, {
     headers: getAuthHeaders(),
   });
 };

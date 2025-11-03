@@ -49,3 +49,30 @@ export interface ISugestaoAdminRead {
   contagem: number;
   status: string;
 }
+
+export interface IDashboardRecentPedido {
+  id: string;
+  produto_nome: string;
+  valor_pago: string;
+  criado_em: string;
+  usuario_telegram_id: number,
+  nome_completo: string;
+}
+
+export interface IPedidoAdminList {
+  id: string;
+  criado_em: string;
+  valor_pago: string;
+  produto_nome: string;
+  usuario_nome_completo: string;
+  usuario_telegram_id: number;
+}
+
+export interface IPedidoAdminConta {
+  login: string;
+  senha: string;
+}
+
+export interface IPedidoAdminDetails extends IPedidoAdminList {
+  conta: IPedidoAdminConta;
+}

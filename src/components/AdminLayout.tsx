@@ -20,6 +20,7 @@ export const AdminLayout = () => {
     { path: '/produtos', icon: '🛍️', label: 'Produtos' },
     { path: '/estoque', icon: '📦', label: 'Estoque' },
     { path: '/tickets', icon: '🎟️', label: 'Tickets' },
+    { path: '/pedidos', icon: '🧾', label: 'Pedidos' },
     { path: '/giftcards', icon: '🎁', label: 'Gift Cards' },
     { path: '/sugestoes', icon: '💡', label: 'Sugestões' },
   ];
