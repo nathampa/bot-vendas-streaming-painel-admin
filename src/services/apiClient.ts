@@ -1,12 +1,7 @@
 import axios from 'axios';
 
-// 1. Pega a URL da API do nosso arquivo .env
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-/**
- * Função auxiliar para pegar o token do localStorage
- * e montar o cabeçalho de autorização.
- */
 const getAuthHeaders = () => {
   const token = localStorage.getItem('authToken');
   return {
@@ -20,10 +15,6 @@ const getAuthHeaders = () => {
 // PILAR 8: Autenticação
 // -----------------------------------------------------------------
 
-/**
- * Faz o login. Nota: esta é a ÚNICA função que não usa getAuthHeaders().
- * Ela também envia 'FormData' em vez de JSON, como o FastAPI espera.
- */
 export const loginAdmin = (formData: FormData) => {
   return axios.post(`${VITE_API_BASE_URL}/admin/login`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -67,7 +58,18 @@ export const createProduto = (data: { nome: string; descricao: string; preco: nu
   });
 };
 
-// TODO: Adicionar updateProduto, etc.
+// ==================== NOVOS ENDPOINTS ====================
+export const updateProduto = (produtoId: string, data: any) => {
+  return axios.put(`${VITE_API_BASE_URL}/admin/produtos/${produtoId}`, data, {
+    headers: getAuthHeaders(),
+  });
+};
+
+export const deleteProduto = (produtoId: string) => {
+  return axios.delete(`${VITE_API_BASE_URL}/admin/produtos/${produtoId}`, {
+    headers: getAuthHeaders(),
+  });
+};
 
 // -----------------------------------------------------------------
 // PILAR 5: Estoque
@@ -91,7 +93,18 @@ export const createEstoque = (data: { produto_id: string; login: string; senha: 
   });
 };
 
-// TODO: Adicionar updateEstoque, deleteEstoque, etc.
+// ==================== NOVOS ENDPOINTS ====================
+export const updateEstoque = (estoqueId: string, data: any) => {
+  return axios.put(`${VITE_API_BASE_URL}/admin/estoque/${estoqueId}`, data, {
+    headers: getAuthHeaders(),
+  });
+};
+
+export const deleteEstoque = (estoqueId: string) => {
+  return axios.delete(`${VITE_API_BASE_URL}/admin/estoque/${estoqueId}`, {
+    headers: getAuthHeaders(),
+  });
+};
 
 // -----------------------------------------------------------------
 // PILAR 6: Tickets
@@ -127,6 +140,13 @@ export const getAdminGiftCards = (params?: { is_utilizado: boolean }) => {
 
 export const createGiftCard = (data: { valor: number; quantidade: number; codigo_personalizado?: string }) => {
   return axios.post(`${VITE_API_BASE_URL}/admin/giftcards/`, data, {
+    headers: getAuthHeaders(),
+  });
+};
+
+// ==================== NOVO ENDPOINT ====================
+export const deleteGiftCard = (giftcardId: string) => {
+  return axios.delete(`${VITE_API_BASE_URL}/admin/giftcards/${giftcardId}`, {
     headers: getAuthHeaders(),
   });
 };
