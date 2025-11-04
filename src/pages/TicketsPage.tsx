@@ -9,7 +9,7 @@ export const TicketsPage = () => {
   const [selectedTicket, setSelectedTicket] = useState<ITicketDetalhes | null>(null);
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [_error, setError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<TicketStatus>('ABERTO');
 
   const carregarTickets = async (status: TicketStatus) => {

@@ -136,7 +136,7 @@ export const resolverTicket = (ticketId: string, acao: 'TROCAR_CONTA' | 'REEMBOL
 // -----------------------------------------------------------------
 // PILAR 7: Gift Cards
 // -----------------------------------------------------------------
-export const getAdminGiftCards = (params?: { is_utilizado: boolean }) => {
+export const getAdminGiftCards = (params?: { is_utilizado?: boolean }) => {
   return axios.get(`${VITE_API_BASE_URL}/admin/giftcards/`, {
     headers: getAuthHeaders(),
     params: params,

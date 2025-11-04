@@ -196,14 +196,14 @@ export const PedidosPage = () => {
                       <h4 style={styles.contaTitle}>🔐 Credenciais Entregues</h4>
                       <div style={styles.contaRow}>
                         <span style={styles.contaLabel}>Login:</span>
-                        <div style={styles.copyBox} onClick={() => copyToClipboard(selectedPedido.conta.login)}>
+                        <div style={styles.copyBox} onClick={() => copyToClipboard(selectedPedido.conta!.login)}>
                           <span style={styles.contaValue}>{selectedPedido.conta.login}</span>
                           <button style={styles.copyButton} title="Copiar login">📋</button>
                         </div>
                       </div>
                       <div style={styles.contaRow}>
                         <span style={styles.contaLabel}>Senha:</span>
-                        <div style={styles.copyBox} onClick={() => copyToClipboard(selectedPedido.conta.senha)}>
+                        <div style={styles.copyBox} onClick={() => copyToClipboard(selectedPedido.conta!.senha)}>
                           <span style={styles.contaValue}>{selectedPedido.conta.senha}</span>
                           <button style={styles.copyButton} title="Copiar senha">📋</button>
                         </div>

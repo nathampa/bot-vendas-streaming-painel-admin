@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 // Importa a nossa função de login da API
 import { loginAdmin } from '../services/apiClient';
 
