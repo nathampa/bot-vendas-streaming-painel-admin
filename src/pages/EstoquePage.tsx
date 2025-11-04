@@ -16,6 +16,9 @@ interface IProduto {
   nome: string;
 }
 
+// 1. TIPO ADICIONADO PARA OS FILTROS
+type FilterStatus = 'todos' | 'ativos' | 'inativos' | 'atencao';
+
 export const EstoquePage = () => {
   const [estoque, setEstoque] = useState<IEstoque[]>([]);
   const [produtos, setProdutos] = useState<IProduto[]>([]);
@@ -24,6 +27,11 @@ export const EstoquePage = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingEstoque, setEditingEstoque] = useState<IEstoque | null>(null);
   const [deletingEstoque, setDeletingEstoque] = useState<IEstoque | null>(null);
+
+  // --- 2. STATES DE FILTRO ADICIONADOS ---
+  const [filterProdutoId, setFilterProdutoId] = useState<string>('todos');
+  const [filterStatus, setFilterStatus] = useState<FilterStatus>('todos');
+  // --- FIM DOS STATES DE FILTRO ---
 
   // Form states
   const [selectedProdutoId, setSelectedProdutoId] = useState('');
@@ -41,6 +49,10 @@ export const EstoquePage = () => {
       ]);
       setEstoque(estoqueRes.data);
       setProdutos(produtosRes.data);
+      if (produtosRes.data.length > 0 && selectedProdutoId === '') {
+        // Pré-seleciona o primeiro produto no form (opcional)
+        // setSelectedProdutoId(produtosRes.data[0].id);
+      }
       setError(null);
     } catch (err) {
       console.error("Erro ao buscar dados:", err);
@@ -86,7 +98,14 @@ export const EstoquePage = () => {
 
     try {
       if (editingEstoque) {
-        await updateEstoque(editingEstoque.id, data);
+        // Se estiver editando, não enviamos 'produto_id'
+        const updateData = {
+          login: novoLogin,
+          max_slots: novoMaxSlots,
+          is_ativo: novoIsAtivo,
+          ...(novaSenha && { senha: novaSenha }) // Adiciona senha apenas se preenchida
+        };
+        await updateEstoque(editingEstoque.id, updateData);
         alert("✅ Conta atualizada com sucesso!");
       } else {
         if (!novaSenha) {
@@ -131,14 +150,54 @@ export const EstoquePage = () => {
     }
   };
 
+  // --- 3. NOVA FUNÇÃO ADICIONADA ---
+  const handleMarkAsResolved = async (estoqueId: string) => {
+    if (!window.confirm("Tem certeza que deseja marcar esta conta como 'resolvida'? A flag 'Requer Atenção' será removida.")) {
+      return;
+    }
+
+    try {
+      // Chamamos a API de update apenas com o campo que queremos mudar
+      await updateEstoque(estoqueId, { requer_atencao: false });
+      alert("✅ Conta marcada como resolvida!");
+      // Recarrega os dados para refletir a mudança
+      carregarDados();
+    } catch (err: any) {
+      console.error("Erro ao marcar como resolvido:", err);
+      const errorMsg = err.response?.data?.detail || "Falha ao atualizar conta.";
+      alert(`❌ Erro: ${errorMsg}`);
+    }
+  };
+  // --- FIM DA NOVA FUNÇÃO ---
+
   const getProdutoNome = (produtoId: string): string => {
     const produto = produtos.find(p => p.id === produtoId);
     return produto ? produto.nome : 'Produto Desconhecido';
   };
 
   const getSlotPercentage = (ocupados: number, max: number): number => {
+    if (max === 0) return 0; // Evita divisão por zero
     return (ocupados / max) * 100;
   };
+
+  // --- 4. LÓGICA DE FILTRO ADICIONADA ---
+  const filteredEstoque = estoque.filter(item => {
+    const matchesProduto = filterProdutoId === 'todos' || item.produto_id === filterProdutoId;
+
+    let matchesStatus = true;
+    if (filterStatus === 'ativos') {
+      // Ativo significa 'is_ativo' E NÃO 'requer_atencao'
+      matchesStatus = item.is_ativo && !item.requer_atencao;
+    } else if (filterStatus === 'inativos') {
+      matchesStatus = !item.is_ativo;
+    } else if (filterStatus === 'atencao') {
+      matchesStatus = item.requer_atencao;
+    }
+    // 'todos' não faz nada (matchesStatus = true)
+
+    return matchesProduto && matchesStatus;
+  });
+  // --- FIM DA LÓGICA DE FILTRO ---
 
   if (isLoading) {
     return (
@@ -183,7 +242,7 @@ export const EstoquePage = () => {
                 value={selectedProdutoId}
                 onChange={(e) => setSelectedProdutoId(e.target.value)}
                 required
-                disabled={!!editingEstoque}
+                disabled={!!editingEstoque} // Desabilita se estiver editando
                 style={{...styles.input, opacity: editingEstoque ? 0.6 : 1}}
               >
                 <option value="">-- Selecione um Produto --</option>
@@ -221,7 +280,7 @@ export const EstoquePage = () => {
                   type="password"
                   value={novaSenha}
                   onChange={(e) => setNovaSenha(e.target.value)}
-                  required={!editingEstoque}
+                  required={!editingEstoque} // Obrigatório apenas ao criar
                   style={styles.input}
                   placeholder="••••••••"
                 />
@@ -272,41 +331,78 @@ export const EstoquePage = () => {
         </div>
       )}
 
-      {/* Stats Cards */}
+      {/* --- 5. SEÇÃO DE FILTROS ADICIONADA --- */}
+      <div style={styles.filterContainer}>
+        <h3 style={styles.filterTitle}>Filtrar Estoque</h3>
+        <div style={styles.filterInputs}>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Por Produto</label>
+            <select
+              value={filterProdutoId}
+              onChange={(e) => setFilterProdutoId(e.target.value)}
+              style={styles.input}
+            >
+              <option value="todos">-- Todos os Produtos --</option>
+              {produtos.map((produto) => (
+                <option key={produto.id} value={produto.id}>
+                  {produto.nome}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Por Status</label>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
+              style={styles.input}
+            >
+              <option value="todos">-- Todos os Status --</option>
+              <option value="ativos">✓ Ativos (Prontos p/ Venda)</option>
+              <option value="atencao">⚠ Requer Atenção</option>
+              <option value="inativos">✕ Inativos</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      {/* --- FIM DA SEÇÃO DE FILTROS --- */}
+
+
+      {/* Stats Cards - MODIFICADOS para usar a lista filtrada */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
           <div style={styles.statIcon}>📊</div>
           <div>
-            <p style={styles.statLabel}>Total de Contas</p>
-            <h3 style={styles.statValue}>{estoque.length}</h3>
+            <p style={styles.statLabel}>Contas (Filtro)</p>
+            <h3 style={styles.statValue}>{filteredEstoque.length}</h3>
           </div>
         </div>
         <div style={styles.statCard}>
           <div style={{...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46'}}>✓</div>
           <div>
-            <p style={styles.statLabel}>Contas Ativas</p>
-            <h3 style={styles.statValue}>{estoque.filter(e => e.is_ativo).length}</h3>
+            <p style={styles.statLabel}>Prontas p/ Venda</p>
+            <h3 style={styles.statValue}>{filteredEstoque.filter(e => e.is_ativo && !e.requer_atencao).length}</h3>
           </div>
         </div>
         <div style={styles.statCard}>
           <div style={{...styles.statIcon, backgroundColor: '#fee2e2', color: '#991b1b'}}>⚠</div>
           <div>
             <p style={styles.statLabel}>Requer Atenção</p>
-            <h3 style={styles.statValue}>{estoque.filter(e => e.requer_atencao).length}</h3>
+            <h3 style={styles.statValue}>{filteredEstoque.filter(e => e.requer_atencao).length}</h3>
           </div>
         </div>
       </div>
 
-      {/* Estoque Grid */}
+      {/* Estoque Grid - MODIFICADO para usar a lista filtrada */}
       <div style={styles.estoqueGrid}>
-        {estoque.length === 0 ? (
+        {filteredEstoque.length === 0 ? (
           <div style={styles.emptyState}>
             <span style={styles.emptyIcon}>📦</span>
-            <h3 style={styles.emptyTitle}>Nenhuma conta em estoque</h3>
-            <p style={styles.emptyText}>Comece adicionando contas para venda</p>
+            <h3 style={styles.emptyTitle}>Nenhuma conta encontrada</h3>
+            <p style={styles.emptyText}>Tente ajustar os filtros ou adicione novas contas.</p>
           </div>
         ) : (
-          estoque.map((item) => {
+          filteredEstoque.map((item) => {
             const percentage = getSlotPercentage(item.slots_ocupados, item.max_slots);
             const isFull = percentage >= 100;
             const isAlmostFull = percentage >= 80;
@@ -373,8 +469,18 @@ export const EstoquePage = () => {
                   <span style={styles.cardId}>ID: {item.id.substring(0, 8)}...</span>
                 </div>
 
-                {/* Action Buttons */}
+                {/* Action Buttons - MODIFICADO */}
                 <div style={styles.actionButtons}>
+                  {/* --- 6. BOTÃO DE RESOLVER ADICIONADO --- */}
+                  {item.requer_atencao && (
+                    <button
+                      onClick={() => handleMarkAsResolved(item.id)}
+                      style={{...styles.actionBtn, ...styles.resolveBtn}}
+                      title="Marcar como resolvido"
+                    >
+                      ✓ Resolver
+                    </button>
+                  )}
                   <button
                     onClick={() => handleEdit(item)}
                     style={{...styles.actionBtn, ...styles.editBtn}}
@@ -437,7 +543,10 @@ export const EstoquePage = () => {
   );
 };
 
+// --- 7. NOVOS ESTILOS ADICIONADOS ---
+// (Cole isso dentro do seu objeto 'styles', no final)
 const styles: Record<string, React.CSSProperties> = {
+  // ... (todos os seus estilos existentes de 'container' até 'emptyText') ...
   container: { maxWidth: '1400px', margin: '0 auto' },
   loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '16px' },
   spinner: { width: '48px', height: '48px', border: '4px solid #e5e7eb', borderTop: '4px solid #667eea', borderRadius: '50%', animation: 'spin 1s linear infinite' },
@@ -459,6 +568,28 @@ const styles: Record<string, React.CSSProperties> = {
   formActions: { display: 'flex', gap: '12px', justifyContent: 'flex-end' },
   cancelButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#f5f7fa', color: '#1a1d29', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   submitButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+  
+  // --- NOVOS ESTILOS PARA FILTROS ---
+  filterContainer: {
+    backgroundColor: '#fff',
+    borderRadius: '12px',
+    padding: '24px',
+    marginBottom: '32px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+  },
+  filterTitle: {
+    margin: '0 0 20px 0',
+    fontSize: '18px',
+    fontWeight: 700,
+    color: '#1a1d29'
+  },
+  filterInputs: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '16px'
+  },
+  // --- FIM DOS NOVOS ESTILOS ---
+
   statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' },
   statCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
   statIcon: { width: '48px', height: '48px', borderRadius: '10px', backgroundColor: '#f5f7fa', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' },
@@ -487,6 +618,14 @@ const styles: Record<string, React.CSSProperties> = {
   cardId: { fontSize: '11px', color: '#9ca3af' },
   actionButtons: { display: 'flex', gap: '8px', paddingTop: '12px', borderTop: '1px solid #e5e7eb' },
   actionBtn: { flex: 1, padding: '10px 16px', fontSize: '13px', fontWeight: 600, border: 'none', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s ease' },
+  
+  // --- NOVO ESTILO PARA O BOTÃO RESOLVER ---
+  resolveBtn: {
+    backgroundColor: '#d1fae5', 
+    color: '#065f46',
+  },
+  // --- FIM DO NOVO ESTILO ---
+
   editBtn: { backgroundColor: '#dbeafe', color: '#1e40af' },
   deleteBtn: { backgroundColor: '#fee2e2', color: '#991b1b' },
   emptyState: { gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', gap: '16px' },
