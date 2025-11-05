@@ -10,7 +10,6 @@ export const PedidosPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   const carregarPedidos = async () => {
-    // ... (função carregarPedidos, sem alteração) ...
     setIsLoadingList(true);
     try {
       const response = await getAdminPedidos();
@@ -29,7 +28,6 @@ export const PedidosPage = () => {
   }, []);
 
   const handleVerDetalhes = async (pedidoId: string) => {
-    // ... (função handleVerDetalhes, sem alteração) ...
     setIsLoadingDetails(true);
     setError(null);
     try {
@@ -45,7 +43,6 @@ export const PedidosPage = () => {
   };
   
   const formatarData = (dataIso: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const dataUtc = dataIso.endsWith('Z') ? dataIso : dataIso + 'Z';
     return new Date(dataUtc).toLocaleString('pt-BR', {
       day: '2-digit',
@@ -58,13 +55,11 @@ export const PedidosPage = () => {
   };
 
   const copyToClipboard = (text: string) => {
-    // ... (função copyToClipboard, sem alteração) ...
     navigator.clipboard.writeText(text);
     alert('📋 Copiado!');
   };
 
   if (isLoadingList) {
-    // ... (bloco loading, sem alteração) ...
     return (
       <div style={styles.loadingContainer}>
         <div style={styles.spinner} />
@@ -78,7 +73,7 @@ export const PedidosPage = () => {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>🧾 Pedidossss</h1>
+          <h1 style={styles.title}>🧾 Pedidos</h1>
           <p style={styles.subtitle}>Histórico de todas as vendas realizadas</p>
         </div>
       </div>
