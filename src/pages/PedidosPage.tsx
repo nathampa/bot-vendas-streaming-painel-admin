@@ -77,7 +77,7 @@ export const PedidosPage = () => {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>🧾 Pedidos</h1>
+          <h1 style={styles.title}>🧾 Pedidossss</h1>
           <p style={styles.subtitle}>Histórico de todas as vendas realizadas</p>
         </div>
       </div>
