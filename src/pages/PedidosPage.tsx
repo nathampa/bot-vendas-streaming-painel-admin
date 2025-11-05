@@ -45,7 +45,7 @@ export const PedidosPage = () => {
   };
   
   const formatarData = (dataIso: string) => {
-    // ... (função formatarData, sem alteração) ...
+    const dataUtc = dataIso.endsWith('Z') ? dataIso : dataIso + 'Z';
     return new Date(dataIso).toLocaleString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
