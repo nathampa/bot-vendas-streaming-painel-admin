@@ -45,7 +45,7 @@ export const DashboardPage = () => {
 
   const formatarData = (dataIso: string) => {
     const dataUtc = dataIso.endsWith('Z') ? dataIso : dataIso + 'Z';
-    return new Date(dataIso).toLocaleString('pt-BR', {
+    return new Date(dataUtc).toLocaleString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',

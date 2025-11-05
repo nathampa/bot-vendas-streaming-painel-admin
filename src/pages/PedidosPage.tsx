@@ -45,8 +45,9 @@ export const PedidosPage = () => {
   };
   
   const formatarData = (dataIso: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const dataUtc = dataIso.endsWith('Z') ? dataIso : dataIso + 'Z';
-    return new Date(dataIso).toLocaleString('pt-BR', {
+    return new Date(dataUtc).toLocaleString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
