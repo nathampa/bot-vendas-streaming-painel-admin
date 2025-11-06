@@ -58,7 +58,14 @@ export const getAdminProdutos = () => {
   });
 };
 
-export const createProduto = (data: { nome: string; descricao: string; preco: number; is_ativo: boolean }) => {
+export const createProduto = (data: { 
+  nome: string; 
+  descricao?: string; 
+  instrucoes_pos_compra?: string;
+  preco: number; 
+  is_ativo: boolean;
+  requer_email_cliente: boolean;
+}) => {
   return axios.post(`${VITE_API_BASE_URL}/admin/produtos/`, data, {
     headers: getAuthHeaders(),
   });

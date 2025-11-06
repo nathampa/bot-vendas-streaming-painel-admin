@@ -9,7 +9,8 @@ interface IProduto {
   preco: string;
   is_ativo: boolean;
   criado_em: string;
-  requer_email_cliente: boolean; // <-- CAMPO ADICIONADO
+  requer_email_cliente: boolean;
+  instrucoes_pos_compra: string | null;
 }
 
 export const ProdutosPage = () => {
@@ -23,6 +24,7 @@ export const ProdutosPage = () => {
   // Form states
   const [novoNome, setNovoNome] = useState('');
   const [novoDescricao, setNovoDescricao] = useState('');
+  const [novoInstrucoes, setNovoInstrucoes] = useState('');
   const [novoPreco, setNovoPreco] = useState('');
   const [novoIsAtivo, setNovoIsAtivo] = useState(true);
   // 2. Novo state para o checkbox
@@ -50,9 +52,10 @@ export const ProdutosPage = () => {
   const resetForm = () => {
     setNovoNome('');
     setNovoDescricao('');
+    setNovoInstrucoes('');
     setNovoPreco('');
     setNovoIsAtivo(true);
-    setNovoRequerEmail(false); // <-- ADICIONADO
+    setNovoRequerEmail(false);
     setEditingProduct(null);
     setShowForm(false);
   };
@@ -64,9 +67,10 @@ export const ProdutosPage = () => {
     const data = {
       nome: novoNome,
       descricao: novoDescricao,
+      instrucoes_pos_compra: novoInstrucoes,
       preco: parseFloat(novoPreco),
       is_ativo: novoIsAtivo,
-      requer_email_cliente: novoRequerEmail, // <-- ADICIONADO
+      requer_email_cliente: novoRequerEmail,
     };
 
     try {
@@ -91,9 +95,10 @@ export const ProdutosPage = () => {
     setEditingProduct(produto);
     setNovoNome(produto.nome);
     setNovoDescricao(produto.descricao);
+    setNovoInstrucoes(produto.instrucoes_pos_compra || '');
     setNovoPreco(produto.preco);
     setNovoIsAtivo(produto.is_ativo);
-    setNovoRequerEmail(produto.requer_email_cliente); // <-- ADICIONADO
+    setNovoRequerEmail(produto.requer_email_cliente);
     setShowForm(true);
   };
 
@@ -169,6 +174,16 @@ export const ProdutosPage = () => {
                 onChange={(e) => setNovoDescricao(e.target.value)}
                 style={{...styles.input, minHeight: '80px', resize: 'vertical'} as React.CSSProperties}
                 placeholder="Descrição do produto..."
+              />
+            </div>
+
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Instruções Pós-Compra (aparece após o pagamento)</label>
+              <textarea
+                value={novoInstrucoes}
+                onChange={(e) => setNovoInstrucoes(e.target.value)}
+                style={{...styles.input, minHeight: '100px', resize: 'vertical'} as React.CSSProperties}
+                placeholder="Ex: 🚫 Não altere o nome dos perfis..."
               />
             </div>
 
@@ -262,6 +277,13 @@ export const ProdutosPage = () => {
               
               {produto.descricao && (
                 <p style={styles.productDescription}>{produto.descricao}</p>
+              )}
+
+              {produto.instrucoes_pos_compra && (
+                <div style={styles.instructionsPreview}>
+                  <strong style={styles.instructionsLabel}>Instruções Pós-Compra:</strong>
+                  <p style={styles.productDescription}>{produto.instrucoes_pos_compra}</p>
+                </div>
               )}
               
               <div style={styles.productFooter}>
