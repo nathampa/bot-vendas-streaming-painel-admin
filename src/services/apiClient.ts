@@ -182,3 +182,21 @@ export const getPedidoDetalhes = (pedidoId: string) => {
     headers: getAuthHeaders(),
   });
 };
+
+// -----------------------------------------------------------------
+// PILAR: Usuários
+// -----------------------------------------------------------------
+export const getAdminUsuarios = () => {
+  return axios.get(`${VITE_API_BASE_URL}/admin/usuarios/`, {
+    headers: getAuthHeaders(),
+  });
+};
+
+// -----------------------------------------------------------------
+// PILAR: Recargas
+// -----------------------------------------------------------------
+export const getAdminRecargas = () => {
+  return axios.get(`${VITE_API_BASE_URL}/admin/recargas/`, {
+    headers: getAuthHeaders(),
+  });
+};

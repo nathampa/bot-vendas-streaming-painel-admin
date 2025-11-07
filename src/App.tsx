@@ -4,7 +4,7 @@ import { useAuth } from './contexts/AuthContext';
 // 1. Importa o Layout
 import { AdminLayout } from './components/AdminLayout';
 
-// 2. Importa todas as nossas Páginas (ATUALIZADO)
+// 2. Importa todas as nossas Páginas
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ProdutosPage } from './pages/ProdutosPage';
@@ -15,6 +15,8 @@ import { PedidosPage } from './pages/PedidosPage';
 // --- IMPORTAÇÕES ADICIONADAS ---
 import { GiftCardsPage } from './pages/GiftCardsPage'; 
 import { SugestoesPage } from './pages/SugestoesPage';
+import { UsuariosPage } from './pages/UsuariosPage';
+import { RecargasPage } from './pages/RecargasPage';
 // --- FIM DAS IMPORTAÇÕES ---
 
 /**
@@ -64,6 +66,8 @@ function App() {
           <Route path="/giftcards" element={<GiftCardsPage />} />
           <Route path="/sugestoes" element={<SugestoesPage />} />
           <Route path="/pedidos" element={<PedidosPage />} />
+          <Route path="/usuarios" element={<UsuariosPage />} />
+          <Route path="/recargas" element={<RecargasPage />} />
 
           {/* Rota de fallback (índice) */}
           <Route index element={<Navigate to="/dashboard" replace />} />

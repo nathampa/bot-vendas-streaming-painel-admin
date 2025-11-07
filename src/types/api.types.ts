@@ -1,5 +1,3 @@
-// Em src/types/api.types.ts
-
 // Este é o schema 'EstoqueAdminReadDetails'
 export interface IEstoqueDetalhes {
   id: string;
@@ -76,4 +74,28 @@ export interface IPedidoAdminConta {
 
 export interface IPedidoAdminDetails extends IPedidoAdminList {
   conta: IPedidoAdminConta | null;
+}
+
+// Schema 'UsuarioAdminRead'
+export interface IUsuarioAdminList {
+  id: string;
+  telegram_id: number;
+  nome_completo: string;
+  saldo_carteira: string; // API envia Decimal como string
+  criado_em: string;
+  total_pedidos: number;
+}
+
+// Schema 'RecargaAdminRead'
+export interface IRecargaAdminList {
+  id: string;
+  valor_solicitado: string;
+  status_pagamento: 'PENDENTE' | 'PAGO' | 'FALHOU' | 'ESTORNADO';
+  gateway_id: string | null;
+  criado_em: string;
+  pago_em: string | null;
+  
+  // Dados do JOIN
+  usuario_telegram_id: number;
+  usuario_nome_completo: string;
 }
