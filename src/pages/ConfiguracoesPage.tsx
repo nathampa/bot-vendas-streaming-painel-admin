@@ -54,7 +54,6 @@ export const ConfiguracoesPage = () => {
     // Prepara os dados para enviar (garante que o valor é um número)
     const dataToSave = {
       ...config,
-      // Converte a string (ex: "50.00") para um número
       afiliado_valor_premio: parseFloat(config.afiliado_valor_premio) || 0,
     };
 
@@ -117,17 +116,18 @@ export const ConfiguracoesPage = () => {
           <label htmlFor="afiliado_ativo" style={styles.switchLabel}>
             Ativar Sistema de Afiliados
           </label>
-          <label style={styles.switch}>
+          
+          <label className="config-switch" style={styles.switch}>
             <input
               type="checkbox"
               id="afiliado_ativo"
               name="afiliado_ativo"
               checked={config.afiliado_ativo}
               onChange={handleChange}
-              style={{ opacity: 0, width: 0, height: 0 }} // Input real fica escondido
             />
-            <span style={styles.slider}></span>
+            <span className="config-slider" style={styles.slider}></span>
           </label>
+
         </div>
 
         {/* Divisor */}
@@ -204,7 +204,7 @@ export const ConfiguracoesPage = () => {
   );
 };
 
-// Estilos
+// Estilos (Objeto React)
 const styles: Record<string, React.CSSProperties> = {
   container: { maxWidth: '1000px', margin: '0 auto' },
   loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '16px' },
@@ -228,8 +228,7 @@ const styles: Record<string, React.CSSProperties> = {
   formActions: { display: 'flex', justifyContent: 'flex-end', paddingTop: '24px', marginTop: '24px', borderTop: '1px solid #e5e7eb' },
   submitButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   
-  // --- ESTILOS CORRIGIDOS DO SWITCH ---
-  // Apenas os estilos dos *elementos* React, não os pseudo-seletores
+  // Estilos base do Switch
   switch: { 
     position: 'relative', 
     display: 'inline-block', 
@@ -240,28 +239,24 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: '#ccc', transition: '.4s', borderRadius: '28px'
   },
-  // As chaves 'switch input', 'slider:before', etc., foram REMOVIDAS.
-  // Elas estão no 'globalStyles' abaixo.
-  // --- FIM DA CORREÇÃO ---
 };
 
 // CSS puro para os seletores :before e :checked
-// Esta parte continua igual e é necessária.
 const globalStyles = `
   /* Esconde o input checkbox original */
-  .${styles.switch} input {
+  .config-switch input {
     opacity: 0;
     width: 0;
     height: 0;
   }
   
   /* Cor do slider quando está checado */
-  .${styles.switch} input:checked + span {
+  .config-switch input:checked + .config-slider {
     background-color: #667eea;
   }
   
-  /* Posição da bolinha :before */
-  .${styles.slider}:before {
+  /* A BOLINHA BRANCA (que estava faltando) */
+  .config-slider:before {
     position: absolute;
     content: "";
     height: 20px;
@@ -274,14 +269,13 @@ const globalStyles = `
   }
   
   /* Animação da bolinha quando checado */
-  .${styles.switch} input:checked + span:before {
+  .config-switch input:checked + .config-slider:before {
     transform: translateX(22px);
   }
 `;
 
-// Injeta os estilos globais (necessário para pseudo-elementos como :before)
+// Injeta os estilos globais
 (function() {
-  // Evita adicionar o <style> múltiplas vezes
   const styleId = 'config-page-styles';
   if (!document.getElementById(styleId)) {
     const styleEl = document.createElement('style');
