@@ -200,3 +200,18 @@ export const getAdminRecargas = () => {
     headers: getAuthHeaders(),
   });
 };
+
+// -----------------------------------------------------------------
+// PILAR: Configurações
+// -----------------------------------------------------------------
+export const getAdminConfig = () => {
+  return axios.get(`${VITE_API_BASE_URL}/admin/configuracoes/`, {
+    headers: getAuthHeaders(),
+  });
+};
+
+export const updateAdminConfig = (data: any) => {
+  return axios.put(`${VITE_API_BASE_URL}/admin/configuracoes/`, data, {
+    headers: getAuthHeaders(),
+  });
+};

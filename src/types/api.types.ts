@@ -99,3 +99,12 @@ export interface IRecargaAdminList {
   usuario_telegram_id: number;
   usuario_nome_completo: string;
 }
+
+// Schema 'Configuracao'
+export interface IConfiguracao {
+  id: string;
+  afiliado_ativo: boolean;
+  afiliado_gatilho: 'primeira_recarga' | 'primeira_compra';
+  afiliado_tipo_premio: 'cashback_pendente' | 'giftcard_imediato';
+  afiliado_valor_premio: string; // Decimal vem como string
+}

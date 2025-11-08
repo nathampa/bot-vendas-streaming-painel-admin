@@ -11,13 +11,12 @@ import { ProdutosPage } from './pages/ProdutosPage';
 import { EstoquePage } from './pages/EstoquePage';
 import { TicketsPage } from './pages/TicketsPage';
 import { PedidosPage } from './pages/PedidosPage';
-
-// --- IMPORTAÇÕES ADICIONADAS ---
 import { GiftCardsPage } from './pages/GiftCardsPage'; 
 import { SugestoesPage } from './pages/SugestoesPage';
 import { UsuariosPage } from './pages/UsuariosPage';
 import { RecargasPage } from './pages/RecargasPage';
-// --- FIM DAS IMPORTAÇÕES ---
+import { ConfiguracoesPage } from './pages/ConfiguracoesPage';
+
 
 /**
  * Componente "Protetor" (Wrapper)
@@ -68,6 +67,7 @@ function App() {
           <Route path="/pedidos" element={<PedidosPage />} />
           <Route path="/usuarios" element={<UsuariosPage />} />
           <Route path="/recargas" element={<RecargasPage />} />
+          <Route path="/configuracoes" element={<ConfiguracoesPage />} />
 
           {/* Rota de fallback (índice) */}
           <Route index element={<Navigate to="/dashboard" replace />} />

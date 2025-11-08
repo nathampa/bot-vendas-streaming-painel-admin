@@ -25,6 +25,7 @@ export const AdminLayout = () => {
     { path: '/recargas', icon: '💰', label: 'Recargas' },
     { path: '/giftcards', icon: '🎁', label: 'Gift Cards' },
     { path: '/sugestoes', icon: '💡', label: 'Sugestões' },
+    { path: '/configuracoes', icon: '⚙️', label: 'Configurações' }
   ];
 
   return (
