@@ -99,7 +99,7 @@ export const getEstoqueDetalhes = (estoqueId: string) => {
   });
 };
 
-export const createEstoque = (data: { produto_id: string; login: string; senha: string; max_slots: number }) => {
+export const createEstoque = (data: { produto_id: string; login: string; senha: string; max_slots: number; data_expiracao?: string | null; }) => {
   return axios.post(`${VITE_API_BASE_URL}/admin/estoque/`, data, {
     headers: getAuthHeaders(),
   });

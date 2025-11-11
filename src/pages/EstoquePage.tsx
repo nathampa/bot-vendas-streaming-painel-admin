@@ -9,6 +9,8 @@ interface IEstoque {
   slots_ocupados: number;
   is_ativo: boolean;
   requer_atencao: boolean;
+  data_expiracao: string | null;
+  dias_restantes: number | null;
 }
 
 interface IProduto {
@@ -16,7 +18,6 @@ interface IProduto {
   nome: string;
 }
 
-// 1. TIPO ADICIONADO PARA OS FILTROS
 type FilterStatus = 'todos' | 'ativos' | 'inativos' | 'atencao';
 
 export const EstoquePage = () => {
@@ -28,10 +29,8 @@ export const EstoquePage = () => {
   const [editingEstoque, setEditingEstoque] = useState<IEstoque | null>(null);
   const [deletingEstoque, setDeletingEstoque] = useState<IEstoque | null>(null);
 
-  // --- 2. STATES DE FILTRO ADICIONADOS ---
   const [filterProdutoId, setFilterProdutoId] = useState<string>('todos');
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('todos');
-  // --- FIM DOS STATES DE FILTRO ---
 
   // Form states
   const [selectedProdutoId, setSelectedProdutoId] = useState('');
@@ -39,6 +38,7 @@ export const EstoquePage = () => {
   const [novaSenha, setNovaSenha] = useState('');
   const [novoMaxSlots, setNovoMaxSlots] = useState(2);
   const [novoIsAtivo, setNovoIsAtivo] = useState(true);
+  const [novoDataExpiracao, setNovoDataExpiracao] = useState('');
 
   const carregarDados = async () => {
     setIsLoading(true);
@@ -72,6 +72,7 @@ export const EstoquePage = () => {
     setNovaSenha('');
     setNovoMaxSlots(2);
     setNovoIsAtivo(true);
+    setNovoDataExpiracao('');
     setEditingEstoque(null);
     setShowForm(false);
   };
@@ -89,6 +90,7 @@ export const EstoquePage = () => {
       login: novoLogin,
       max_slots: novoMaxSlots,
       is_ativo: novoIsAtivo,
+      data_expiracao: novoDataExpiracao || null,
     };
 
     // Apenas incluir senha se foi preenchida
@@ -103,6 +105,7 @@ export const EstoquePage = () => {
           login: novoLogin,
           max_slots: novoMaxSlots,
           is_ativo: novoIsAtivo,
+          data_expiracao: novoDataExpiracao || null,
           ...(novaSenha && { senha: novaSenha }) // Adiciona senha apenas se preenchida
         };
         await updateEstoque(editingEstoque.id, updateData);
@@ -131,6 +134,7 @@ export const EstoquePage = () => {
     setNovaSenha(''); // Não pré-preencher senha por segurança
     setNovoMaxSlots(item.max_slots);
     setNovoIsAtivo(item.is_ativo);
+    setNovoDataExpiracao(item.data_expiracao || '');
     setShowForm(true);
   };
 
@@ -150,7 +154,6 @@ export const EstoquePage = () => {
     }
   };
 
-  // --- 3. NOVA FUNÇÃO ADICIONADA ---
   const handleMarkAsResolved = async (estoqueId: string) => {
     if (!window.confirm("Tem certeza que deseja marcar esta conta como 'resolvida'? A flag 'Requer Atenção' será removida.")) {
       return;
@@ -168,7 +171,6 @@ export const EstoquePage = () => {
       alert(`❌ Erro: ${errorMsg}`);
     }
   };
-  // --- FIM DA NOVA FUNÇÃO ---
 
   const getProdutoNome = (produtoId: string): string => {
     const produto = produtos.find(p => p.id === produtoId);
@@ -180,7 +182,6 @@ export const EstoquePage = () => {
     return (ocupados / max) * 100;
   };
 
-  // --- 4. LÓGICA DE FILTRO ADICIONADA ---
   const filteredEstoque = estoque.filter(item => {
     const matchesProduto = filterProdutoId === 'todos' || item.produto_id === filterProdutoId;
 
@@ -197,7 +198,6 @@ export const EstoquePage = () => {
 
     return matchesProduto && matchesStatus;
   });
-  // --- FIM DA LÓGICA DE FILTRO ---
 
   if (isLoading) {
     return (
@@ -307,17 +307,28 @@ export const EstoquePage = () => {
               </div>
 
               <div style={styles.inputGroup}>
-                <label style={styles.label}>Status</label>
-                <select
-                  value={novoIsAtivo ? 'true' : 'false'}
-                  onChange={(e) => setNovoIsAtivo(e.target.value === 'true')}
+                <label style={styles.label}>Data de Expiração (Opcional)</label>
+                <input
+                  type="date"
+                  value={novoDataExpiracao}
+                  onChange={(e) => setNovoDataExpiracao(e.target.value)}
                   style={styles.input}
-                >
-                  <option value="true">✓ Ativo</option>
-                  <option value="false">✕ Inativo</option>
-                </select>
+                />
               </div>
             </div>
+
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Status</label>
+              <select
+                value={novoIsAtivo ? 'true' : 'false'}
+                onChange={(e) => setNovoIsAtivo(e.target.value === 'true')}
+                style={styles.input}
+              >
+                <option value="true">✓ Ativo</option>
+                <option value="false">✕ Inativo</option>
+              </select>
+            </div>
+
 
             <div style={styles.formActions}>
               <button type="button" onClick={resetForm} style={styles.cancelButton}>
@@ -331,7 +342,7 @@ export const EstoquePage = () => {
         </div>
       )}
 
-      {/* --- 5. SEÇÃO DE FILTROS ADICIONADA --- */}
+      {/* Filter Section */}
       <div style={styles.filterContainer}>
         <h3 style={styles.filterTitle}>Filtrar Estoque</h3>
         <div style={styles.filterInputs}>
@@ -365,10 +376,8 @@ export const EstoquePage = () => {
           </div>
         </div>
       </div>
-      {/* --- FIM DA SEÇÃO DE FILTROS --- */}
 
-
-      {/* Stats Cards - MODIFICADOS para usar a lista filtrada */}
+      {/* Stats Cards */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
           <div style={styles.statIcon}>📊</div>
@@ -393,7 +402,7 @@ export const EstoquePage = () => {
         </div>
       </div>
 
-      {/* Estoque Grid - MODIFICADO para usar a lista filtrada */}
+      {/* Estoque Grid */}
       <div style={styles.estoqueGrid}>
         {filteredEstoque.length === 0 ? (
           <div style={styles.emptyState}>
@@ -406,6 +415,23 @@ export const EstoquePage = () => {
             const percentage = getSlotPercentage(item.slots_ocupados, item.max_slots);
             const isFull = percentage >= 100;
             const isAlmostFull = percentage >= 80;
+
+            const { dias_restantes } = item;
+            let expLabel: string | null = null;
+            let expStyle: React.CSSProperties = {}; // Estilo default
+
+            if (dias_restantes !== null && dias_restantes !== undefined) {
+              if (dias_restantes < 0) {
+                expLabel = `🗓️ Expirou há ${-dias_restantes} dias`;
+                expStyle = styles.badgeInactive; // Vermelho
+              } else if (dias_restantes <= 7) {
+                expLabel = `🗓️ Expira em ${dias_restantes} dias`;
+                expStyle = styles.badgeWarning; // Amarelo
+              } else {
+                expLabel = `🗓️ Expira em ${dias_restantes} dias`;
+                expStyle = styles.badgeInfo; // Azul (novo estilo)
+              }
+            }
 
             return (
               <div
@@ -422,6 +448,11 @@ export const EstoquePage = () => {
                     {item.requer_atencao && (
                       <span style={{...styles.badge, ...styles.badgeWarning}}>
                         ⚠ Atenção
+                      </span>
+                    )}
+                    {expLabel && (
+                      <span style={{...styles.badge, ...expStyle}}>
+                        {expLabel}
                       </span>
                     )}
                     <span style={{
@@ -469,9 +500,8 @@ export const EstoquePage = () => {
                   <span style={styles.cardId}>ID: {item.id.substring(0, 8)}...</span>
                 </div>
 
-                {/* Action Buttons - MODIFICADO */}
+                {/* Action Buttons */}
                 <div style={styles.actionButtons}>
-                  {/* --- 6. BOTÃO DE RESOLVER ADICIONADO --- */}
                   {item.requer_atencao && (
                     <button
                       onClick={() => handleMarkAsResolved(item.id)}
@@ -543,10 +573,7 @@ export const EstoquePage = () => {
   );
 };
 
-// --- 7. NOVOS ESTILOS ADICIONADOS ---
-// (Cole isso dentro do seu objeto 'styles', no final)
 const styles: Record<string, React.CSSProperties> = {
-  // ... (todos os seus estilos existentes de 'container' até 'emptyText') ...
   container: { maxWidth: '1400px', margin: '0 auto' },
   loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '16px' },
   spinner: { width: '48px', height: '48px', border: '4px solid #e5e7eb', borderTop: '4px solid #667eea', borderRadius: '50%', animation: 'spin 1s linear infinite' },
@@ -569,7 +596,6 @@ const styles: Record<string, React.CSSProperties> = {
   cancelButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#f5f7fa', color: '#1a1d29', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   submitButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   
-  // --- NOVOS ESTILOS PARA FILTROS ---
   filterContainer: {
     backgroundColor: '#fff',
     borderRadius: '12px',
@@ -588,7 +614,6 @@ const styles: Record<string, React.CSSProperties> = {
     gridTemplateColumns: '1fr 1fr',
     gap: '16px'
   },
-  // --- FIM DOS NOVOS ESTILOS ---
 
   statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' },
   statCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
@@ -604,6 +629,7 @@ const styles: Record<string, React.CSSProperties> = {
   badgeActive: { backgroundColor: '#d1fae5', color: '#065f46' },
   badgeInactive: { backgroundColor: '#fee2e2', color: '#991b1b' },
   badgeWarning: { backgroundColor: '#fef3c7', color: '#92400e' },
+  badgeInfo: { backgroundColor: '#dbeafe', color: '#1e40af' },
   cardInfo: { display: 'flex', justifyContent: 'space-between', marginBottom: '16px', padding: '12px', backgroundColor: '#f9fafb', borderRadius: '8px' },
   infoLabel: { fontSize: '13px', color: '#6b7280', fontWeight: 500 },
   infoValue: { fontSize: '13px', color: '#1a1d29', fontWeight: 600 },
@@ -619,12 +645,10 @@ const styles: Record<string, React.CSSProperties> = {
   actionButtons: { display: 'flex', gap: '8px', paddingTop: '12px', borderTop: '1px solid #e5e7eb' },
   actionBtn: { flex: 1, padding: '10px 16px', fontSize: '13px', fontWeight: 600, border: 'none', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s ease' },
   
-  // --- NOVO ESTILO PARA O BOTÃO RESOLVER ---
   resolveBtn: {
     backgroundColor: '#d1fae5', 
     color: '#065f46',
   },
-  // --- FIM DO NOVO ESTILO ---
 
   editBtn: { backgroundColor: '#dbeafe', color: '#1e40af' },
   deleteBtn: { backgroundColor: '#fee2e2', color: '#991b1b' },
