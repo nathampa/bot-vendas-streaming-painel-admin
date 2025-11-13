@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getAdminProdutos, createProduto, updateProduto, deleteProduto } from '../services/apiClient';
 
 // 1. Interface atualizada
@@ -20,6 +20,8 @@ export const ProdutosPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<IProduto | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<IProduto | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'todos' | 'ativos' | 'inativos'>('todos');
 
   // Form states
   const [novoNome, setNovoNome] = useState('');
@@ -125,6 +127,20 @@ export const ProdutosPage = () => {
     );
   }
 
+  const filteredProdutos = useMemo(() => {
+    return produtos.filter(produto => {
+      // Filtro de Status
+      const statusMatch = (statusFilter === 'todos') ||
+                        (statusFilter === 'ativos' && produto.is_ativo) ||
+                        (statusFilter === 'inativos' && !produto.is_ativo);
+
+      // Filtro de Pesquisa (pelo nome)
+      const searchMatch = produto.nome.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      return statusMatch && searchMatch;
+    });
+  }, [produtos, searchTerm, statusFilter]);
+
   return (
     <div style={styles.container}>
       {/* Header */}
@@ -145,6 +161,26 @@ export const ProdutosPage = () => {
           <span>{error}</span>
         </div>
       )}
+
+      {/* Barra de Filtros */}
+      <div style={styles.filterBar}>
+        <input
+          type="text"
+          placeholder="Pesquisar por nome..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={styles.filterInput}
+        />
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as 'todos' | 'ativos' | 'inativos')}
+          style={styles.filterSelect}
+        >
+          <option value="todos">Todos os Status</option>
+          <option value="ativos">Somente Ativos</option>
+          <option value="inativos">Somente Inativos</option>
+        </select>
+      </div>
 
       {/* Form */}
       {showForm && (
@@ -252,14 +288,14 @@ export const ProdutosPage = () => {
 
       {/* Products Grid */}
       <div style={styles.productsGrid}>
-        {produtos.length === 0 ? (
+        {filteredProdutos.length === 0 ? (
           <div style={styles.emptyState}>
             <span style={styles.emptyIcon}>📦</span>
             <h3 style={styles.emptyTitle}>Nenhum produto cadastrado</h3>
             <p style={styles.emptyText}>Comece adicionando seu primeiro produto ao catálogo</p>
           </div>
         ) : (
-          produtos.map((produto) => (
+          filteredProdutos.map((produto) => (
             <div key={produto.id} style={styles.productCard}>
               <div style={styles.productHeader}>
                 <h3 style={styles.productName}>{produto.nome}</h3>
@@ -272,7 +308,6 @@ export const ProdutosPage = () => {
                     {produto.is_ativo ? '✓ Ativo' : '✕ Inativo'}
                   </span>
                   
-                  {/* --- BADGE ATUALIZADO --- */}
                   <span style={{...styles.badge, ...styles.badgeEmail}}>
                     {
                       produto.tipo_entrega === 'AUTOMATICA' ? '🤖 Automático' :
@@ -280,7 +315,6 @@ export const ProdutosPage = () => {
                       '👨‍💻 Entrega Manual'
                     }
                   </span>
-                  {/* --- FIM DA MUDANÇA --- */}
                 </div>
               </div>
               
@@ -382,6 +416,33 @@ const styles: Record<string, React.CSSProperties> = {
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
   label: { fontSize: '14px', fontWeight: 600, color: '#374151' },
   input: { padding: '12px 16px', fontSize: '15px', border: '2px solid #e5e7eb', borderRadius: '8px', outline: 'none', width: '100%', fontFamily: 'inherit' },
+  
+
+  // Filtros
+  filterBar: {
+    display: 'flex',
+    gap: '16px',
+    marginBottom: '24px',
+    padding: '16px',
+    backgroundColor: '#fff',
+    borderRadius: '12px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+  },
+  filterInput: {
+    flex: 2,
+    padding: '12px 16px',
+    fontSize: '15px',
+    border: '2px solid #e5e7eb',
+    borderRadius: '8px',
+  },
+  filterSelect: {
+    flex: 1,
+    padding: '12px 16px',
+    fontSize: '15px',
+    border: '2px solid #e5e7eb',
+    borderRadius: '8px',
+    backgroundColor: '#fff',
+  },
   
   // --- NOVOS ESTILOS CHECKBOX ---
   checkboxGroup: {
