@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { IPedidoAdminEntregaRequest } from '../types/api.types';
 
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -64,7 +65,7 @@ export const createProduto = (data: {
   instrucoes_pos_compra?: string;
   preco: number; 
   is_ativo: boolean;
-  requer_email_cliente: boolean;
+  tipo_entrega: string;
 }) => {
   return axios.post(`${VITE_API_BASE_URL}/admin/produtos/`, data, {
     headers: getAuthHeaders(),
@@ -179,6 +180,13 @@ export const getAdminPedidos = () => {
 
 export const getPedidoDetalhes = (pedidoId: string) => {
   return axios.get(`${VITE_API_BASE_URL}/admin/pedidos/${pedidoId}/detalhes`, {
+    headers: getAuthHeaders(),
+  });
+};
+
+// NOVA FUNÇÃO: Entregar Pedido Manual
+export const entregarPedidoManual = (pedidoId: string, data: IPedidoAdminEntregaRequest) => {
+  return axios.post(`${VITE_API_BASE_URL}/admin/pedidos/${pedidoId}/entregar`, data, {
     headers: getAuthHeaders(),
   });
 };

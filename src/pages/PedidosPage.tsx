@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAdminPedidos, getPedidoDetalhes } from '../services/apiClient';
+import { getAdminPedidos, getPedidoDetalhes, entregarPedidoManual } from '../services/apiClient';
 import type { IPedidoAdminList, IPedidoAdminDetails } from '../types/api.types';
 
 export const PedidosPage = () => {
@@ -8,6 +8,10 @@ export const PedidosPage = () => {
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [entregaModalPedido, setEntregaModalPedido] = useState<IPedidoAdminList | null>(null);
+  const [isEntregaLoading, setIsEntregaLoading] = useState(false);
+  const [entregaLogin, setEntregaLogin] = useState('');
+  const [entregaSenha, setEntregaSenha] = useState('');
 
   const carregarPedidos = async () => {
     setIsLoadingList(true);
@@ -59,6 +63,51 @@ export const PedidosPage = () => {
     alert('📋 Copiado!');
   };
 
+  // Novas funções para o fluxo de entrega
+  const handleOpenEntregaModal = (pedido: IPedidoAdminList) => {
+    setEntregaModalPedido(pedido);
+    setEntregaLogin('');
+    setEntregaSenha('');
+  };
+
+  const handleCloseEntregaModal = () => {
+    if (isEntregaLoading) return; // Previne fechar durante o loading
+    setEntregaModalPedido(null);
+  };
+
+  const handleSubmitEntrega = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!entregaModalPedido) return;
+
+    setIsEntregaLoading(true);
+    try {
+      // Chama a nova função da API
+      await entregarPedidoManual(entregaModalPedido.id, {
+        login: entregaLogin,
+        senha: entregaSenha,
+      });
+
+      alert("✅ Entrega realizada com sucesso! O cliente foi notificado.");
+      handleCloseEntregaModal();
+      carregarPedidos(); // Recarrega a lista para atualizar o status
+
+    } catch (err: any) {
+      console.error("Erro ao entregar pedido:", err);
+      const errorMsg = err.response?.data?.detail || "Falha ao realizar entrega.";
+      alert(`❌ Erro: ${errorMsg}`);
+    } finally {
+      setIsEntregaLoading(false);
+    }
+  };
+  
+  // Nova função para badge de status
+  const getStatusBadge = (status: 'ENTREGUE' | 'PENDENTE') => {
+    if (status === 'PENDENTE') {
+      return <span style={{...styles.badge, ...styles.badgeWarning}}>⏳ Pendente</span>;
+    }
+    return <span style={{...styles.badge, ...styles.badgeSuccess}}>✅ Entregue</span>;
+  };
+
   if (isLoadingList) {
     return (
       <div style={styles.loadingContainer}>
@@ -103,7 +152,8 @@ export const PedidosPage = () => {
                 <th style={styles.th}>Data</th>
                 <th style={styles.th}>Produto</th>
                 <th style={styles.th}>Usuário</th>
-                <th style={styles.th}>Email Cliente</th>
+                <th style={styles.th}>Status</th> 
+                <th style={styles.th}>Entrega Info</th>
                 <th style={styles.th}>Valor</th>
                 <th style={styles.th}>Ações</th>
               </tr>
@@ -120,6 +170,9 @@ export const PedidosPage = () => {
                     </div>
                   </td>
                   <td style={styles.td}>
+                    {getStatusBadge(pedido.status_entrega)}
+                  </td>
+                  <td style={styles.td}>
                     {pedido.email_cliente ? (
                       <span style={styles.emailText} title={pedido.email_cliente}>
                         {pedido.email_cliente}
@@ -132,12 +185,21 @@ export const PedidosPage = () => {
                     <span style={styles.price}>R$ {pedido.valor_pago}</span>
                   </td>
                   <td style={styles.td}>
-                    <button 
-                      onClick={() => handleVerDetalhes(pedido.id)}
-                      style={styles.detailsButton}
-                    >
-                      👁️ Ver Detalhes
-                    </button>
+                    {pedido.status_entrega === 'PENDENTE' ? (
+                      <button 
+                        onClick={() => handleOpenEntregaModal(pedido)}
+                        style={styles.deliverButton}
+                      >
+                        🚚 Entregar
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => handleVerDetalhes(pedido.id)}
+                        style={styles.detailsButton}
+                      >
+                        👁️ Ver Detalhes
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -235,6 +297,67 @@ export const PedidosPage = () => {
           </div>
         </div>
       )}
+
+      {/* Novo Modal: Entrega Manual */}
+      {entregaModalPedido && (
+        <div style={styles.modalOverlay} onClick={handleCloseEntregaModal}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <form onSubmit={handleSubmitEntrega}>
+              <div style={styles.modalHeader}>
+                <h3 style={styles.modalTitle}>🚚 Realizar Entrega Manual</h3>
+                <button type="button" onClick={handleCloseEntregaModal} style={styles.modalClose}>✕</button>
+              </div>
+              
+              <div style={styles.modalBody}>
+                <p style={styles.modalText}>
+                  Você está entregando o pedido: <strong>{entregaModalPedido.produto_nome}</strong><br/>
+                  Para o usuário: <strong>{entregaModalPedido.usuario_nome_completo}</strong>
+                </p>
+                
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>Login (Email)</label>
+                  <input
+                    type="text"
+                    value={entregaLogin}
+                    onChange={(e) => setEntregaLogin(e.target.value)}
+                    required
+                    style={styles.input}
+                    placeholder="email@exemplo.com"
+                    disabled={isEntregaLoading}
+                  />
+                </div>
+                
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>Senha</label>
+                  <input
+                    type="text"
+                    value={entregaSenha}
+                    onChange={(e) => setEntregaSenha(e.target.value)}
+                    required
+                    style={styles.input}
+                    placeholder="••••••••"
+                    disabled={isEntregaLoading}
+                  />
+                </div>
+                
+                <div style={styles.manualInfo}>
+                  <span style={styles.manualInfoIcon}>ℹ️</span>
+                  <span>Ao confirmar, as credenciais acima serão enviadas para o cliente via bot.</span>
+                </div>
+              </div>
+
+              <div style={styles.modalFooter}>
+                <button type="button" onClick={handleCloseEntregaModal} style={styles.modalCancelBtn} disabled={isEntregaLoading}>
+                  Cancelar
+                </button>
+                <button type="submit" style={styles.modalSubmitBtn} disabled={isEntregaLoading}>
+                  {isEntregaLoading ? 'Enviando...' : 'Confirmar e Notificar Cliente'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -264,6 +387,19 @@ const styles: Record<string, React.CSSProperties> = {
   emptyText: { margin: 0, fontSize: '14px', color: '#6b7280' },
   
   // --- NOVOS ESTILOS ---
+  badge: { padding: '4px 10px', fontSize: '11px', fontWeight: 600, borderRadius: '6px' },
+  badgeSuccess: { backgroundColor: '#d1fae5', color: '#065f46' },
+  badgeWarning: { backgroundColor: '#fef3c7', color: '#92400e' },
+  deliverButton: { 
+    padding: '8px 16px', 
+    fontSize: '13px', 
+    fontWeight: 600, 
+    backgroundColor: '#667eea', 
+    color: '#fff', 
+    border: 'none', 
+    borderRadius: '8px', 
+    cursor: 'pointer' 
+  },
   emailText: {
     fontFamily: 'monospace',
     fontSize: '13px',
@@ -291,6 +427,62 @@ const styles: Record<string, React.CSSProperties> = {
   manualInfoIcon: {
     fontSize: '18px',
     flexShrink: 0,
+  },
+  inputGroup: { 
+    display: 'flex', 
+    flexDirection: 'column', 
+    gap: '8px',
+    marginBottom: '16px',
+  },
+  label: { 
+    fontSize: '14px', 
+    fontWeight: 600, 
+    color: '#374151' 
+  },
+  input: { 
+    padding: '12px 16px', 
+    fontSize: '15px', 
+    border: '2px solid #e5e7eb', 
+    borderRadius: '8px', 
+    outline: 'none', 
+    width: '100%', 
+    fontFamily: 'inherit' 
+  },
+  modalText: {
+    margin: '0 0 16px 0',
+    fontSize: '14px',
+    color: '#374151',
+    lineHeight: 1.5,
+  },
+  modalFooter: { 
+    padding: '24px', 
+    borderTop: '1px solid #e5e7eb', 
+    display: 'flex', 
+    gap: '12px', 
+    justifyContent: 'flex-end',
+    backgroundColor: '#f9fafb',
+    borderBottomLeftRadius: '16px',
+    borderBottomRightRadius: '16px',
+  },
+  modalCancelBtn: { 
+    padding: '12px 24px', 
+    fontSize: '14px', 
+    fontWeight: 600, 
+    backgroundColor: '#fff', 
+    color: '#1a1d29', 
+    border: '1px solid #d1d5db',
+    borderRadius: '8px', 
+    cursor: 'pointer' 
+  },
+  modalSubmitBtn: { 
+    padding: '12px 24px', 
+    fontSize: '14px', 
+    fontWeight: 600, 
+    backgroundColor: '#10b981', 
+    color: '#fff', 
+    border: 'none', 
+    borderRadius: '8px', 
+    cursor: 'pointer' 
   },
   // --- FIM DOS NOVOS ESTILOS ---
 

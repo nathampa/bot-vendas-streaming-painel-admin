@@ -61,10 +61,16 @@ export interface IPedidoAdminList {
   id: string;
   criado_em: string;
   valor_pago: string;
+  status_entrega: 'ENTREGUE' | 'PENDENTE';
   produto_nome: string;
   usuario_nome_completo: string;
   usuario_telegram_id: number;
   email_cliente: string | null;
+}
+
+export interface IPedidoAdminEntregaRequest {
+  login: string;
+  senha: string;
 }
 
 export interface IPedidoAdminConta {

@@ -9,7 +9,7 @@ interface IProduto {
   preco: string;
   is_ativo: boolean;
   criado_em: string;
-  requer_email_cliente: boolean;
+  tipo_entrega: 'AUTOMATICA' | 'SOLICITA_EMAIL' | 'MANUAL_ADMIN';
   instrucoes_pos_compra: string | null;
 }
 
@@ -27,8 +27,7 @@ export const ProdutosPage = () => {
   const [novoInstrucoes, setNovoInstrucoes] = useState('');
   const [novoPreco, setNovoPreco] = useState('');
   const [novoIsAtivo, setNovoIsAtivo] = useState(true);
-  // 2. Novo state para o checkbox
-  const [novoRequerEmail, setNovoRequerEmail] = useState(false); 
+  const [novoTipoEntrega, setNovoTipoEntrega] = useState<'AUTOMATICA' | 'SOLICITA_EMAIL' | 'MANUAL_ADMIN'>('AUTOMATICA');
 
   const carregarProdutos = async () => {
     setIsLoading(true);
@@ -55,7 +54,7 @@ export const ProdutosPage = () => {
     setNovoInstrucoes('');
     setNovoPreco('');
     setNovoIsAtivo(true);
-    setNovoRequerEmail(false);
+    setNovoTipoEntrega('AUTOMATICA');
     setEditingProduct(null);
     setShowForm(false);
   };
@@ -70,7 +69,7 @@ export const ProdutosPage = () => {
       instrucoes_pos_compra: novoInstrucoes,
       preco: parseFloat(novoPreco),
       is_ativo: novoIsAtivo,
-      requer_email_cliente: novoRequerEmail,
+      tipo_entrega: novoTipoEntrega,
     };
 
     try {
@@ -98,7 +97,7 @@ export const ProdutosPage = () => {
     setNovoInstrucoes(produto.instrucoes_pos_compra || '');
     setNovoPreco(produto.preco);
     setNovoIsAtivo(produto.is_ativo);
-    setNovoRequerEmail(produto.requer_email_cliente);
+    setNovoTipoEntrega(produto.tipo_entrega);
     setShowForm(true);
   };
 
@@ -215,20 +214,27 @@ export const ProdutosPage = () => {
               </div>
             </div>
 
-            {/* --- 7. NOVO CAMPO CHECKBOX ADICIONADO --- */}
-            <div style={styles.checkboxGroup}>
-              <input
-                type="checkbox"
-                id="requer_email"
-                checked={novoRequerEmail}
-                onChange={(e) => setNovoRequerEmail(e.target.checked)}
-                style={styles.checkbox}
-              />
-              <label htmlFor="requer_email" style={styles.checkboxLabel}>
-                Este produto requer o email do cliente? (Ex: Link Convite)
-              </label>
+            {/* --- 7. NOVO CAMPO SELECT --- */}
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Tipo de Entrega</label>
+              <select
+                value={novoTipoEntrega}
+                // @ts-ignore (typescript pode reclamar, mas o valor é válido)
+                onChange={(e) => setNovoTipoEntrega(e.target.value)}
+                style={styles.input}
+              >
+                <option value="AUTOMATICA">Entrega Automática (Padrão)</option>
+                <option value="SOLICITA_EMAIL">Solicitar E-mail (Entrega Manual Externa)</option>
+                <option value="MANUAL_ADMIN">Entrega Manual (Pelo Painel Admin)</option>
+              </select>
+              <small style={styles.inputHint}>
+                {
+                  novoTipoEntrega === 'AUTOMATICA' ? "O bot entrega a conta do estoque imediatamente." :
+                  novoTipoEntrega === 'SOLICITA_EMAIL' ? "O bot pede o e-mail do cliente e avisa o admin (Ex: Canva)." :
+                  "O bot avisa o admin para inserir as credenciais no painel (Ex: Contas novas)."
+                }
+              </small>
             </div>
-            {/* --- FIM DO NOVO CAMPO --- */}
 
 
             <div style={styles.formActions}>
@@ -257,7 +263,7 @@ export const ProdutosPage = () => {
             <div key={produto.id} style={styles.productCard}>
               <div style={styles.productHeader}>
                 <h3 style={styles.productName}>{produto.nome}</h3>
-                {/* 9. Wrapper de Badges adicionado */}
+                {/* 9. Wrapper de Badges */}
                 <div style={styles.badges}>
                   <span style={{
                     ...styles.badge,
@@ -265,13 +271,16 @@ export const ProdutosPage = () => {
                   }}>
                     {produto.is_ativo ? '✓ Ativo' : '✕ Inativo'}
                   </span>
-                  {/* --- NOVO BADGE ADICIONADO --- */}
-                  {produto.requer_email_cliente && (
-                    <span style={{...styles.badge, ...styles.badgeEmail}}>
-                      @ Requer Email
-                    </span>
-                  )}
-                  {/* --- FIM DO NOVO BADGE --- */}
+                  
+                  {/* --- BADGE ATUALIZADO --- */}
+                  <span style={{...styles.badge, ...styles.badgeEmail}}>
+                    {
+                      produto.tipo_entrega === 'AUTOMATICA' ? '🤖 Automático' :
+                      produto.tipo_entrega === 'SOLICITA_EMAIL' ? '@ Requer Email' :
+                      '👨‍💻 Entrega Manual'
+                    }
+                  </span>
+                  {/* --- FIM DA MUDANÇA --- */}
                 </div>
               </div>
               
