@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getAdminProdutos, createProduto, updateProduto, deleteProduto } from '../services/apiClient';
 
-// 1. Interface atualizada
+// Interface do Produto
 interface IProduto {
   id: string;
   nome: string;
@@ -20,6 +20,8 @@ export const ProdutosPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<IProduto | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<IProduto | null>(null);
+
+  // States dos Filtros
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'todos' | 'ativos' | 'inativos'>('todos');
 
@@ -49,7 +51,6 @@ export const ProdutosPage = () => {
     carregarProdutos();
   }, []);
 
-  // 3. resetForm atualizado
   const resetForm = () => {
     setNovoNome('');
     setNovoDescricao('');
@@ -61,7 +62,6 @@ export const ProdutosPage = () => {
     setShowForm(false);
   };
 
-  // 4. handleCreateOrUpdate atualizado
   const handleCreateOrUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -83,7 +83,7 @@ export const ProdutosPage = () => {
         alert("✅ Produto criado com sucesso!");
       }
       resetForm();
-      carregarProdutos();
+      carregarProdutos(); // A API já retorna a lista ordenada
     } catch (err: any) {
       console.error("Erro ao salvar produto:", err);
       const errorMsg = err.response?.data?.detail || "Falha ao salvar produto.";
@@ -91,7 +91,6 @@ export const ProdutosPage = () => {
     }
   };
 
-  // 5. handleEdit atualizado
   const handleEdit = (produto: IProduto) => {
     setEditingProduct(produto);
     setNovoNome(produto.nome);
@@ -118,15 +117,7 @@ export const ProdutosPage = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.spinner} />
-        <p style={styles.loadingText}>Carregando produtos...</p>
-      </div>
-    );
-  }
-
+  // Lista de produtos filtrada com base nos states de filtro
   const filteredProdutos = useMemo(() => {
     return produtos.filter(produto => {
       // Filtro de Status
@@ -140,6 +131,15 @@ export const ProdutosPage = () => {
       return statusMatch && searchMatch;
     });
   }, [produtos, searchTerm, statusFilter]);
+
+  if (isLoading) {
+    return (
+      <div style={styles.loadingContainer}>
+        <div style={styles.spinner} />
+        <p style={styles.loadingText}>Carregando produtos...</p>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.container}>
@@ -188,7 +188,6 @@ export const ProdutosPage = () => {
           <h3 style={styles.formTitle}>
             {editingProduct ? '✏️ Editar Produto' : '➕ Criar Novo Produto'}
           </h3>
-          {/* 6. Mudado de <div> para <form> */}
           <form onSubmit={handleCreateOrUpdate} style={styles.form}>
             <div style={styles.inputGroup}>
               <label style={styles.label}>Nome do Produto</label>
@@ -250,13 +249,11 @@ export const ProdutosPage = () => {
               </div>
             </div>
 
-            {/* --- 7. NOVO CAMPO SELECT --- */}
             <div style={styles.inputGroup}>
               <label style={styles.label}>Tipo de Entrega</label>
               <select
                 value={novoTipoEntrega}
-                // @ts-ignore (typescript pode reclamar, mas o valor é válido)
-                onChange={(e) => setNovoTipoEntrega(e.target.value)}
+                onChange={(e) => setNovoTipoEntrega(e.target.value as 'AUTOMATICA' | 'SOLICITA_EMAIL' | 'MANUAL_ADMIN')}
                 style={styles.input}
               >
                 <option value="AUTOMATICA">Entrega Automática (Padrão)</option>
@@ -277,7 +274,6 @@ export const ProdutosPage = () => {
               <button type="button" onClick={resetForm} style={styles.cancelButton}>
                 Cancelar
               </button>
-              {/* 8. Botão agora é type="submit" */}
               <button type="submit" style={styles.submitButton}>
                 {editingProduct ? 'Salvar Alterações' : 'Criar Produto'}
               </button>
@@ -291,15 +287,18 @@ export const ProdutosPage = () => {
         {filteredProdutos.length === 0 ? (
           <div style={styles.emptyState}>
             <span style={styles.emptyIcon}>📦</span>
-            <h3 style={styles.emptyTitle}>Nenhum produto cadastrado</h3>
-            <p style={styles.emptyText}>Comece adicionando seu primeiro produto ao catálogo</p>
+            <h3 style={styles.emptyTitle}>
+              {produtos.length === 0 ? "Nenhum produto cadastrado" : "Nenhum produto encontrado"}
+            </h3>
+            <p style={styles.emptyText}>
+              {produtos.length === 0 ? "Comece adicionando seu primeiro produto ao catálogo" : "Tente ajustar seus filtros."}
+            </p>
           </div>
         ) : (
           filteredProdutos.map((produto) => (
             <div key={produto.id} style={styles.productCard}>
               <div style={styles.productHeader}>
                 <h3 style={styles.productName}>{produto.nome}</h3>
-                {/* 9. Wrapper de Badges */}
                 <div style={styles.badges}>
                   <span style={{
                     ...styles.badge,
@@ -307,7 +306,6 @@ export const ProdutosPage = () => {
                   }}>
                     {produto.is_ativo ? '✓ Ativo' : '✕ Inativo'}
                   </span>
-                  
                   <span style={{...styles.badge, ...styles.badgeEmail}}>
                     {
                       produto.tipo_entrega === 'AUTOMATICA' ? '🤖 Automático' :
@@ -397,7 +395,7 @@ export const ProdutosPage = () => {
   );
 };
 
-// 10. Novos estilos adicionados ao final do objeto 'styles'
+// Objeto de estilos completo (incluindo os novos filtros)
 const styles: Record<string, React.CSSProperties> = {
   container: { maxWidth: '1400px', margin: '0 auto' },
   loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '16px' },
@@ -409,16 +407,8 @@ const styles: Record<string, React.CSSProperties> = {
   addButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   alert: { display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', backgroundColor: '#fee2e2', border: '1px solid #fecaca', borderRadius: '8px', color: '#991b1b', marginBottom: '24px' },
   alertIcon: { fontSize: '18px' },
-  formCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '24px', marginBottom: '32px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
-  formTitle: { margin: '0 0 20px 0', fontSize: '18px', fontWeight: 700, color: '#1a1d29' },
-  form: { display: 'flex', flexDirection: 'column', gap: '20px' },
-  inputRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
-  inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
-  label: { fontSize: '14px', fontWeight: 600, color: '#374151' },
-  input: { padding: '12px 16px', fontSize: '15px', border: '2px solid #e5e7eb', borderRadius: '8px', outline: 'none', width: '100%', fontFamily: 'inherit' },
   
-
-  // Filtros
+  // Estilos dos Filtros
   filterBar: {
     display: 'flex',
     gap: '16px',
@@ -434,6 +424,8 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '15px',
     border: '2px solid #e5e7eb',
     borderRadius: '8px',
+    outline: 'none',
+    width: '100%',
   },
   filterSelect: {
     flex: 1,
@@ -442,39 +434,28 @@ const styles: Record<string, React.CSSProperties> = {
     border: '2px solid #e5e7eb',
     borderRadius: '8px',
     backgroundColor: '#fff',
+    outline: 'none',
+    width: '100%',
   },
   
-  // --- NOVOS ESTILOS CHECKBOX ---
-  checkboxGroup: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    padding: '12px',
-    backgroundColor: '#f9fafb',
-    borderRadius: '8px',
-  },
-  checkbox: {
-    width: '16px',
-    height: '16px',
-    cursor: 'pointer',
-  },
-  checkboxLabel: {
-    fontSize: '14px',
-    fontWeight: 500,
-    color: '#374151',
-    cursor: 'pointer',
-  },
-  // --- FIM DOS NOVOS ESTILOS ---
-
+  // Estilos do Formulário
+  formCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '24px', marginBottom: '32px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
+  formTitle: { margin: '0 0 20px 0', fontSize: '18px', fontWeight: 700, color: '#1a1d29' },
+  form: { display: 'flex', flexDirection: 'column', gap: '20px' },
+  inputRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
+  inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
+  label: { fontSize: '14px', fontWeight: 600, color: '#374151' },
+  input: { padding: '12px 16px', fontSize: '15px', border: '2px solid #e5e7eb', borderRadius: '8px', outline: 'none', width: '100%', fontFamily: 'inherit' },
+  inputHint: { fontSize: '12px', color: '#6b7280', fontStyle: 'italic' },
   formActions: { display: 'flex', gap: '12px', justifyContent: 'flex-end' },
   cancelButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#f5f7fa', color: '#1a1d29', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   submitButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+
+  // Estilos dos Cards de Produto
   productsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' },
   productCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '2px solid transparent' },
   productHeader: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px', gap: '12px' },
   productName: { margin: 0, fontSize: '18px', fontWeight: 600, color: '#1a1d29', flex: 1 },
-  
-  // --- NOVOS ESTILOS BADGES ---
   badges: {
     display: 'flex',
     flexDirection: 'column',
@@ -486,9 +467,20 @@ const styles: Record<string, React.CSSProperties> = {
   badgeActive: { backgroundColor: '#d1fae5', color: '#065f46' },
   badgeInactive: { backgroundColor: '#fee2e2', color: '#991b1b' },
   badgeEmail: { backgroundColor: '#dbeafe', color: '#1e40af' },
-  // --- FIM DOS NOVOS ESTILOS ---
-
   productDescription: { margin: '0 0 16px 0', fontSize: '14px', color: '#6b7280', lineHeight: 1.5 },
+  instructionsPreview: { 
+    margin: '0 0 16px 0', 
+    padding: '12px', 
+    backgroundColor: '#f9fafb', 
+    borderRadius: '8px' 
+  },
+  instructionsLabel: { 
+    fontSize: '12px', 
+    color: '#374151', 
+    fontWeight: 600, 
+    display: 'block', 
+    marginBottom: '4px' 
+  },
   productFooter: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid #e5e7eb', marginBottom: '12px' },
   priceTag: { display: 'flex', flexDirection: 'column', gap: '2px' },
   priceLabel: { fontSize: '12px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' },
@@ -503,6 +495,8 @@ const styles: Record<string, React.CSSProperties> = {
   emptyIcon: { fontSize: '64px', opacity: 0.5 },
   emptyTitle: { margin: 0, fontSize: '20px', color: '#1a1d29' },
   emptyText: { margin: 0, fontSize: '14px', color: '#6b7280' },
+  
+  // Estilos do Modal de Delete
   modalOverlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' },
   modal: { backgroundColor: '#fff', borderRadius: '16px', maxWidth: '500px', width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' },
   modalHeader: { padding: '24px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
