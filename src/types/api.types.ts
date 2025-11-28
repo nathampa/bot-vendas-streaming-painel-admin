@@ -8,6 +8,8 @@ export interface IEstoqueDetalhes {
   is_ativo: boolean;
   requer_atencao: boolean;
   senha: string | null; // A senha descriptografada
+  // --- CAMPO ADICIONADO ---
+  instrucoes_especificas: string | null;
 }
 
 // Este é o schema 'TicketAdminRead' (para a lista)
@@ -23,7 +25,7 @@ export interface ITicketLista {
 // Este é o schema 'TicketAdminReadDetails' (para os detalhes)
 export interface ITicketDetalhes extends ITicketLista {
   descricao_outros: string | null;
-  resolucao: 'N/A' | 'CONTA_TROCADA' | 'REEMBOLSO_CARTEIRA' | 'MANUAL';
+  resolucao: 'N/A' | 'CONTA_TROCADA' | 'REEMBOLSAR_CARTEIRA' | 'MANUAL';
   atualizado_em: string;
 
   // Campos extra que a API preenche
