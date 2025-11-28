@@ -11,6 +11,7 @@ interface IEstoque {
   requer_atencao: boolean;
   data_expiracao: string | null;
   dias_restantes: number | null;
+  instrucoes_especificas: string | null;
 }
 
 interface IProduto {
@@ -39,6 +40,7 @@ export const EstoquePage = () => {
   const [novoMaxSlots, setNovoMaxSlots] = useState(2);
   const [novoIsAtivo, setNovoIsAtivo] = useState(true);
   const [novoDataExpiracao, setNovoDataExpiracao] = useState('');
+  const [novasInstrucoes, setNovasInstrucoes] = useState('');
 
   const carregarDados = async () => {
     setIsLoading(true);
@@ -49,10 +51,6 @@ export const EstoquePage = () => {
       ]);
       setEstoque(estoqueRes.data);
       setProdutos(produtosRes.data);
-      if (produtosRes.data.length > 0 && selectedProdutoId === '') {
-        // Pré-seleciona o primeiro produto no form (opcional)
-        // setSelectedProdutoId(produtosRes.data[0].id);
-      }
       setError(null);
     } catch (err) {
       console.error("Erro ao buscar dados:", err);
@@ -73,6 +71,7 @@ export const EstoquePage = () => {
     setNovoMaxSlots(2);
     setNovoIsAtivo(true);
     setNovoDataExpiracao('');
+    setNovasInstrucoes('');
     setEditingEstoque(null);
     setShowForm(false);
   };
@@ -91,22 +90,22 @@ export const EstoquePage = () => {
       max_slots: novoMaxSlots,
       is_ativo: novoIsAtivo,
       data_expiracao: novoDataExpiracao || null,
+      instrucoes_especificas: novasInstrucoes || null,
     };
 
-    // Apenas incluir senha se foi preenchida
     if (novaSenha) {
       data.senha = novaSenha;
     }
 
     try {
       if (editingEstoque) {
-        // Se estiver editando, não enviamos 'produto_id'
         const updateData = {
           login: novoLogin,
           max_slots: novoMaxSlots,
           is_ativo: novoIsAtivo,
           data_expiracao: novoDataExpiracao || null,
-          ...(novaSenha && { senha: novaSenha }) // Adiciona senha apenas se preenchida
+          instrucoes_especificas: novasInstrucoes || null,
+          ...(novaSenha && { senha: novaSenha }) 
         };
         await updateEstoque(editingEstoque.id, updateData);
         alert("✅ Conta atualizada com sucesso!");
@@ -131,10 +130,11 @@ export const EstoquePage = () => {
     setEditingEstoque(item);
     setSelectedProdutoId(item.produto_id);
     setNovoLogin(item.login);
-    setNovaSenha(''); // Não pré-preencher senha por segurança
+    setNovaSenha(''); 
     setNovoMaxSlots(item.max_slots);
     setNovoIsAtivo(item.is_ativo);
     setNovoDataExpiracao(item.data_expiracao || '');
+    setNovasInstrucoes(item.instrucoes_especificas || '');
     setShowForm(true);
   };
 
@@ -160,10 +160,8 @@ export const EstoquePage = () => {
     }
 
     try {
-      // Chamamos a API de update apenas com o campo que queremos mudar
       await updateEstoque(estoqueId, { requer_atencao: false });
       alert("✅ Conta marcada como resolvida!");
-      // Recarrega os dados para refletir a mudança
       carregarDados();
     } catch (err: any) {
       console.error("Erro ao marcar como resolvido:", err);
@@ -178,7 +176,7 @@ export const EstoquePage = () => {
   };
 
   const getSlotPercentage = (ocupados: number, max: number): number => {
-    if (max === 0) return 0; // Evita divisão por zero
+    if (max === 0) return 0;
     return (ocupados / max) * 100;
   };
 
@@ -187,14 +185,12 @@ export const EstoquePage = () => {
 
     let matchesStatus = true;
     if (filterStatus === 'ativos') {
-      // Ativo significa 'is_ativo' E NÃO 'requer_atencao'
       matchesStatus = item.is_ativo && !item.requer_atencao;
     } else if (filterStatus === 'inativos') {
       matchesStatus = !item.is_ativo;
     } else if (filterStatus === 'atencao') {
       matchesStatus = item.requer_atencao;
     }
-    // 'todos' não faz nada (matchesStatus = true)
 
     return matchesProduto && matchesStatus;
   });
@@ -242,7 +238,7 @@ export const EstoquePage = () => {
                 value={selectedProdutoId}
                 onChange={(e) => setSelectedProdutoId(e.target.value)}
                 required
-                disabled={!!editingEstoque} // Desabilita se estiver editando
+                disabled={!!editingEstoque}
                 style={{...styles.input, opacity: editingEstoque ? 0.6 : 1}}
               >
                 <option value="">-- Selecione um Produto --</option>
@@ -280,7 +276,7 @@ export const EstoquePage = () => {
                   type="password"
                   value={novaSenha}
                   onChange={(e) => setNovaSenha(e.target.value)}
-                  required={!editingEstoque} // Obrigatório apenas ao criar
+                  required={!editingEstoque}
                   style={styles.input}
                   placeholder="••••••••"
                 />
@@ -318,6 +314,19 @@ export const EstoquePage = () => {
             </div>
 
             <div style={styles.inputGroup}>
+              <label style={styles.label}>Instruções Específicas desta Conta (Opcional)</label>
+              <textarea
+                value={novasInstrucoes}
+                onChange={(e) => setNovasInstrucoes(e.target.value)}
+                style={{...styles.input, minHeight: '60px', resize: 'vertical'} as React.CSSProperties}
+                placeholder="Ex: Use apenas o Perfil 4 com PIN 1234. Não altere nada."
+              />
+              <small style={styles.inputHint}>
+                Isso aparecerá para o cliente junto com as instruções gerais do produto.
+              </small>
+            </div>
+
+            <div style={styles.inputGroup}>
               <label style={styles.label}>Status</label>
               <select
                 value={novoIsAtivo ? 'true' : 'false'}
@@ -328,7 +337,6 @@ export const EstoquePage = () => {
                 <option value="false">✕ Inativo</option>
               </select>
             </div>
-
 
             <div style={styles.formActions}>
               <button type="button" onClick={resetForm} style={styles.cancelButton}>
@@ -418,18 +426,18 @@ export const EstoquePage = () => {
 
             const { dias_restantes } = item;
             let expLabel: string | null = null;
-            let expStyle: React.CSSProperties = {}; // Estilo default
+            let expStyle: React.CSSProperties = {};
 
             if (dias_restantes !== null && dias_restantes !== undefined) {
               if (dias_restantes < 0) {
                 expLabel = `🗓️ Expirou há ${-dias_restantes} dias`;
-                expStyle = styles.badgeInactive; // Vermelho
+                expStyle = styles.badgeInactive;
               } else if (dias_restantes <= 7) {
                 expLabel = `🗓️ Expira em ${dias_restantes} dias`;
-                expStyle = styles.badgeWarning; // Amarelo
+                expStyle = styles.badgeWarning;
               } else {
                 expLabel = `🗓️ Expira em ${dias_restantes} dias`;
-                expStyle = styles.badgeInfo; // Azul (novo estilo)
+                expStyle = styles.badgeInfo;
               }
             }
 
@@ -469,6 +477,13 @@ export const EstoquePage = () => {
                   <span style={styles.infoLabel}>Login:</span>
                   <span style={styles.infoValue}>{item.login}</span>
                 </div>
+
+                {/* Instructions Indicator (Icon) */}
+                {item.instrucoes_especificas && (
+                  <div style={styles.instructionsIndicator}>
+                    <span style={{fontSize: '12px', color: '#1e40af'}}>📝 Possui instruções específicas</span>
+                  </div>
+                )}
 
                 {/* Slots Progress */}
                 <div style={styles.slotsSection}>
@@ -633,6 +648,7 @@ const styles: Record<string, React.CSSProperties> = {
   cardInfo: { display: 'flex', justifyContent: 'space-between', marginBottom: '16px', padding: '12px', backgroundColor: '#f9fafb', borderRadius: '8px' },
   infoLabel: { fontSize: '13px', color: '#6b7280', fontWeight: 500 },
   infoValue: { fontSize: '13px', color: '#1a1d29', fontWeight: 600 },
+  instructionsIndicator: { marginBottom: '12px', padding: '8px', backgroundColor: '#eff6ff', borderRadius: '6px', textAlign: 'center' },
   slotsSection: { marginBottom: '16px' },
   slotsHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '8px' },
   slotsLabel: { fontSize: '13px', color: '#6b7280', fontWeight: 500 },
