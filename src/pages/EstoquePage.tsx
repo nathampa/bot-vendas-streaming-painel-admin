@@ -30,10 +30,11 @@ export const EstoquePage = () => {
   const [editingEstoque, setEditingEstoque] = useState<IEstoque | null>(null);
   const [deletingEstoque, setDeletingEstoque] = useState<IEstoque | null>(null);
 
-  const [filterProdutoId, setFilterProdutoId] = useState<string>('todos');
+  // Removido: filterProdutoId
+  const [filterTerm, setFilterTerm] = useState<string>(''); // Novo campo de filtro por nome/login
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('todos');
 
-  // Form states
+  // Form states (mantidos)
   const [selectedProdutoId, setSelectedProdutoId] = useState('');
   const [novoLogin, setNovoLogin] = useState('');
   const [novaSenha, setNovaSenha] = useState('');
@@ -180,9 +181,23 @@ export const EstoquePage = () => {
     return (ocupados / max) * 100;
   };
 
+  // Lógica de Filtro ATUALIZADA
   const filteredEstoque = estoque.filter(item => {
-    const matchesProduto = filterProdutoId === 'todos' || item.produto_id === filterProdutoId;
+    // 1. Filtro por Termo de Busca (Nome do Produto ou Login)
+    const term = filterTerm.toLowerCase().trim();
+    let matchesSearch = true;
 
+    if (term) {
+      const produtoNome = getProdutoNome(item.produto_id).toLowerCase();
+      const login = item.login.toLowerCase();
+
+      // Corresponde se o termo estiver no nome do produto OU no login da conta
+      if (!produtoNome.includes(term) && !login.includes(term)) {
+        matchesSearch = false;
+      }
+    }
+
+    // 2. Filtro por Status
     let matchesStatus = true;
     if (filterStatus === 'ativos') {
       matchesStatus = item.is_ativo && !item.requer_atencao;
@@ -192,7 +207,7 @@ export const EstoquePage = () => {
       matchesStatus = item.requer_atencao;
     }
 
-    return matchesProduto && matchesStatus;
+    return matchesSearch && matchesStatus;
   });
 
   if (isLoading) {
@@ -350,25 +365,22 @@ export const EstoquePage = () => {
         </div>
       )}
 
-      {/* Filter Section */}
+      {/* Filter Section - UI ATUALIZADA */}
       <div style={styles.filterContainer}>
         <h3 style={styles.filterTitle}>Filtrar Estoque</h3>
         <div style={styles.filterInputs}>
+          
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Por Produto</label>
-            <select
-              value={filterProdutoId}
-              onChange={(e) => setFilterProdutoId(e.target.value)}
+            <label style={styles.label}>Buscar Conta (Nome do Produto ou Login)</label>
+            <input
+              type="text"
+              value={filterTerm}
+              onChange={(e) => setFilterTerm(e.target.value)}
               style={styles.input}
-            >
-              <option value="todos">-- Todos os Produtos --</option>
-              {produtos.map((produto) => (
-                <option key={produto.id} value={produto.id}>
-                  {produto.nome}
-                </option>
-              ))}
-            </select>
+              placeholder="Ex: Netflix ou conta@email.com"
+            />
           </div>
+
           <div style={styles.inputGroup}>
             <label style={styles.label}>Por Status</label>
             <select
