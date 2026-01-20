@@ -31,7 +31,7 @@ export interface ITicketDetalhes extends ITicketLista {
   // Campos extra que a API preenche
   usuario_telegram_id: number;
   produto_nome: string;
-  conta_problematica: IEstoqueDetalhes;
+  conta_problematica: IEstoqueDetalhes | null;
 }
 
 export interface IGiftCardAdminRead {

@@ -55,9 +55,16 @@ export const TicketsPage = () => {
 
     if (!window.confirm(confirmMsg)) return;
 
+    let mensagem: string | null | undefined = undefined;
+    if (acao === 'FECHAR_MANUALMENTE') {
+      const resposta = window.prompt("Mensagem para o usuário (opcional):");
+      if (resposta === null) return;
+      mensagem = resposta.trim() ? resposta : null;
+    }
+
     setIsLoadingDetails(true);
     try {
-      await resolverTicket(selectedTicket.id, acao);
+      await resolverTicket(selectedTicket.id, acao, mensagem);
       alert("✅ Solicitação enviada! Processando...");
       setSelectedTicket(null);
       setFilterStatus('EM_ANALISE');
@@ -262,39 +269,50 @@ export const TicketsPage = () => {
                 )}
 
                 {/* Conta Problemática */}
-                <div style={styles.contaCard}>
-                  <h3 style={styles.contaTitle}>🔐 Conta Problemática</h3>
-                  <div style={styles.contaInfo}>
-                    <div style={styles.contaRow}>
-                      <span style={styles.contaLabel}>Login:</span>
-                      <span style={styles.contaValue}>{selectedTicket.conta_problematica.login}</span>
-                    </div>
-                    <div style={styles.contaRow}>
-                      <span style={styles.contaLabel}>Senha:</span>
-                      <span style={{...styles.contaValue, fontFamily: 'monospace'}}>
-                        {selectedTicket.conta_problematica.senha}
-                      </span>
-                    </div>
-                    <div style={styles.contaRow}>
-                      <span style={styles.contaLabel}>Slots:</span>
-                      <span style={styles.contaValue}>
-                        {selectedTicket.conta_problematica.slots_ocupados} / {selectedTicket.conta_problematica.max_slots}
-                      </span>
+                {selectedTicket.conta_problematica ? (
+                  <div style={styles.contaCard}>
+                    <h3 style={styles.contaTitle}>🔐 Conta Problemática</h3>
+                    <div style={styles.contaInfo}>
+                      <div style={styles.contaRow}>
+                        <span style={styles.contaLabel}>Login:</span>
+                        <span style={styles.contaValue}>{selectedTicket.conta_problematica.login}</span>
+                      </div>
+                      <div style={styles.contaRow}>
+                        <span style={styles.contaLabel}>Senha:</span>
+                        <span style={{...styles.contaValue, fontFamily: 'monospace'}}>
+                          {selectedTicket.conta_problematica.senha}
+                        </span>
+                      </div>
+                      <div style={styles.contaRow}>
+                        <span style={styles.contaLabel}>Slots:</span>
+                        <span style={styles.contaValue}>
+                          {selectedTicket.conta_problematica.slots_ocupados} / {selectedTicket.conta_problematica.max_slots}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div style={styles.contaCard}>
+                    <h3 style={styles.contaTitle}>🧾 Conta Não Associada</h3>
+                    <p style={styles.contaEmptyText}>
+                      Este pedido é de entrega manual e não possui conta vinculada.
+                    </p>
+                  </div>
+                )}
 
                 {/* Actions */}
                 {selectedTicket.status === 'ABERTO' && (
                   <div style={styles.actionsSection}>
                     <h3 style={styles.actionsTitle}>Ações de Resolução</h3>
                     <div style={styles.actionsGrid}>
-                      <button
-                        onClick={() => handleResolver('TROCAR_CONTA')}
-                        style={{...styles.actionButton, ...styles.actionButtonSwap}}
-                      >
-                        🔁 Trocar Conta
-                      </button>
+                      {selectedTicket.conta_problematica && (
+                        <button
+                          onClick={() => handleResolver('TROCAR_CONTA')}
+                          style={{...styles.actionButton, ...styles.actionButtonSwap}}
+                        >
+                          🔁 Trocar Conta
+                        </button>
+                      )}
                       <button
                         onClick={() => handleResolver('REEMBOLSAR_CARTEIRA')}
                         style={{...styles.actionButton, ...styles.actionButtonRefund}}
@@ -584,6 +602,11 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  contaEmptyText: {
+    margin: 0,
+    fontSize: '14px',
+    color: '#6b7280',
   },
   contaLabel: {
     fontSize: '13px',

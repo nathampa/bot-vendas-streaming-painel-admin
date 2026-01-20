@@ -142,8 +142,12 @@ export const getTicketDetalhes = (ticketId: string) => {
   });
 };
 
-export const resolverTicket = (ticketId: string, acao: 'TROCAR_CONTA' | 'REEMBOLSAR_CARTEIRA' | 'FECHAR_MANUALMENTE') => {
-  return axios.post(`${VITE_API_BASE_URL}/admin/tickets/${ticketId}/resolver`, { acao }, {
+export const resolverTicket = (
+  ticketId: string,
+  acao: 'TROCAR_CONTA' | 'REEMBOLSAR_CARTEIRA' | 'FECHAR_MANUALMENTE',
+  mensagem?: string | null
+) => {
+  return axios.post(`${VITE_API_BASE_URL}/admin/tickets/${ticketId}/resolver`, { acao, mensagem }, {
     headers: getAuthHeaders(),
   });
 };
