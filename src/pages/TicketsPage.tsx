@@ -98,6 +98,8 @@ export const TicketsPage = () => {
     return motivos[motivo] || motivo;
   };
 
+  const contaProblematica = selectedTicket?.conta_problematica ?? null;
+
   return (
     <div style={styles.container}>
       {/* Header */}
@@ -269,24 +271,24 @@ export const TicketsPage = () => {
                 )}
 
                 {/* Conta Problemática */}
-                {selectedTicket.conta_problematica ? (
+                {contaProblematica ? (
                   <div style={styles.contaCard}>
                     <h3 style={styles.contaTitle}>🔐 Conta Problemática</h3>
                     <div style={styles.contaInfo}>
                       <div style={styles.contaRow}>
                         <span style={styles.contaLabel}>Login:</span>
-                        <span style={styles.contaValue}>{selectedTicket.conta_problematica.login}</span>
+                        <span style={styles.contaValue}>{contaProblematica?.login ?? '-'}</span>
                       </div>
                       <div style={styles.contaRow}>
                         <span style={styles.contaLabel}>Senha:</span>
                         <span style={{...styles.contaValue, fontFamily: 'monospace'}}>
-                          {selectedTicket.conta_problematica.senha}
+                          {contaProblematica?.senha ?? '-'}
                         </span>
                       </div>
                       <div style={styles.contaRow}>
                         <span style={styles.contaLabel}>Slots:</span>
                         <span style={styles.contaValue}>
-                          {selectedTicket.conta_problematica.slots_ocupados} / {selectedTicket.conta_problematica.max_slots}
+                          {contaProblematica?.slots_ocupados ?? 0} / {contaProblematica?.max_slots ?? 0}
                         </span>
                       </div>
                     </div>
@@ -305,7 +307,7 @@ export const TicketsPage = () => {
                   <div style={styles.actionsSection}>
                     <h3 style={styles.actionsTitle}>Ações de Resolução</h3>
                     <div style={styles.actionsGrid}>
-                      {selectedTicket.conta_problematica && (
+                      {contaProblematica && (
                         <button
                           onClick={() => handleResolver('TROCAR_CONTA')}
                           style={{...styles.actionButton, ...styles.actionButtonSwap}}
