@@ -83,7 +83,7 @@ export const ContasMaePage = () => {
     e.preventDefault();
 
     if (!selectedProdutoId) {
-      alert('️ Por favor, selecione um produto.');
+      alert('⚠️ Por favor, selecione um produto.');
       return;
     }
 
@@ -97,10 +97,10 @@ export const ContasMaePage = () => {
           ...(novaSenha && { senha: novaSenha }),
         };
         await updateContaMae(editingConta.id, updateData);
-        alert(' Conta mãe atualizada com sucesso!');
+        alert('✅ Conta mãe atualizada com sucesso!');
       } else {
         if (!novaSenha) {
-          alert('️ A senha é obrigatória ao criar nova conta.');
+          alert('⚠️ A senha é obrigatória ao criar nova conta.');
           return;
         }
         await createContaMae({
@@ -111,7 +111,7 @@ export const ContasMaePage = () => {
           data_expiracao: novoDataExpiracao || null,
           is_ativo: novoIsAtivo,
         });
-        alert(' Conta mãe criada com sucesso!');
+        alert('✅ Conta mãe criada com sucesso!');
       }
 
       resetForm();
@@ -119,7 +119,7 @@ export const ContasMaePage = () => {
     } catch (err: any) {
       console.error('Erro ao salvar conta mãe:', err);
       const errorMsg = err.response?.data?.detail || 'Falha ao salvar conta mãe.';
-      alert(` Erro: ${errorMsg}`);
+      alert(`❌ Erro: ${errorMsg}`);
     }
   };
 
@@ -138,7 +138,7 @@ export const ContasMaePage = () => {
     if (!deletingConta) return;
     try {
       await deleteContaMae(deletingConta.id);
-      alert(' Conta mãe excluída com sucesso!');
+      alert('✅ Conta mãe excluída com sucesso!');
       setDeletingConta(null);
       carregarDados();
     } catch (err: any) {
@@ -158,7 +158,7 @@ export const ContasMaePage = () => {
     } catch (err: any) {
       console.error('Erro ao buscar detalhes:', err);
       const errorMsg = err.response?.data?.detail || 'Falha ao carregar detalhes.';
-      alert(` Erro: ${errorMsg}`);
+      alert(`❌ Erro: ${errorMsg}`);
     } finally {
       setIsLoadingDetails(false);
     }
@@ -167,7 +167,7 @@ export const ContasMaePage = () => {
   const handleAddInvite = async () => {
     if (!selectedConta) return;
     if (!inviteEmail.trim()) {
-      alert('️ Informe o email do convidado.');
+      alert('⚠️ Informe o email do convidado.');
       return;
     }
 
@@ -186,7 +186,7 @@ export const ContasMaePage = () => {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    alert(' Copiado!');
+    alert('📋 Copiado!');
   };
 
   const filteredContas = contas.filter((conta) => {
@@ -221,7 +221,7 @@ export const ContasMaePage = () => {
 
       {error && (
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>️</span>
+          <span style={styles.alertIcon}>⚠️</span>
           <span>{error}</span>
         </div>
       )}
@@ -249,7 +249,7 @@ export const ContasMaePage = () => {
                 ))}
               </select>
               {editingConta && (
-                <small style={styles.inputHint}>O produto não pode ser alterado após criação</small>
+                <small style={styles.inputHint}>O produto no pode ser alterado aps criao</small>
               )}
             </div>
 
@@ -267,7 +267,7 @@ export const ContasMaePage = () => {
               </div>
               <div style={styles.inputGroup}>
                 <label style={styles.label}>
-                  Senha {editingConta && '(deixe vazio para não alterar)'}
+                  Senha {editingConta && '(deixe vazio para no alterar)'}
                 </label>
                 <input
                   type="password"
@@ -282,7 +282,7 @@ export const ContasMaePage = () => {
 
             <div style={styles.inputRow}>
               <div style={styles.inputGroup}>
-                <label style={styles.label}>M?ximo de Slots</label>
+                <label style={styles.label}>Máximo de Slots</label>
                 <input
                   type="number"
                   step="1"
@@ -294,7 +294,7 @@ export const ContasMaePage = () => {
                 />
               </div>
               <div style={styles.inputGroup}>
-                <label style={styles.label}>Data de Expira??o</label>
+                <label style={styles.label}>Data de Expiração</label>
                 <input
                   type="date"
                   value={novoDataExpiracao}
@@ -311,14 +311,14 @@ export const ContasMaePage = () => {
                 onChange={(e) => setNovoIsAtivo(e.target.value === 'true')}
                 style={styles.input}
               >
-                <option value="true">? Ativa</option>
-                <option value="false">? Inativa</option>
+                <option value="true">✓ Ativa</option>
+                <option value="false">✖ Inativa</option>
               </select>
             </div>
 
             <div style={styles.formActions}>
               <button type="button" onClick={resetForm} style={styles.cancelButton}>
-                Cancelar
+               ✖ Cancelar
               </button>
               <button type="submit" style={styles.submitButton}>
                 {editingConta ? 'Salvar Alterações' : 'Cadastrar Conta'}
@@ -346,14 +346,14 @@ export const ContasMaePage = () => {
 
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}></div>
+          <div style={styles.statIcon}>📊</div>
           <div>
             <p style={styles.statLabel}>Contas (Filtro)</p>
             <h3 style={styles.statValue}>{filteredContas.length}</h3>
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={{ ...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46' }}></div>
+          <div style={{ ...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46' }}>✅</div>
           <div>
             <p style={styles.statLabel}>Ativas</p>
             <h3 style={styles.statValue}>{filteredContas.filter((c) => c.is_ativo).length}</h3>
@@ -371,7 +371,7 @@ export const ContasMaePage = () => {
       <div style={styles.estoqueGrid}>
         {filteredContas.length === 0 ? (
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}></span>
+            <span style={styles.emptyIcon}>👩‍💼</span>
             <h3 style={styles.emptyTitle}>Nenhuma conta encontrada</h3>
             <p style={styles.emptyText}>Cadastre novas contas ou ajuste os filtros.</p>
           </div>
@@ -382,13 +382,13 @@ export const ContasMaePage = () => {
 
             if (conta.dias_restantes !== null && conta.dias_restantes !== undefined) {
               if (conta.dias_restantes < 0) {
-                expLabel = `️ Expirou há ${-conta.dias_restantes} dias`;
+                expLabel = ` Expirou h ${-conta.dias_restantes} dias`;
                 expStyle = styles.badgeInactive;
               } else if (conta.dias_restantes <= 7) {
-                expLabel = `️ Expira em ${conta.dias_restantes} dias`;
+                expLabel = ` Expira em ${conta.dias_restantes} dias`;
                 expStyle = styles.badgeWarning;
               } else {
-                expLabel = `️ Expira em ${conta.dias_restantes} dias`;
+                expLabel = ` Expira em ${conta.dias_restantes} dias`;
                 expStyle = styles.badgeInfo;
               }
             }
@@ -410,7 +410,7 @@ export const ContasMaePage = () => {
                       </span>
                     )}
                     <span style={{ ...styles.badge, ...(conta.is_ativo ? styles.badgeActive : styles.badgeInactive) }}>
-                      {conta.is_ativo ? ' Ativa' : ' Inativa'}
+                      {conta.is_ativo ? '✓ Ativa' : '✖ Inativa'}
                     </span>
                   </div>
                 </div>
@@ -439,19 +439,19 @@ export const ContasMaePage = () => {
                     onClick={() => handleOpenDetails(conta.id)}
                     style={{ ...styles.actionBtn, ...styles.detailsBtn }}
                   >
-                    ️ Detalhes
+                     Detalhes
                   </button>
                   <button
                     onClick={() => handleEdit(conta)}
                     style={{ ...styles.actionBtn, ...styles.editBtn }}
                   >
-                    ️ Editar
+                     Editar
                   </button>
                   <button
                     onClick={() => setDeletingConta(conta)}
                     style={{ ...styles.actionBtn, ...styles.deleteBtn }}
                   >
-                    ️ Excluir
+                     Excluir
                   </button>
                 </div>
               </div>
@@ -491,7 +491,7 @@ export const ContasMaePage = () => {
                     </div>
                   </div>
                   <div style={styles.infoBox}>
-                    <span style={styles.infoLabel}>Expiração</span>
+                    <span style={styles.infoLabel}>Expirao</span>
                     <span style={styles.infoValue}>{formatDate(selectedConta.data_expiracao)}</span>
                   </div>
                   <div style={styles.infoBox}>
@@ -507,7 +507,7 @@ export const ContasMaePage = () => {
                 <div style={styles.inviteSection}>
                   <h4 style={styles.sectionTitle}>Adicionar Email Convidado</h4>
                   {isSlotsFull && (
-                    <p style={styles.warningText}>Esta conta j? atingiu o m?ximo de slots.</p>
+                    <p style={styles.warningText}>Esta conta já atingiu o máximo de slots.</p>
                   )}
                   <div style={styles.inviteRow}>
                     <input
@@ -525,7 +525,7 @@ export const ContasMaePage = () => {
                 </div>
 
                 <div style={styles.inviteList}>
-                  <h4 style={styles.sectionTitle}>Emails atribuídos</h4>
+                  <h4 style={styles.sectionTitle}>Emails atribudos</h4>
                   {selectedConta.convites.length === 0 ? (
                     <p style={styles.emptyText}>Nenhum convite registrado.</p>
                   ) : (
@@ -549,7 +549,7 @@ export const ContasMaePage = () => {
         <div style={styles.modalOverlay} onClick={() => setDeletingConta(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>️ Confirmar Exclusão</h3>
+              <h3 style={styles.modalTitle}> Confirmar Excluso</h3>
               <button onClick={() => setDeletingConta(null)} style={styles.modalClose}></button>
             </div>
             <div style={styles.modalBody}>
@@ -557,15 +557,15 @@ export const ContasMaePage = () => {
                 Tem certeza que deseja excluir a conta <strong>{deletingConta.login}</strong>?
               </p>
               <div style={styles.warningBox}>
-                <span style={styles.warningIcon}>️</span>
+                <span style={styles.warningIcon}></span>
                 <p style={styles.warningText}>
-                  Esta ação não pode ser desfeita. Os convites vinculados serão removidos.
+                  Esta ao no pode ser desfeita. Os convites vinculados sero removidos.
                 </p>
               </div>
             </div>
             <div style={styles.modalFooter}>
               <button onClick={() => setDeletingConta(null)} style={styles.modalCancelBtn}>
-                Cancelar
+               ✖ Cancelar
               </button>
               <button onClick={handleDelete} style={styles.modalDeleteBtn}>
                 Sim, Excluir
