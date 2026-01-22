@@ -19,6 +19,8 @@ export const AdminLayout = () => {
     { path: '/dashboard', icon: '📊', label: 'Dashboard' },
     { path: '/produtos', icon: '🛍️', label: 'Produtos' },
     { path: '/estoque', icon: '📦', label: 'Estoque' },
+    { path: '/contas-mae', icon: '👩‍💼', label: 'Contas M?e' },
+    { path: '/contas-mae', icon: '👩‍💼', label: 'Contas M?e' },
     { path: '/tickets', icon: '🎟️', label: 'Tickets' },
     { path: '/pedidos', icon: '🧾', label: 'Pedidos' },
     { path: '/usuarios', icon: '👥', label: 'Usuários' },

@@ -234,3 +234,49 @@ export const updateAdminConfig = (data: any) => {
     headers: getAuthHeaders(),
   });
 };
+
+// -----------------------------------------------------------------
+// PILAR: Contas Mãe
+// -----------------------------------------------------------------
+export const getAdminContasMae = () => {
+  return axios.get(`${VITE_API_BASE_URL}/admin/contas-mae/`, {
+    headers: getAuthHeaders(),
+  });
+};
+
+export const getContaMaeDetalhes = (contaMaeId: string) => {
+  return axios.get(`${VITE_API_BASE_URL}/admin/contas-mae/${contaMaeId}`, {
+    headers: getAuthHeaders(),
+  });
+};
+
+export const createContaMae = (data: {
+  produto_id: string;
+  login: string;
+  senha: string;
+  max_slots: number;
+  data_expiracao?: string | null;
+  is_ativo: boolean;
+}) => {
+  return axios.post(`${VITE_API_BASE_URL}/admin/contas-mae/`, data, {
+    headers: getAuthHeaders(),
+  });
+};
+
+export const updateContaMae = (contaMaeId: string, data: any) => {
+  return axios.put(`${VITE_API_BASE_URL}/admin/contas-mae/${contaMaeId}`, data, {
+    headers: getAuthHeaders(),
+  });
+};
+
+export const deleteContaMae = (contaMaeId: string) => {
+  return axios.delete(`${VITE_API_BASE_URL}/admin/contas-mae/${contaMaeId}`, {
+    headers: getAuthHeaders(),
+  });
+};
+
+export const addContaMaeConvite = (contaMaeId: string, data: { email_cliente: string }) => {
+  return axios.post(`${VITE_API_BASE_URL}/admin/contas-mae/${contaMaeId}/convites`, data, {
+    headers: getAuthHeaders(),
+  });
+};

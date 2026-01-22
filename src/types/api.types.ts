@@ -80,8 +80,16 @@ export interface IPedidoAdminConta {
   senha: string;
 }
 
+export interface IPedidoAdminContaMae {
+  id: string;
+  login: string;
+  data_expiracao: string | null;
+  dias_restantes: number | null;
+}
+
 export interface IPedidoAdminDetails extends IPedidoAdminList {
   conta: IPedidoAdminConta | null;
+  conta_mae: IPedidoAdminContaMae | null;
 }
 
 // Schema 'UsuarioAdminRead'
@@ -115,4 +123,28 @@ export interface IConfiguracao {
   afiliado_gatilho: 'primeira_recarga' | 'primeira_compra';
   afiliado_tipo_premio: 'cashback_pendente' | 'giftcard_imediato';
   afiliado_valor_premio: string; // Decimal vem como string
+}
+
+export interface IContaMae {
+  id: string;
+  produto_id: string;
+  login: string;
+  max_slots: number;
+  slots_ocupados: number;
+  is_ativo: boolean;
+  data_expiracao: string | null;
+  dias_restantes: number | null;
+  total_convites: number | null;
+}
+
+export interface IContaMaeConvite {
+  id: string;
+  email_cliente: string;
+  criado_em: string;
+  pedido_id: string | null;
+}
+
+export interface IContaMaeDetalhes extends IContaMae {
+  senha: string | null;
+  convites: IContaMaeConvite[];
 }

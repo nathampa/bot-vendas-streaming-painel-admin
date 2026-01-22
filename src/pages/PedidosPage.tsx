@@ -58,6 +58,17 @@ export const PedidosPage = () => {
     });
   };
 
+  const formatarDataCurta = (dataIso: string | null) => {
+    if (!dataIso) return '-';
+    const dataUtc = `${dataIso}T00:00:00Z`;
+    return new Date(dataUtc).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      timeZone: 'UTC'
+    });
+  };
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     alert('📋 Copiado!');
@@ -279,6 +290,21 @@ export const PedidosPage = () => {
                           <button style={styles.copyButton} title="Copiar email">📋</button>
                         </div>
                       </div>
+                      {selectedPedido.conta_mae && (
+                        <>
+                          <div style={styles.contaRow}>
+                            <span style={styles.contaLabel}>Conta mãe atribuída:</span>
+                            <div style={styles.copyBox} onClick={() => copyToClipboard(selectedPedido.conta_mae!.login)}>
+                              <span style={styles.contaValue}>{selectedPedido.conta_mae.login}</span>
+                              <button style={styles.copyButton} title="Copiar login">📋</button>
+                            </div>
+                          </div>
+                          <div style={styles.contaRow}>
+                            <span style={styles.contaLabel}>Expiração da conta mãe:</span>
+                            <span style={styles.contaValue}>{formatarDataCurta(selectedPedido.conta_mae.data_expiracao)}</span>
+                          </div>
+                        </>
+                      )}
                       <div style={styles.manualInfo}>
                         <span style={styles.manualInfoIcon}>ℹ️</span>
                         <span>Este pedido é de entrega manual. Use o email acima para enviar o convite da plataforma (ex: Youtube, Canva).</span>

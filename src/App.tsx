@@ -16,6 +16,7 @@ import { SugestoesPage } from './pages/SugestoesPage';
 import { UsuariosPage } from './pages/UsuariosPage';
 import { RecargasPage } from './pages/RecargasPage';
 import { ConfiguracoesPage } from './pages/ConfiguracoesPage';
+import { ContasMaePage } from './pages/ContasMaePage';
 
 
 /**
@@ -61,6 +62,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/produtos" element={<ProdutosPage />} />
           <Route path="/estoque" element={<EstoquePage />} />
+          <Route path="/contas-mae" element={<ContasMaePage />} />
           <Route path="/tickets" element={<TicketsPage />} />
           <Route path="/giftcards" element={<GiftCardsPage />} />
           <Route path="/sugestoes" element={<SugestoesPage />} />
