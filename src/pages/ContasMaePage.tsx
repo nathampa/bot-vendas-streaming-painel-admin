@@ -47,7 +47,7 @@ export const ContasMaePage = () => {
       setError(null);
     } catch (err) {
       console.error('Erro ao buscar dados:', err);
-      setError('Falha ao carregar contas mÃ£e.');
+      setError('Falha ao carregar contas mãe.');
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +83,7 @@ export const ContasMaePage = () => {
     e.preventDefault();
 
     if (!selectedProdutoId) {
-      alert('âš ï¸ Por favor, selecione um produto.');
+      alert('️ Por favor, selecione um produto.');
       return;
     }
 
@@ -97,10 +97,10 @@ export const ContasMaePage = () => {
           ...(novaSenha && { senha: novaSenha }),
         };
         await updateContaMae(editingConta.id, updateData);
-        alert('âœ… Conta mÃ£e atualizada com sucesso!');
+        alert(' Conta mãe atualizada com sucesso!');
       } else {
         if (!novaSenha) {
-          alert('âš ï¸ A senha Ã© obrigatÃ³ria ao criar nova conta.');
+          alert('️ A senha é obrigatória ao criar nova conta.');
           return;
         }
         await createContaMae({
@@ -111,15 +111,15 @@ export const ContasMaePage = () => {
           data_expiracao: novoDataExpiracao || null,
           is_ativo: novoIsAtivo,
         });
-        alert('âœ… Conta mÃ£e criada com sucesso!');
+        alert(' Conta mãe criada com sucesso!');
       }
 
       resetForm();
       carregarDados();
     } catch (err: any) {
-      console.error('Erro ao salvar conta mÃ£e:', err);
-      const errorMsg = err.response?.data?.detail || 'Falha ao salvar conta mÃ£e.';
-      alert(`âŒ Erro: ${errorMsg}`);
+      console.error('Erro ao salvar conta mãe:', err);
+      const errorMsg = err.response?.data?.detail || 'Falha ao salvar conta mãe.';
+      alert(` Erro: ${errorMsg}`);
     }
   };
 
@@ -138,13 +138,13 @@ export const ContasMaePage = () => {
     if (!deletingConta) return;
     try {
       await deleteContaMae(deletingConta.id);
-      alert('âœ… Conta mÃ£e excluÃ­da com sucesso!');
+      alert(' Conta mãe excluída com sucesso!');
       setDeletingConta(null);
       carregarDados();
     } catch (err: any) {
-      console.error('Erro ao excluir conta mÃ£e:', err);
-      const errorMsg = err.response?.data?.detail || 'Falha ao excluir conta mÃ£e.';
-      alert(`âŒ ${errorMsg}`);
+      console.error('Erro ao excluir conta mãe:', err);
+      const errorMsg = err.response?.data?.detail || 'Falha ao excluir conta mãe.';
+      alert(` ${errorMsg}`);
       setDeletingConta(null);
     }
   };
@@ -158,7 +158,7 @@ export const ContasMaePage = () => {
     } catch (err: any) {
       console.error('Erro ao buscar detalhes:', err);
       const errorMsg = err.response?.data?.detail || 'Falha ao carregar detalhes.';
-      alert(`âŒ Erro: ${errorMsg}`);
+      alert(` Erro: ${errorMsg}`);
     } finally {
       setIsLoadingDetails(false);
     }
@@ -167,7 +167,7 @@ export const ContasMaePage = () => {
   const handleAddInvite = async () => {
     if (!selectedConta) return;
     if (!inviteEmail.trim()) {
-      alert('âš ï¸ Informe o email do convidado.');
+      alert('️ Informe o email do convidado.');
       return;
     }
 
@@ -180,13 +180,13 @@ export const ContasMaePage = () => {
     } catch (err: any) {
       console.error('Erro ao adicionar convite:', err);
       const errorMsg = err.response?.data?.detail || 'Falha ao adicionar convite.';
-      alert(`âŒ ${errorMsg}`);
+      alert(` ${errorMsg}`);
     }
   };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    alert('ðŸ“‹ Copiado!');
+    alert(' Copiado!');
   };
 
   const filteredContas = contas.filter((conta) => {
@@ -202,7 +202,7 @@ export const ContasMaePage = () => {
     return (
       <div style={styles.loadingContainer}>
         <div style={styles.spinner} />
-        <p style={styles.loadingText}>Carregando contas mÃ£e...</p>
+        <p style={styles.loadingText}>Carregando contas mãe...</p>
       </div>
     );
   }
@@ -211,17 +211,17 @@ export const ContasMaePage = () => {
     <div style={styles.container}>
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>ðŸ‘©â€ðŸ’¼ Contas MÃ£e</h1>
+          <h1 style={styles.title}>Contas Mãe</h1>
           <p style={styles.subtitle}>Gerencie as contas que convidam clientes por email</p>
         </div>
         <button onClick={() => (showForm ? resetForm() : setShowForm(true))} style={styles.addButton}>
-          {showForm ? 'âœ• Cancelar' : 'âž• Nova Conta MÃ£e'}
+          {showForm ? 'Cancelar' : 'Nova Conta Mãe'}
         </button>
       </div>
 
       {error && (
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>âš ï¸</span>
+          <span style={styles.alertIcon}>️</span>
           <span>{error}</span>
         </div>
       )}
@@ -229,7 +229,7 @@ export const ContasMaePage = () => {
       {showForm && (
         <div style={styles.formCard}>
           <h3 style={styles.formTitle}>
-            {editingConta ? 'âœï¸ Editar Conta MÃ£e' : 'âž• Cadastrar Conta MÃ£e'}
+            {editingConta ? 'Editar Conta Mãe' : 'Cadastrar Conta Mãe'}
           </h3>
           <form onSubmit={handleCreateOrUpdate} style={styles.form}>
             <div style={styles.inputGroup}>
@@ -249,7 +249,7 @@ export const ContasMaePage = () => {
                 ))}
               </select>
               {editingConta && (
-                <small style={styles.inputHint}>O produto nÃ£o pode ser alterado apÃ³s criaÃ§Ã£o</small>
+                <small style={styles.inputHint}>O produto não pode ser alterado após criação</small>
               )}
             </div>
 
@@ -267,7 +267,7 @@ export const ContasMaePage = () => {
               </div>
               <div style={styles.inputGroup}>
                 <label style={styles.label}>
-                  Senha {editingConta && '(deixe vazio para nÃ£o alterar)'}
+                  Senha {editingConta && '(deixe vazio para não alterar)'}
                 </label>
                 <input
                   type="password"
@@ -275,7 +275,7 @@ export const ContasMaePage = () => {
                   onChange={(e) => setNovaSenha(e.target.value)}
                   required={!editingConta}
                   style={styles.input}
-                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                  placeholder=""
                 />
               </div>
             </div>
@@ -321,7 +321,7 @@ export const ContasMaePage = () => {
                 Cancelar
               </button>
               <button type="submit" style={styles.submitButton}>
-                {editingConta ? 'Salvar AlteraÃ§Ãµes' : 'Cadastrar Conta'}
+                {editingConta ? 'Salvar Alterações' : 'Cadastrar Conta'}
               </button>
             </div>
           </form>
@@ -346,23 +346,23 @@ export const ContasMaePage = () => {
 
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}>ðŸ“Š</div>
+          <div style={styles.statIcon}></div>
           <div>
             <p style={styles.statLabel}>Contas (Filtro)</p>
             <h3 style={styles.statValue}>{filteredContas.length}</h3>
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={{ ...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46' }}>âœ“</div>
+          <div style={{ ...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46' }}></div>
           <div>
             <p style={styles.statLabel}>Ativas</p>
             <h3 style={styles.statValue}>{filteredContas.filter((c) => c.is_ativo).length}</h3>
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={{ ...styles.statIcon, backgroundColor: '#fee2e2', color: '#991b1b' }}>â³</div>
+          <div style={{ ...styles.statIcon, backgroundColor: '#fee2e2', color: '#991b1b' }}>⏳</div>
           <div>
-            <p style={styles.statLabel}>PrÃ³ximas de Expirar</p>
+            <p style={styles.statLabel}>Próximas de Expirar</p>
             <h3 style={styles.statValue}>{filteredContas.filter((c) => (c.dias_restantes ?? 999) <= 7).length}</h3>
           </div>
         </div>
@@ -371,7 +371,7 @@ export const ContasMaePage = () => {
       <div style={styles.estoqueGrid}>
         {filteredContas.length === 0 ? (
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>ðŸ‘©â€ðŸ’¼</span>
+            <span style={styles.emptyIcon}></span>
             <h3 style={styles.emptyTitle}>Nenhuma conta encontrada</h3>
             <p style={styles.emptyText}>Cadastre novas contas ou ajuste os filtros.</p>
           </div>
@@ -382,13 +382,13 @@ export const ContasMaePage = () => {
 
             if (conta.dias_restantes !== null && conta.dias_restantes !== undefined) {
               if (conta.dias_restantes < 0) {
-                expLabel = `ðŸ—“ï¸ Expirou hÃ¡ ${-conta.dias_restantes} dias`;
+                expLabel = `️ Expirou há ${-conta.dias_restantes} dias`;
                 expStyle = styles.badgeInactive;
               } else if (conta.dias_restantes <= 7) {
-                expLabel = `ðŸ—“ï¸ Expira em ${conta.dias_restantes} dias`;
+                expLabel = `️ Expira em ${conta.dias_restantes} dias`;
                 expStyle = styles.badgeWarning;
               } else {
-                expLabel = `ðŸ—“ï¸ Expira em ${conta.dias_restantes} dias`;
+                expLabel = `️ Expira em ${conta.dias_restantes} dias`;
                 expStyle = styles.badgeInfo;
               }
             }
@@ -410,7 +410,7 @@ export const ContasMaePage = () => {
                       </span>
                     )}
                     <span style={{ ...styles.badge, ...(conta.is_ativo ? styles.badgeActive : styles.badgeInactive) }}>
-                      {conta.is_ativo ? 'âœ“ Ativa' : 'âœ• Inativa'}
+                      {conta.is_ativo ? ' Ativa' : ' Inativa'}
                     </span>
                   </div>
                 </div>
@@ -439,19 +439,19 @@ export const ContasMaePage = () => {
                     onClick={() => handleOpenDetails(conta.id)}
                     style={{ ...styles.actionBtn, ...styles.detailsBtn }}
                   >
-                    ðŸ‘ï¸ Detalhes
+                    ️ Detalhes
                   </button>
                   <button
                     onClick={() => handleEdit(conta)}
                     style={{ ...styles.actionBtn, ...styles.editBtn }}
                   >
-                    âœï¸ Editar
+                    ️ Editar
                   </button>
                   <button
                     onClick={() => setDeletingConta(conta)}
                     style={{ ...styles.actionBtn, ...styles.deleteBtn }}
                   >
-                    ðŸ—‘ï¸ Excluir
+                    ️ Excluir
                   </button>
                 </div>
               </div>
@@ -464,8 +464,8 @@ export const ContasMaePage = () => {
         <div style={styles.modalOverlay} onClick={() => setSelectedConta(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>ðŸ‘©â€ðŸ’¼ Conta MÃ£e</h3>
-              <button onClick={() => setSelectedConta(null)} style={styles.modalClose}>âœ•</button>
+              <h3 style={styles.modalTitle}>Conta Mãe</h3>
+              <button onClick={() => setSelectedConta(null)} style={styles.modalClose}></button>
             </div>
 
             {isLoadingDetails ? (
@@ -480,18 +480,18 @@ export const ContasMaePage = () => {
                     <span style={styles.infoLabel}>Login</span>
                     <div style={styles.copyBox} onClick={() => copyToClipboard(selectedConta.login)}>
                       <span style={styles.infoValue}>{selectedConta.login}</span>
-                      <button style={styles.copyButton}>ðŸ“‹</button>
+                      <button style={styles.copyButton}></button>
                     </div>
                   </div>
                   <div style={styles.infoBox}>
                     <span style={styles.infoLabel}>Senha</span>
                     <div style={styles.copyBox} onClick={() => copyToClipboard(selectedConta.senha || '')}>
                       <span style={styles.infoValue}>{selectedConta.senha || '-'}</span>
-                      <button style={styles.copyButton}>ðŸ“‹</button>
+                      <button style={styles.copyButton}></button>
                     </div>
                   </div>
                   <div style={styles.infoBox}>
-                    <span style={styles.infoLabel}>ExpiraÃ§Ã£o</span>
+                    <span style={styles.infoLabel}>Expiração</span>
                     <span style={styles.infoValue}>{formatDate(selectedConta.data_expiracao)}</span>
                   </div>
                   <div style={styles.infoBox}>
@@ -525,7 +525,7 @@ export const ContasMaePage = () => {
                 </div>
 
                 <div style={styles.inviteList}>
-                  <h4 style={styles.sectionTitle}>Emails atribuÃ­dos</h4>
+                  <h4 style={styles.sectionTitle}>Emails atribuídos</h4>
                   {selectedConta.convites.length === 0 ? (
                     <p style={styles.emptyText}>Nenhum convite registrado.</p>
                   ) : (
@@ -549,17 +549,17 @@ export const ContasMaePage = () => {
         <div style={styles.modalOverlay} onClick={() => setDeletingConta(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>âš ï¸ Confirmar ExclusÃ£o</h3>
-              <button onClick={() => setDeletingConta(null)} style={styles.modalClose}>âœ•</button>
+              <h3 style={styles.modalTitle}>️ Confirmar Exclusão</h3>
+              <button onClick={() => setDeletingConta(null)} style={styles.modalClose}></button>
             </div>
             <div style={styles.modalBody}>
               <p style={styles.modalText}>
                 Tem certeza que deseja excluir a conta <strong>{deletingConta.login}</strong>?
               </p>
               <div style={styles.warningBox}>
-                <span style={styles.warningIcon}>â„¹ï¸</span>
+                <span style={styles.warningIcon}>️</span>
                 <p style={styles.warningText}>
-                  Esta aÃ§Ã£o nÃ£o pode ser desfeita. Os convites vinculados serÃ£o removidos.
+                  Esta ação não pode ser desfeita. Os convites vinculados serão removidos.
                 </p>
               </div>
             </div>
