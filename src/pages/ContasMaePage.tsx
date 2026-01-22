@@ -211,11 +211,11 @@ export const ContasMaePage = () => {
     <div style={styles.container}>
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>Contas Mãe</h1>
+          <h1 style={styles.title}>👩‍💼 Contas Mãe</h1>
           <p style={styles.subtitle}>Gerencie as contas que convidam clientes por email</p>
         </div>
         <button onClick={() => (showForm ? resetForm() : setShowForm(true))} style={styles.addButton}>
-          {showForm ? 'Cancelar' : 'Nova Conta Mãe'}
+          {showForm ? '✖ Cancelar' : '➕ Nova Conta Mãe'}
         </button>
       </div>
 
@@ -229,7 +229,7 @@ export const ContasMaePage = () => {
       {showForm && (
         <div style={styles.formCard}>
           <h3 style={styles.formTitle}>
-            {editingConta ? 'Editar Conta Mãe' : 'Cadastrar Conta Mãe'}
+            {editingConta ? '✏️ Editar Conta Mãe' : '➕ Cadastrar Conta Mãe'}
           </h3>
           <form onSubmit={handleCreateOrUpdate} style={styles.form}>
             <div style={styles.inputGroup}>
@@ -464,7 +464,7 @@ export const ContasMaePage = () => {
         <div style={styles.modalOverlay} onClick={() => setSelectedConta(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>Conta Mãe</h3>
+              <h3 style={styles.modalTitle}>👩‍💼 Conta Mãe</h3>
               <button onClick={() => setSelectedConta(null)} style={styles.modalClose}></button>
             </div>
 
