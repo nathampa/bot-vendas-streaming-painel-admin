@@ -131,6 +131,8 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#fff',
     display: 'flex',
     flexDirection: 'column',
+    overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch',
     boxShadow: '2px 0 10px rgba(0,0,0,0.1)',
     zIndex: 1000,
     transition: 'transform 0.3s ease',
