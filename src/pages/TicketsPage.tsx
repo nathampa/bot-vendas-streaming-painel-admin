@@ -1,16 +1,20 @@
 import { useState, useEffect } from 'react';
 import { getAdminTickets, getTicketDetalhes, resolverTicket } from '../services/apiClient';
 import type { ITicketLista, ITicketDetalhes } from '../types/api.types';
+import { getApiErrorMessage } from '../utils/errors';
 
 type TicketStatus = 'ABERTO' | 'EM_ANALISE' | 'RESOLVIDO' | 'FECHADO' | null;
+type ResolverAction = 'TROCAR_CONTA' | 'REEMBOLSAR_CARTEIRA' | 'FECHAR_MANUALMENTE';
 
 export const TicketsPage = () => {
   const [tickets, setTickets] = useState<ITicketLista[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<ITicketDetalhes | null>(null);
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
-  const [_error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<TicketStatus>('ABERTO');
+  const [resolverAction, setResolverAction] = useState<ResolverAction | null>(null);
+  const [resolverMensagem, setResolverMensagem] = useState('');
 
   const carregarTickets = async (status: TicketStatus) => {
     setIsLoadingList(true);
@@ -45,39 +49,41 @@ export const TicketsPage = () => {
     }
   };
 
-  const handleResolver = async (acao: 'TROCAR_CONTA' | 'REEMBOLSAR_CARTEIRA' | 'FECHAR_MANUALMENTE') => {
-    if (!selectedTicket) return;
+  const handleOpenResolverDialog = (acao: ResolverAction) => {
+    setResolverAction(acao);
+    setResolverMensagem('');
+  };
 
-    const confirmMsg = 
-      acao === 'TROCAR_CONTA' ? "Tem certeza que deseja alocar uma NOVA conta para este usuário?" :
-      acao === 'REEMBOLSAR_CARTEIRA' ? "Tem certeza que deseja REEMBOLSAR o valor para a carteira?" :
-      "Tem certeza que deseja fechar este ticket manualmente?";
+  const handleCloseResolverDialog = () => {
+    if (isLoadingDetails) return;
+    setResolverAction(null);
+    setResolverMensagem('');
+  };
 
-    if (!window.confirm(confirmMsg)) return;
+  const handleResolver = async () => {
+    if (!selectedTicket || !resolverAction) return;
 
-    let mensagem: string | null | undefined = undefined;
-    if (acao === 'FECHAR_MANUALMENTE') {
-      const resposta = window.prompt("Mensagem para o usuário (opcional):");
-      if (resposta === null) return;
-      mensagem = resposta.trim() ? resposta : null;
-    }
+    const mensagem =
+      resolverAction === 'FECHAR_MANUALMENTE'
+        ? (resolverMensagem.trim() ? resolverMensagem.trim() : null)
+        : undefined;
 
     setIsLoadingDetails(true);
     try {
-      await resolverTicket(selectedTicket.id, acao, mensagem);
-      alert("✅ Solicitação enviada! Processando...");
+      await resolverTicket(selectedTicket.id, resolverAction, mensagem);
+      alert('Solicitacao enviada! Processando...');
+      handleCloseResolverDialog();
       setSelectedTicket(null);
       setFilterStatus('EM_ANALISE');
       carregarTickets('EM_ANALISE');
-    } catch (err: any) {
-      console.error("Erro ao resolver ticket:", err);
-      const errorMsg = err.response?.data?.detail || "Falha ao enviar solicitação.";
-      alert(`❌ Erro: ${errorMsg}`);
+    } catch (err: unknown) {
+      console.error('Erro ao resolver ticket:', err);
+      const errorMsg = getApiErrorMessage(err, 'Falha ao enviar solicitacao.');
+      alert(`Erro: ${errorMsg}`);
     } finally {
       setIsLoadingDetails(false);
     }
   };
-
   const getStatusBadge = (status: string) => {
     const badges: Record<string, { color: string; bg: string; label: string }> = {
       ABERTO: { color: '#f59e0b', bg: '#fef3c7', label: '🔴 Aberto' },
@@ -99,6 +105,18 @@ export const TicketsPage = () => {
   };
 
   const contaProblematica = selectedTicket?.conta_problematica ?? null;
+  const resolverDialogTitle =
+    resolverAction === 'TROCAR_CONTA'
+      ? 'Confirmar troca de conta'
+      : resolverAction === 'REEMBOLSAR_CARTEIRA'
+        ? 'Confirmar reembolso'
+        : 'Fechar ticket manualmente';
+  const resolverDialogDescription =
+    resolverAction === 'TROCAR_CONTA'
+      ? 'Uma nova conta sera alocada para o usuario.'
+      : resolverAction === 'REEMBOLSAR_CARTEIRA'
+        ? 'O valor sera devolvido para a carteira do usuario.'
+        : 'O ticket sera fechado manualmente com mensagem opcional.';
 
   return (
     <div style={styles.container}>
@@ -309,20 +327,20 @@ export const TicketsPage = () => {
                     <div style={styles.actionsGrid}>
                       {contaProblematica && (
                         <button
-                          onClick={() => handleResolver('TROCAR_CONTA')}
+                          onClick={() => handleOpenResolverDialog('TROCAR_CONTA')}
                           style={{...styles.actionButton, ...styles.actionButtonSwap}}
                         >
                           🔁 Trocar Conta
                         </button>
                       )}
                       <button
-                        onClick={() => handleResolver('REEMBOLSAR_CARTEIRA')}
+                        onClick={() => handleOpenResolverDialog('REEMBOLSAR_CARTEIRA')}
                         style={{...styles.actionButton, ...styles.actionButtonRefund}}
                       >
                         💰 Reembolsar
                       </button>
                       <button
-                        onClick={() => handleResolver('FECHAR_MANUALMENTE')}
+                        onClick={() => handleOpenResolverDialog('FECHAR_MANUALMENTE')}
                         style={{...styles.actionButton, ...styles.actionButtonClose}}
                       >
                         ✓ Fechar Manual
@@ -335,6 +353,42 @@ export const TicketsPage = () => {
           </div>
         </div>
       </div>
+
+      {resolverAction && selectedTicket && (
+        <div style={styles.modalOverlay} onClick={handleCloseResolverDialog}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+            <div style={styles.modalHeader}>
+              <h3 style={styles.modalTitle}>{resolverDialogTitle}</h3>
+              <button onClick={handleCloseResolverDialog} style={styles.modalClose} disabled={isLoadingDetails}>
+                X
+              </button>
+            </div>
+            <div style={styles.modalBody}>
+              <p style={styles.modalText}>{resolverDialogDescription}</p>
+              {resolverAction === 'FECHAR_MANUALMENTE' && (
+                <div style={styles.inputGroup}>
+                  <label style={styles.inputLabel}>Mensagem para o usuario (opcional)</label>
+                  <textarea
+                    value={resolverMensagem}
+                    onChange={(e) => setResolverMensagem(e.target.value)}
+                    rows={4}
+                    style={styles.textarea}
+                    placeholder="Ex: Ticket fechado conforme orientacao no suporte."
+                  />
+                </div>
+              )}
+            </div>
+            <div style={styles.modalFooter}>
+              <button onClick={handleCloseResolverDialog} style={styles.modalCancelBtn} disabled={isLoadingDetails}>
+                Cancelar
+              </button>
+              <button onClick={handleResolver} style={styles.modalConfirmBtn} disabled={isLoadingDetails}>
+                {isLoadingDetails ? 'Processando...' : 'Confirmar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -653,4 +707,103 @@ const styles: Record<string, React.CSSProperties> = {
   actionButtonClose: {
     background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
   },
+  modalOverlay: {
+    position: 'fixed',
+    inset: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 9999,
+    padding: '20px',
+  },
+  modal: {
+    backgroundColor: '#fff',
+    borderRadius: '16px',
+    width: '100%',
+    maxWidth: '560px',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+    overflow: 'hidden',
+  },
+  modalHeader: {
+    padding: '20px 24px',
+    borderBottom: '1px solid #e5e7eb',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  modalTitle: {
+    margin: 0,
+    fontSize: '18px',
+    fontWeight: 700,
+    color: '#1a1d29',
+  },
+  modalClose: {
+    background: 'none',
+    border: 'none',
+    fontSize: '18px',
+    cursor: 'pointer',
+    color: '#6b7280',
+    padding: '4px',
+  },
+  modalBody: {
+    padding: '20px 24px',
+    display: 'grid',
+    gap: '14px',
+  },
+  modalText: {
+    margin: 0,
+    fontSize: '14px',
+    color: '#374151',
+    lineHeight: 1.5,
+  },
+  inputGroup: {
+    display: 'grid',
+    gap: '8px',
+  },
+  inputLabel: {
+    fontSize: '13px',
+    color: '#374151',
+    fontWeight: 600,
+  },
+  textarea: {
+    width: '100%',
+    border: '1px solid #d1d5db',
+    borderRadius: '8px',
+    padding: '10px 12px',
+    fontFamily: 'inherit',
+    fontSize: '14px',
+    resize: 'vertical',
+  },
+  modalFooter: {
+    padding: '16px 24px 20px',
+    borderTop: '1px solid #e5e7eb',
+    display: 'flex',
+    gap: '12px',
+    justifyContent: 'flex-end',
+  },
+  modalCancelBtn: {
+    padding: '10px 16px',
+    fontSize: '14px',
+    fontWeight: 600,
+    backgroundColor: '#f3f4f6',
+    color: '#1f2937',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+  },
+  modalConfirmBtn: {
+    padding: '10px 16px',
+    fontSize: '14px',
+    fontWeight: 600,
+    backgroundColor: '#3b82f6',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+  },
 };
+
+
+
+

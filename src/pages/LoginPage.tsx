@@ -1,24 +1,23 @@
 import { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { getApiErrorMessage } from '../utils/errors';
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [error, setError] = useState<string | null>(null);
-
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
     try {
       await login(email, senha);
       navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'Erro desconhecido');
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, 'Erro desconhecido.'));
     }
   };
 
@@ -27,7 +26,7 @@ export const LoginPage = () => {
       <div style={styles.loginBox}>
         <div style={styles.header}>
           <div style={styles.logoWrapper}>
-            <span style={styles.logoIcon}>🎬</span>
+            <span style={styles.logoIcon}>FS</span>
           </div>
           <h1 style={styles.title}>Ferreira Streamings</h1>
           <p style={styles.subtitle}>Painel Administrativo</p>
@@ -35,53 +34,47 @@ export const LoginPage = () => {
 
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Email</label>
+            <label htmlFor="login-email" style={styles.label}>
+              Email
+            </label>
             <input
+              id="login-email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(event) => setEmail(event.target.value)}
               required
               style={styles.input}
               placeholder="seu@email.com"
+              autoComplete="username"
             />
           </div>
 
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Senha</label>
+            <label htmlFor="login-password" style={styles.label}>
+              Senha
+            </label>
             <input
+              id="login-password"
               type="password"
               value={senha}
-              onChange={(e) => setSenha(e.target.value)}
+              onChange={(event) => setSenha(event.target.value)}
               required
               style={styles.input}
-              placeholder="••••••••"
+              placeholder="Digite sua senha"
+              autoComplete="current-password"
             />
           </div>
 
           {error && (
             <div style={styles.errorBox}>
-              <span style={styles.errorIcon}>⚠️</span>
               <span style={styles.errorText}>{error}</span>
             </div>
           )}
 
           <button type="submit" disabled={isLoading} style={styles.submitButton}>
-            {isLoading ? (
-              <>
-                <span style={styles.spinner}>⏳</span>
-                Entrando...
-              </>
-            ) : (
-              'Entrar no Painel'
-            )}
+            {isLoading ? 'Entrando...' : 'Entrar no Painel'}
           </button>
         </form>
-
-        <div style={styles.footer}>
-          <p style={styles.footerText}>
-            Sistema seguro e protegido 🔒
-          </p>
-        </div>
       </div>
     </div>
   );
@@ -95,7 +88,6 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'center',
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     padding: '20px',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   },
   loginBox: {
     width: '100%',
@@ -105,10 +97,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '40px',
     boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
   },
-  header: {
-    textAlign: 'center',
-    marginBottom: '32px',
-  },
+  header: { textAlign: 'center', marginBottom: '32px' },
   logoWrapper: {
     display: 'inline-flex',
     alignItems: 'center',
@@ -119,44 +108,18 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: '20px',
     marginBottom: '16px',
   },
-  logoIcon: {
-    fontSize: '48px',
-  },
-  title: {
-    margin: '0 0 8px 0',
-    fontSize: '28px',
-    fontWeight: 700,
-    color: '#1a1d29',
-  },
-  subtitle: {
-    margin: 0,
-    fontSize: '14px',
-    color: '#6b7280',
-    fontWeight: 500,
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-  },
-  inputGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  },
-  label: {
-    fontSize: '14px',
-    fontWeight: 600,
-    color: '#374151',
-  },
+  logoIcon: { fontSize: '24px', fontWeight: 700 },
+  title: { margin: '0 0 8px 0', fontSize: '28px', fontWeight: 700, color: '#1a1d29' },
+  subtitle: { margin: 0, fontSize: '14px', color: '#6b7280', fontWeight: 500 },
+  form: { display: 'flex', flexDirection: 'column', gap: '20px' },
+  inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
+  label: { fontSize: '14px', fontWeight: 600, color: '#374151' },
   input: {
     width: '100%',
     padding: '12px 16px',
     fontSize: '15px',
     border: '2px solid #e5e7eb',
     borderRadius: '8px',
-    outline: 'none',
-    transition: 'all 0.2s ease',
     backgroundColor: '#fff',
     color: '#1a1d29',
     boxSizing: 'border-box',
@@ -164,20 +127,12 @@ const styles: Record<string, React.CSSProperties> = {
   errorBox: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
     padding: '12px 16px',
     backgroundColor: '#fee2e2',
     border: '1px solid #fecaca',
     borderRadius: '8px',
   },
-  errorIcon: {
-    fontSize: '18px',
-  },
-  errorText: {
-    fontSize: '14px',
-    color: '#991b1b',
-    fontWeight: 500,
-  },
+  errorText: { fontSize: '14px', color: '#991b1b', fontWeight: 500 },
   submitButton: {
     width: '100%',
     padding: '14px',
@@ -188,22 +143,6 @@ const styles: Record<string, React.CSSProperties> = {
     border: 'none',
     borderRadius: '8px',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
-  },
-  spinner: {
-    animation: 'spin 1s linear infinite',
-  },
-  footer: {
-    marginTop: '24px',
-    textAlign: 'center',
-  },
-  footerText: {
-    margin: 0,
-    fontSize: '13px',
-    color: '#9ca3af',
   },
 };
+

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getDashboardKPIs, getTopProdutos, getRecentPedidos } from '../services/apiClient';
 import type { IDashboardRecentPedido } from '../types/api.types'; 
+import { getApiErrorMessage } from '../utils/errors';
 
 interface IKPIs {
   faturamento_24h: string;
@@ -34,9 +35,8 @@ export const DashboardPage = () => {
         setTopProdutos(topProdutosResponse.data);
         setRecentPedidos(recentPedidosResponse.data);
         setError(null);
-      } catch (err: any) {
-        console.error("Erro ao buscar dados do dashboard:", err);
-        setError("Falha ao carregar os dados do dashboard.");
+      } catch (err: unknown) {
+        setError(getApiErrorMessage(err, "Falha ao carregar os dados do dashboard."));
       } finally {
         setIsLoading(false);
       }
@@ -458,3 +458,4 @@ const styles: Record<string, React.CSSProperties> = {
     textAlign: 'center',
   },
 };
+

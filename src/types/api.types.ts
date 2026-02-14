@@ -148,3 +148,4 @@ export interface IContaMaeDetalhes extends IContaMae {
   senha: string | null;
   convites: IContaMaeConvite[];
 }
+

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getAdminEstoque, getAdminProdutos, createEstoque, updateEstoque, deleteEstoque } from '../services/apiClient';
+import { getApiErrorMessage } from '../utils/errors';
 
 interface IEstoque {
   id: string;
@@ -29,6 +30,7 @@ export const EstoquePage = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingEstoque, setEditingEstoque] = useState<IEstoque | null>(null);
   const [deletingEstoque, setDeletingEstoque] = useState<IEstoque | null>(null);
+  const [resolvingEstoque, setResolvingEstoque] = useState<IEstoque | null>(null);
 
   // Removido: filterProdutoId
   const [filterTerm, setFilterTerm] = useState<string>(''); // Novo campo de filtro por nome/login
@@ -85,18 +87,15 @@ export const EstoquePage = () => {
       return;
     }
 
-    const data: any = {
+    const data = {
       produto_id: selectedProdutoId,
       login: novoLogin,
+      senha: novaSenha,
       max_slots: novoMaxSlots,
       is_ativo: novoIsAtivo,
       data_expiracao: novoDataExpiracao || null,
       instrucoes_especificas: novasInstrucoes || null,
     };
-
-    if (novaSenha) {
-      data.senha = novaSenha;
-    }
 
     try {
       if (editingEstoque) {
@@ -120,9 +119,9 @@ export const EstoquePage = () => {
       }
       resetForm();
       carregarDados();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro ao salvar estoque:", err);
-      const errorMsg = err.response?.data?.detail || "Falha ao salvar estoque.";
+      const errorMsg = getApiErrorMessage(err, "Falha ao salvar estoque.");
       alert(`❌ Erro: ${errorMsg}`);
     }
   };
@@ -147,30 +146,28 @@ export const EstoquePage = () => {
       alert("✅ Conta excluída com sucesso!");
       setDeletingEstoque(null);
       carregarDados();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro ao excluir estoque:", err);
-      const errorMsg = err.response?.data?.detail || "Falha ao excluir conta.";
+      const errorMsg = getApiErrorMessage(err, "Falha ao excluir conta.");
       alert(`❌ ${errorMsg}`);
       setDeletingEstoque(null);
     }
   };
 
-  const handleMarkAsResolved = async (estoqueId: string) => {
-    if (!window.confirm("Tem certeza que deseja marcar esta conta como 'resolvida'? A flag 'Requer Atenção' será removida.")) {
-      return;
-    }
+  const handleMarkAsResolved = async () => {
+    if (!resolvingEstoque) return;
 
     try {
-      await updateEstoque(estoqueId, { requer_atencao: false });
-      alert("✅ Conta marcada como resolvida!");
+      await updateEstoque(resolvingEstoque.id, { requer_atencao: false });
+      alert("Conta marcada como resolvida!");
+      setResolvingEstoque(null);
       carregarDados();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro ao marcar como resolvido:", err);
-      const errorMsg = err.response?.data?.detail || "Falha ao atualizar conta.";
-      alert(`❌ Erro: ${errorMsg}`);
+      const errorMsg = getApiErrorMessage(err, "Falha ao atualizar conta.");
+      alert(`Erro: ${errorMsg}`);
     }
   };
-
   const getProdutoNome = (produtoId: string): string => {
     const produto = produtos.find(p => p.id === produtoId);
     return produto ? produto.nome : 'Produto Desconhecido';
@@ -288,7 +285,8 @@ export const EstoquePage = () => {
                   Senha {editingEstoque && '(deixe vazio para não alterar)'}
                 </label>
                 <input
-                  type="password"
+                  type="text"
+                  autoComplete="off"
                   value={novaSenha}
                   onChange={(e) => setNovaSenha(e.target.value)}
                   required={!editingEstoque}
@@ -531,7 +529,7 @@ export const EstoquePage = () => {
                 <div style={styles.actionButtons}>
                   {item.requer_atencao && (
                     <button
-                      onClick={() => handleMarkAsResolved(item.id)}
+                      onClick={() => setResolvingEstoque(item)}
                       style={{...styles.actionBtn, ...styles.resolveBtn}}
                       title="Marcar como resolvido"
                     >
@@ -562,7 +560,7 @@ export const EstoquePage = () => {
       {/* Delete Confirmation Modal */}
       {deletingEstoque && (
         <div style={styles.modalOverlay} onClick={() => setDeletingEstoque(null)}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div style={styles.modalHeader}>
               <h3 style={styles.modalTitle}>⚠️ Confirmar Exclusão</h3>
               <button onClick={() => setDeletingEstoque(null)} style={styles.modalClose}>✕</button>
@@ -596,6 +594,36 @@ export const EstoquePage = () => {
           </div>
         </div>
       )}
+
+      {resolvingEstoque && (
+        <div style={styles.modalOverlay} onClick={() => setResolvingEstoque(null)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+            <div style={styles.modalHeader}>
+              <h3 style={styles.modalTitle}>Confirmar Resolucao</h3>
+              <button onClick={() => setResolvingEstoque(null)} style={styles.modalClose}>X</button>
+            </div>
+            <div style={styles.modalBody}>
+              <p style={styles.modalText}>
+                Marcar a conta <strong>{resolvingEstoque.login}</strong> como resolvida?
+              </p>
+              <div style={styles.warningBox}>
+                <span style={styles.warningIcon}>i</span>
+                <p style={styles.warningText}>
+                  A flag "Requer Atencao" sera removida e a conta volta para o fluxo normal.
+                </p>
+              </div>
+            </div>
+            <div style={styles.modalFooter}>
+              <button onClick={() => setResolvingEstoque(null)} style={styles.modalCancelBtn}>
+                Cancelar
+              </button>
+              <button onClick={handleMarkAsResolved} style={styles.resolveConfirmBtn}>
+                Sim, Resolver
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -617,7 +645,7 @@ const styles: Record<string, React.CSSProperties> = {
   inputRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
   label: { fontSize: '14px', fontWeight: 600, color: '#374151' },
-  input: { padding: '12px 16px', fontSize: '15px', border: '2px solid #e5e7eb', borderRadius: '8px', outline: 'none', width: '100%', fontFamily: 'inherit' },
+  input: { padding: '12px 16px', fontSize: '15px', border: '2px solid #e5e7eb', borderRadius: '8px', width: '100%', fontFamily: 'inherit' },
   inputHint: { fontSize: '12px', color: '#6b7280', fontStyle: 'italic' },
   formActions: { display: 'flex', gap: '12px', justifyContent: 'flex-end' },
   cancelButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#f5f7fa', color: '#1a1d29', border: 'none', borderRadius: '8px', cursor: 'pointer' },
@@ -677,6 +705,7 @@ const styles: Record<string, React.CSSProperties> = {
     backgroundColor: '#d1fae5', 
     color: '#065f46',
   },
+  resolveConfirmBtn: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
 
   editBtn: { backgroundColor: '#dbeafe', color: '#1e40af' },
   deleteBtn: { backgroundColor: '#fee2e2', color: '#991b1b' },
@@ -698,3 +727,7 @@ const styles: Record<string, React.CSSProperties> = {
   modalCancelBtn: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#f5f7fa', color: '#1a1d29', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   modalDeleteBtn: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
 };
+
+
+
+

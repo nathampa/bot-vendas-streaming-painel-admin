@@ -1,6 +1,26 @@
-import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
+import { useState, type CSSProperties } from 'react';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useState } from 'react';
+
+type MenuItem = {
+  path: string;
+  icon: string;
+  label: string;
+};
+
+const menuItems: MenuItem[] = [
+  { path: '/dashboard', icon: 'DB', label: 'Dashboard' },
+  { path: '/produtos', icon: 'PR', label: 'Produtos' },
+  { path: '/estoque', icon: 'ES', label: 'Estoque' },
+  { path: '/contas-mae', icon: 'CM', label: 'Contas Mae' },
+  { path: '/tickets', icon: 'TK', label: 'Tickets' },
+  { path: '/pedidos', icon: 'PD', label: 'Pedidos' },
+  { path: '/usuarios', icon: 'US', label: 'Usuarios' },
+  { path: '/recargas', icon: 'RC', label: 'Recargas' },
+  { path: '/giftcards', icon: 'GC', label: 'Gift Cards' },
+  { path: '/sugestoes', icon: 'SG', label: 'Sugestoes' },
+  { path: '/configuracoes', icon: 'CF', label: 'Configuracoes' },
+];
 
 export const AdminLayout = () => {
   const { logout } = useAuth();
@@ -8,40 +28,21 @@ export const AdminLayout = () => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const currentPageLabel = menuItems.find((item) => item.path === location.pathname)?.label ?? 'Admin';
+
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  const isActive = (path: string) => location.pathname === path;
-
-  const menuItems = [
-    { path: '/dashboard', icon: '📊', label: 'Dashboard' },
-    { path: '/produtos', icon: '🛍️', label: 'Produtos' },
-    { path: '/estoque', icon: '📦', label: 'Estoque' },
-    { path: '/contas-mae', icon: '👩‍💼', label: 'Contas Mãe' },
-    { path: '/tickets', icon: '🎟️', label: 'Tickets' },
-    { path: '/pedidos', icon: '🧾', label: 'Pedidos' },
-    { path: '/usuarios', icon: '👥', label: 'Usuários' },
-    { path: '/recargas', icon: '💰', label: 'Recargas' },
-    { path: '/giftcards', icon: '🎁', label: 'Gift Cards' },
-    { path: '/sugestoes', icon: '💡', label: 'Sugestões' },
-    { path: '/configuracoes', icon: '⚙️', label: 'Configurações' }
-  ];
-
   return (
     <div style={styles.container}>
-      {/* Inject mobile styles */}
       <style>{mobileStyles}</style>
 
-      {/* Sidebar */}
-      <aside 
-        className={`sidebar-mobile ${sidebarOpen ? 'open' : ''}`}
-        style={styles.sidebar}
-      >
+      <aside id="admin-sidebar" className={`sidebar-mobile ${sidebarOpen ? 'open' : ''}`} style={styles.sidebar}>
         <div style={styles.sidebarHeader}>
           <div style={styles.logo}>
-            <span style={styles.logoIcon}>🎬</span>
+            <span style={styles.logoIcon}>FS</span>
             <div style={styles.logoText}>
               <h2 style={styles.logoTitle}>Ferreira Streamings</h2>
               <p style={styles.logoSubtitle}>Painel Admin</p>
@@ -49,63 +50,56 @@ export const AdminLayout = () => {
           </div>
         </div>
 
-        <nav style={styles.nav}>
-          {menuItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              style={{
-                ...styles.navLink,
-                ...(isActive(item.path) ? styles.navLinkActive : {}),
-              }}
-              onClick={() => setSidebarOpen(false)}
-            >
-              <span style={styles.navIcon}>{item.icon}</span>
-              <span>{item.label}</span>
-            </Link>
-          ))}
+        <nav style={styles.nav} aria-label="Navegacao principal do painel">
+          {menuItems.map((item) => {
+            const active = location.pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                aria-current={active ? 'page' : undefined}
+                style={{ ...styles.navLink, ...(active ? styles.navLinkActive : {}) }}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <span style={styles.navIcon}>{item.icon}</span>
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
 
         <div style={styles.sidebarFooter}>
-          <button onClick={handleLogout} style={styles.logoutButton}>
-            <span style={styles.navIcon}>🚪</span>
+          <button onClick={handleLogout} style={styles.logoutButton} aria-label="Sair da conta">
+            <span style={styles.navIcon}>OUT</span>
             <span>Sair</span>
           </button>
         </div>
       </aside>
 
-      {/* Overlay para mobile */}
       {sidebarOpen && (
-        <div 
-          className="overlay-mobile"
-          style={styles.overlay} 
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="overlay-mobile" style={styles.overlay} onClick={() => setSidebarOpen(false)} aria-hidden="true" />
       )}
 
-      {/* Main Content */}
       <div className="main-wrapper-mobile" style={styles.mainWrapper}>
-        {/* Top Bar */}
         <header style={styles.topBar}>
-          <button 
+          <button
             className="menu-button-mobile"
             style={styles.menuButton}
-            onClick={() => setSidebarOpen(!sidebarOpen)}
+            onClick={() => setSidebarOpen((current) => !current)}
+            aria-label="Abrir menu lateral"
+            aria-expanded={sidebarOpen}
+            aria-controls="admin-sidebar"
           >
-            ☰
+            MENU
           </button>
           <div style={styles.topBarContent}>
-            <h1 style={styles.pageTitle}>
-              {menuItems.find(item => item.path === location.pathname)?.label || 'Admin'}
-            </h1>
+            <h1 style={styles.pageTitle}>{currentPageLabel}</h1>
             <div style={styles.userInfo}>
-              <span style={styles.userIcon}>👤</span>
               <span style={styles.userName}>Administrador</span>
             </div>
           </div>
         </header>
 
-        {/* Page Content */}
         <main style={styles.content}>
           <Outlet />
         </main>
@@ -114,7 +108,7 @@ export const AdminLayout = () => {
   );
 };
 
-const styles: Record<string, React.CSSProperties> = {
+const styles: Record<string, CSSProperties> = {
   container: {
     display: 'flex',
     minHeight: '100vh',
@@ -147,10 +141,15 @@ const styles: Record<string, React.CSSProperties> = {
     gap: '12px',
   },
   logoIcon: {
-    fontSize: '32px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: '42px',
+    height: '42px',
+    borderRadius: '10px',
+    backgroundColor: '#2d3142',
+    display: 'grid',
+    placeItems: 'center',
+    fontSize: '12px',
+    fontWeight: 700,
+    letterSpacing: 1,
   },
   logoText: {
     flex: 1,
@@ -181,7 +180,7 @@ const styles: Record<string, React.CSSProperties> = {
     textDecoration: 'none',
     color: '#8b92a7',
     borderRadius: '8px',
-    transition: 'all 0.2s ease',
+    transition: 'background-color 0.2s ease, color 0.2s ease',
     fontSize: '14px',
     fontWeight: 500,
   },
@@ -190,11 +189,11 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#fff',
   },
   navIcon: {
-    fontSize: '18px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    fontSize: '11px',
+    fontWeight: 700,
     width: '24px',
+    textAlign: 'center',
+    letterSpacing: 0.4,
   },
   sidebarFooter: {
     padding: '20px 12px',
@@ -213,7 +212,7 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
     fontSize: '14px',
     fontWeight: 500,
-    transition: 'all 0.2s ease',
+    transition: 'background-color 0.2s ease, color 0.2s ease',
   },
   mainWrapper: {
     flex: 1,
@@ -236,8 +235,9 @@ const styles: Record<string, React.CSSProperties> = {
   menuButton: {
     display: 'none',
     backgroundColor: 'transparent',
-    border: 'none',
-    fontSize: '24px',
+    border: '1px solid #d1d5db',
+    fontSize: '12px',
+    fontWeight: 700,
     cursor: 'pointer',
     padding: '8px',
     color: '#1a1d29',
@@ -257,13 +257,9 @@ const styles: Record<string, React.CSSProperties> = {
   userInfo: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
-    padding: '8px 16px',
+    padding: '8px 12px',
     backgroundColor: '#f5f7fa',
     borderRadius: '8px',
-  },
-  userIcon: {
-    fontSize: '18px',
   },
   userName: {
     fontSize: '14px',
@@ -283,7 +279,6 @@ const styles: Record<string, React.CSSProperties> = {
   },
 };
 
-// Estilos responsivos para mobile via CSS-in-JS
 const mobileStyles = `
   @media (max-width: 768px) {
     .sidebar-mobile {
@@ -303,3 +298,4 @@ const mobileStyles = `
     }
   }
 `;
+

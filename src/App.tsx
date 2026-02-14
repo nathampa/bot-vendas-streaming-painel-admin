@@ -1,40 +1,39 @@
-import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
+import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
+import { AdminLayout } from './components/AdminLayout';
 import { useAuth } from './contexts/AuthContext';
 
-// 1. Importa o Layout
-import { AdminLayout } from './components/AdminLayout';
+const LoginPage = lazy(() => import('./pages/LoginPage').then((m) => ({ default: m.LoginPage })));
+const DashboardPage = lazy(() =>
+  import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })),
+);
+const ProdutosPage = lazy(() => import('./pages/ProdutosPage').then((m) => ({ default: m.ProdutosPage })));
+const EstoquePage = lazy(() => import('./pages/EstoquePage').then((m) => ({ default: m.EstoquePage })));
+const ContasMaePage = lazy(() =>
+  import('./pages/ContasMaePage').then((m) => ({ default: m.ContasMaePage })),
+);
+const TicketsPage = lazy(() => import('./pages/TicketsPage').then((m) => ({ default: m.TicketsPage })));
+const PedidosPage = lazy(() => import('./pages/PedidosPage').then((m) => ({ default: m.PedidosPage })));
+const GiftCardsPage = lazy(() =>
+  import('./pages/GiftCardsPage').then((m) => ({ default: m.GiftCardsPage })),
+);
+const SugestoesPage = lazy(() =>
+  import('./pages/SugestoesPage').then((m) => ({ default: m.SugestoesPage })),
+);
+const UsuariosPage = lazy(() => import('./pages/UsuariosPage').then((m) => ({ default: m.UsuariosPage })));
+const RecargasPage = lazy(() => import('./pages/RecargasPage').then((m) => ({ default: m.RecargasPage })));
+const ConfiguracoesPage = lazy(() =>
+  import('./pages/ConfiguracoesPage').then((m) => ({ default: m.ConfiguracoesPage })),
+);
 
-// 2. Importa todas as nossas Páginas
-import { LoginPage } from './pages/LoginPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { ProdutosPage } from './pages/ProdutosPage';
-import { EstoquePage } from './pages/EstoquePage';
-import { TicketsPage } from './pages/TicketsPage';
-import { PedidosPage } from './pages/PedidosPage';
-import { GiftCardsPage } from './pages/GiftCardsPage'; 
-import { SugestoesPage } from './pages/SugestoesPage';
-import { UsuariosPage } from './pages/UsuariosPage';
-import { RecargasPage } from './pages/RecargasPage';
-import { ConfiguracoesPage } from './pages/ConfiguracoesPage';
-import { ContasMaePage } from './pages/ContasMaePage';
-
-
-/**
- * Componente "Protetor" (Wrapper)
- * (Exatamente o mesmo de antes)
- */
 const ProtectedRoute = () => {
   const { isAdmin, token } = useAuth();
   if (!isAdmin || !token) {
     return <Navigate to="/login" replace />;
   }
-  return <Outlet />; // Renderiza as rotas "filhas"
+  return <Outlet />;
 };
 
-/**
- * Componente "Público"
- * (Exatamente o mesmo de antes)
- */
 const PublicRoute = () => {
   const { isAdmin } = useAuth();
   if (isAdmin) {
@@ -43,47 +42,42 @@ const PublicRoute = () => {
   return <Outlet />;
 };
 
-/**
- * Componente principal da Aplicação (Atualizado)
- */
+const PageFallback = () => (
+  <div style={{ display: 'grid', placeItems: 'center', minHeight: '40vh', color: '#6b7280' }}>
+    Carregando pagina...
+  </div>
+);
+
 function App() {
   return (
-    <Routes>
-      {/* Rota de Login (Pública) */}
-      <Route element={<PublicRoute />}>
-        <Route path="/login" element={<LoginPage />} />
-      </Route>
-
-      {/* Rotas Protegidas (Privadas do Admin) */}
-      <Route element={<ProtectedRoute />}>
-        <Route element={<AdminLayout />}> 
-
-          {/* Rotas existentes */}
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/produtos" element={<ProdutosPage />} />
-          <Route path="/estoque" element={<EstoquePage />} />
-          <Route path="/contas-mae" element={<ContasMaePage />} />
-          <Route path="/tickets" element={<TicketsPage />} />
-          <Route path="/giftcards" element={<GiftCardsPage />} />
-          <Route path="/sugestoes" element={<SugestoesPage />} />
-          <Route path="/pedidos" element={<PedidosPage />} />
-          <Route path="/usuarios" element={<UsuariosPage />} />
-          <Route path="/recargas" element={<RecargasPage />} />
-          <Route path="/configuracoes" element={<ConfiguracoesPage />} />
-
-          {/* Rota de fallback (índice) */}
-          <Route index element={<Navigate to="/dashboard" replace />} />
-
+    <Suspense fallback={<PageFallback />}>
+      <Routes>
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<LoginPage />} />
         </Route>
-      </Route>
 
-      {/* Rota Padrão (Catch-all) */}
-      <Route 
-        path="*"
-        element={<Navigate to="/login" replace />}
-      />
-    </Routes>
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/produtos" element={<ProdutosPage />} />
+            <Route path="/estoque" element={<EstoquePage />} />
+            <Route path="/contas-mae" element={<ContasMaePage />} />
+            <Route path="/tickets" element={<TicketsPage />} />
+            <Route path="/giftcards" element={<GiftCardsPage />} />
+            <Route path="/sugestoes" element={<SugestoesPage />} />
+            <Route path="/pedidos" element={<PedidosPage />} />
+            <Route path="/usuarios" element={<UsuariosPage />} />
+            <Route path="/recargas" element={<RecargasPage />} />
+            <Route path="/configuracoes" element={<ConfiguracoesPage />} />
+            <Route index element={<Navigate to="/dashboard" replace />} />
+          </Route>
+        </Route>
+
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </Suspense>
   );
 }
 
 export default App;
+

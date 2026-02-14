@@ -129,6 +129,11 @@ button:disabled {
   cursor: not-allowed;
 }
 
+:focus-visible {
+  outline: 3px solid rgba(59, 130, 246, 0.45);
+  outline-offset: 2px;
+}
+
 /* Inputs */
 input, select, textarea {
   font-family: inherit;
@@ -276,3 +281,4 @@ tbody tr:last-child td {
   }
   */
 }
+

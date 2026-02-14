@@ -9,6 +9,7 @@ import {
   addContaMaeConvite,
 } from '../services/apiClient';
 import type { IContaMae, IContaMaeDetalhes } from '../types/api.types';
+import { getApiErrorMessage } from '../utils/errors';
 
 interface IProduto {
   id: string;
@@ -89,7 +90,7 @@ export const ContasMaePage = () => {
 
     try {
       if (editingConta) {
-        const updateData: any = {
+        const updateData: Record<string, unknown> = {
           login: novoLogin,
           max_slots: novoMaxSlots,
           data_expiracao: novoDataExpiracao || null,
@@ -116,9 +117,9 @@ export const ContasMaePage = () => {
 
       resetForm();
       carregarDados();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erro ao salvar conta mãe:', err);
-      const errorMsg = err.response?.data?.detail || 'Falha ao salvar conta mãe.';
+      const errorMsg = getApiErrorMessage(err, 'Falha ao salvar conta mae.');
       alert(`❌ Erro: ${errorMsg}`);
     }
   };
@@ -141,9 +142,9 @@ export const ContasMaePage = () => {
       alert('✅ Conta mãe excluída com sucesso!');
       setDeletingConta(null);
       carregarDados();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erro ao excluir conta mãe:', err);
-      const errorMsg = err.response?.data?.detail || 'Falha ao excluir conta mãe.';
+      const errorMsg = getApiErrorMessage(err, 'Falha ao excluir conta mae.');
       alert(` ${errorMsg}`);
       setDeletingConta(null);
     }
@@ -155,9 +156,9 @@ export const ContasMaePage = () => {
       const response = await getContaMaeDetalhes(contaId);
       setSelectedConta(response.data);
       setInviteEmail('');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erro ao buscar detalhes:', err);
-      const errorMsg = err.response?.data?.detail || 'Falha ao carregar detalhes.';
+      const errorMsg = getApiErrorMessage(err, 'Falha ao carregar detalhes da conta mae.');
       alert(`❌ Erro: ${errorMsg}`);
     } finally {
       setIsLoadingDetails(false);
@@ -177,9 +178,9 @@ export const ContasMaePage = () => {
       setSelectedConta(updated.data);
       setInviteEmail('');
       carregarDados();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erro ao adicionar convite:', err);
-      const errorMsg = err.response?.data?.detail || 'Falha ao adicionar convite.';
+      const errorMsg = getApiErrorMessage(err, 'Falha ao adicionar convite.');
       alert(` ${errorMsg}`);
     }
   };
@@ -270,7 +271,8 @@ export const ContasMaePage = () => {
                   Senha {editingConta && '(deixe vazio para no alterar)'}
                 </label>
                 <input
-                  type="password"
+                  type="text"
+                  autoComplete="off"
                   value={novaSenha}
                   onChange={(e) => setNovaSenha(e.target.value)}
                   required={!editingConta}
@@ -462,7 +464,7 @@ export const ContasMaePage = () => {
 
       {selectedConta && (
         <div style={styles.modalOverlay} onClick={() => setSelectedConta(null)}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div style={styles.modalHeader}>
               <h3 style={styles.modalTitle}>👩‍💼 Conta Mãe</h3>
               <button onClick={() => setSelectedConta(null)} style={styles.modalClose}></button>
@@ -547,7 +549,7 @@ export const ContasMaePage = () => {
 
       {deletingConta && (
         <div style={styles.modalOverlay} onClick={() => setDeletingConta(null)}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div style={styles.modalHeader}>
               <h3 style={styles.modalTitle}> Confirmar Excluso</h3>
               <button onClick={() => setDeletingConta(null)} style={styles.modalClose}></button>
@@ -595,7 +597,7 @@ const styles: Record<string, React.CSSProperties> = {
   inputRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
   label: { fontSize: '14px', fontWeight: 600, color: '#374151' },
-  input: { padding: '12px 16px', fontSize: '15px', border: '2px solid #e5e7eb', borderRadius: '8px', outline: 'none', width: '100%', fontFamily: 'inherit' },
+  input: { padding: '12px 16px', fontSize: '15px', border: '2px solid #e5e7eb', borderRadius: '8px', width: '100%', fontFamily: 'inherit' },
   inputHint: { fontSize: '12px', color: '#6b7280', fontStyle: 'italic' },
   formActions: { display: 'flex', gap: '12px', justifyContent: 'flex-end' },
   cancelButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#f5f7fa', color: '#1a1d29', border: 'none', borderRadius: '8px', cursor: 'pointer' },
@@ -658,3 +660,6 @@ const styles: Record<string, React.CSSProperties> = {
   modalCancelBtn: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#f5f7fa', color: '#1a1d29', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   modalDeleteBtn: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
 };
+
+
+

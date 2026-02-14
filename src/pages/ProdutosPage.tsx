@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getAdminProdutos, createProduto, updateProduto, deleteProduto } from '../services/apiClient';
+import { getApiErrorMessage } from '../utils/errors';
 
 // Interface do Produto
 interface IProduto {
@@ -84,9 +85,9 @@ export const ProdutosPage = () => {
       }
       resetForm();
       carregarProdutos(); // A API já retorna a lista ordenada
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro ao salvar produto:", err);
-      const errorMsg = err.response?.data?.detail || "Falha ao salvar produto.";
+      const errorMsg = getApiErrorMessage(err, "Falha ao salvar produto.");
       alert(`❌ Erro: ${errorMsg}`);
     }
   };
@@ -109,9 +110,9 @@ export const ProdutosPage = () => {
       alert("✅ Produto excluído com sucesso!");
       setDeletingProduct(null);
       carregarProdutos();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro ao excluir produto:", err);
-      const errorMsg = err.response?.data?.detail || "Falha ao excluir produto.";
+      const errorMsg = getApiErrorMessage(err, "Falha ao excluir produto.");
       alert(`❌ ${errorMsg}`);
       setDeletingProduct(null);
     }
@@ -364,7 +365,7 @@ export const ProdutosPage = () => {
       {/* Delete Confirmation Modal */}
       {deletingProduct && (
         <div style={styles.modalOverlay} onClick={() => setDeletingProduct(null)}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div style={styles.modalHeader}>
               <h3 style={styles.modalTitle}>⚠️ Confirmar Exclusão</h3>
               <button onClick={() => setDeletingProduct(null)} style={styles.modalClose}>✕</button>
@@ -424,7 +425,6 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '15px',
     border: '2px solid #e5e7eb',
     borderRadius: '8px',
-    outline: 'none',
     width: '100%',
   },
   filterSelect: {
@@ -434,7 +434,6 @@ const styles: Record<string, React.CSSProperties> = {
     border: '2px solid #e5e7eb',
     borderRadius: '8px',
     backgroundColor: '#fff',
-    outline: 'none',
     width: '100%',
   },
   
@@ -445,7 +444,7 @@ const styles: Record<string, React.CSSProperties> = {
   inputRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
   label: { fontSize: '14px', fontWeight: 600, color: '#374151' },
-  input: { padding: '12px 16px', fontSize: '15px', border: '2px solid #e5e7eb', borderRadius: '8px', outline: 'none', width: '100%', fontFamily: 'inherit' },
+  input: { padding: '12px 16px', fontSize: '15px', border: '2px solid #e5e7eb', borderRadius: '8px', width: '100%', fontFamily: 'inherit' },
   inputHint: { fontSize: '12px', color: '#6b7280', fontStyle: 'italic' },
   formActions: { display: 'flex', gap: '12px', justifyContent: 'flex-end' },
   cancelButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#f5f7fa', color: '#1a1d29', border: 'none', borderRadius: '8px', cursor: 'pointer' },
@@ -511,3 +510,4 @@ const styles: Record<string, React.CSSProperties> = {
   modalCancelBtn: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#f5f7fa', color: '#1a1d29', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   modalDeleteBtn: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
 };
+

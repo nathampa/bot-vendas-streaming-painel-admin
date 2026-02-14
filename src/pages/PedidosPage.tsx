@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getAdminPedidos, getPedidoDetalhes, entregarPedidoManual } from '../services/apiClient';
 import type { IPedidoAdminList, IPedidoAdminDetails } from '../types/api.types';
+import { getApiErrorMessage } from '../utils/errors';
 
 export const PedidosPage = () => {
   const [pedidos, setPedidos] = useState<IPedidoAdminList[]>([]);
@@ -37,9 +38,9 @@ export const PedidosPage = () => {
     try {
       const response = await getPedidoDetalhes(pedidoId);
       setSelectedPedido(response.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro ao buscar detalhes:", err);
-      const errorMsg = err.response?.data?.detail || "Falha ao carregar detalhes.";
+      const errorMsg = getApiErrorMessage(err, "Falha ao carregar detalhes.");
       alert(`❌ Erro: ${errorMsg}`);
     } finally {
       setIsLoadingDetails(false);
@@ -102,9 +103,9 @@ export const PedidosPage = () => {
       handleCloseEntregaModal();
       carregarPedidos(); // Recarrega a lista para atualizar o status
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro ao entregar pedido:", err);
-      const errorMsg = err.response?.data?.detail || "Falha ao realizar entrega.";
+      const errorMsg = getApiErrorMessage(err, "Falha ao realizar entrega.");
       alert(`❌ Erro: ${errorMsg}`);
     } finally {
       setIsEntregaLoading(false);
@@ -222,7 +223,7 @@ export const PedidosPage = () => {
       {/* Modal de Detalhes do Pedido (MODIFICADO) */}
       {(selectedPedido || isLoadingDetails) && (
         <div style={styles.modalOverlay} onClick={() => !isLoadingDetails && setSelectedPedido(null)}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div style={styles.modalHeader}>
               <h3 style={styles.modalTitle}>🧾 Detalhes do Pedido</h3>
               <button onClick={() => setSelectedPedido(null)} style={styles.modalClose}>✕</button>
@@ -327,7 +328,7 @@ export const PedidosPage = () => {
       {/* Novo Modal: Entrega Manual */}
       {entregaModalPedido && (
         <div style={styles.modalOverlay} onClick={handleCloseEntregaModal}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <form onSubmit={handleSubmitEntrega}>
               <div style={styles.modalHeader}>
                 <h3 style={styles.modalTitle}>🚚 Realizar Entrega Manual</h3>
@@ -470,7 +471,6 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '15px', 
     border: '2px solid #e5e7eb', 
     borderRadius: '8px', 
-    outline: 'none', 
     width: '100%', 
     fontFamily: 'inherit' 
   },
@@ -532,3 +532,5 @@ const styles: Record<string, React.CSSProperties> = {
   copyButton: { background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', padding: '4px' },
   idFooter: { marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #e5e7eb', fontSize: '12px', color: '#9ca3af', textAlign: 'center' },
 };
+
+
