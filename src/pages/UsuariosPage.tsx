@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
+import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
+import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
+import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import { getAdminUsuarios } from '../services/apiClient';
 import type { IUsuarioAdminList } from '../types/api.types';
+import { MetricCard, PageHeader } from '../components/UI';
 
 export const UsuariosPage = () => {
   const [usuarios, setUsuarios] = useState<IUsuarioAdminList[]>([]);
@@ -34,6 +40,9 @@ export const UsuariosPage = () => {
       });
   };
 
+  const saldoTotal = usuarios.reduce((soma, user) => soma + Number(user.saldo_carteira || 0), 0);
+  const totalCompras = usuarios.reduce((soma, user) => soma + Number(user.total_pedidos || 0), 0);
+
   if (isLoading) {
     return (
       <div style={styles.loadingContainer}>
@@ -45,17 +54,21 @@ export const UsuariosPage = () => {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div>
-          <h1 style={styles.title}>👥 Usuários do Sistema</h1>
-          <p style={styles.subtitle}>Lista de todos os clientes cadastrados</p>
-        </div>
+      <PageHeader
+        title="Usuários do Sistema"
+        subtitle="Lista de todos os clientes cadastrados."
+        icon={<GroupOutlinedIcon fontSize="small" />}
+      />
+
+      <div style={styles.statsGrid}>
+        <MetricCard label="Usuários" value={usuarios.length} icon={<PersonOutlineOutlinedIcon fontSize="small" />} tone="info" />
+        <MetricCard label="Saldo total" value={`R$ ${saldoTotal.toFixed(2)}`} icon={<PaidOutlinedIcon fontSize="small" />} tone="success" />
+        <MetricCard label="Total compras" value={totalCompras} icon={<ShoppingCartOutlinedIcon fontSize="small" />} tone="warning" />
       </div>
       
       {error && (
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>⚠️</span>
+          <span style={styles.alertIcon}><ErrorOutlineOutlinedIcon sx={{ fontSize: 18 }} /></span>
           <span>{error}</span>
         </div>
       )}
@@ -64,7 +77,7 @@ export const UsuariosPage = () => {
       <div style={styles.tableContainer}>
         {usuarios.length === 0 ? (
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>👥</span>
+            <span style={styles.emptyIcon}><GroupOutlinedIcon sx={{ fontSize: 52 }} /></span>
             <h3 style={styles.emptyTitle}>Nenhum usuário encontrado</h3>
             <p style={styles.emptyText}>Quando novos usuários se registrarem, eles aparecerão aqui.</p>
           </div>
@@ -105,6 +118,7 @@ const styles: Record<string, React.CSSProperties> = {
   loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '16px' },
   spinner: { width: '48px', height: '48px', border: '4px solid var(--border-subtle)', borderTop: '4px solid var(--brand-500)', borderRadius: '50%', animation: 'spin 1s linear infinite' },
   loadingText: { fontSize: '16px', color: 'var(--text-secondary)' },
+  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' },
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' },
   title: { margin: '0 0 4px 0', fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)' },
   subtitle: { margin: 0, fontSize: '15px', color: 'var(--text-secondary)' },

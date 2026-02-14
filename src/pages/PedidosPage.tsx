@@ -1,8 +1,18 @@
 import { useState, useEffect } from 'react';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import PendingActionsOutlinedIcon from '@mui/icons-material/PendingActionsOutlined';
+import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import KeyOutlinedIcon from '@mui/icons-material/KeyOutlined';
+import AlternateEmailOutlinedIcon from '@mui/icons-material/AlternateEmailOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import { getAdminPedidos, getPedidoDetalhes, entregarPedidoManual } from '../services/apiClient';
 import type { IPedidoAdminList, IPedidoAdminDetails } from '../types/api.types';
 import { useToast } from '../contexts/ToastContext';
 import { getApiErrorMessage } from '../utils/errors';
+import { MetricCard, PageHeader } from '../components/UI';
 
 export const PedidosPage = () => {
   const { showToast } = useToast();
@@ -74,7 +84,7 @@ export const PedidosPage = () => {
 
   const copyToClipboard = async (text: string, label: string) => {
     if (!text) {
-      showToast(`Nao ha ${label} para copiar.`, 'warning');
+      showToast(`Não há ${label} para copiar.`, 'warning');
       return;
     }
 
@@ -126,10 +136,13 @@ export const PedidosPage = () => {
   // Nova função para badge de status
   const getStatusBadge = (status: 'ENTREGUE' | 'PENDENTE') => {
     if (status === 'PENDENTE') {
-      return <span style={{...styles.badge, ...styles.badgeWarning}}>⏳ Pendente</span>;
+      return <span style={{...styles.badge, ...styles.badgeWarning}}>Pendente</span>;
     }
-    return <span style={{...styles.badge, ...styles.badgeSuccess}}>✅ Entregue</span>;
+    return <span style={{...styles.badge, ...styles.badgeSuccess}}>Entregue</span>;
   };
+
+  const pedidosPendentes = pedidos.filter((pedido) => pedido.status_entrega === 'PENDENTE').length;
+  const pedidosEntregues = pedidos.filter((pedido) => pedido.status_entrega === 'ENTREGUE').length;
 
   if (isLoadingList) {
     return (
@@ -142,19 +155,23 @@ export const PedidosPage = () => {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div>
-          <h1 style={styles.title}>🧾 Pedidos</h1>
-          <p style={styles.subtitle}>Histórico de todas as vendas realizadas</p>
-        </div>
+      <PageHeader
+        title="Pedidos"
+        subtitle="Historico de todas as vendas realizadas."
+        icon={<ReceiptLongOutlinedIcon fontSize="small" />}
+      />
+
+      <div style={styles.statsGrid}>
+        <MetricCard label="Total" value={pedidos.length} icon={<ReceiptLongOutlinedIcon fontSize="small" />} tone="info" />
+        <MetricCard label="Pendentes" value={pedidosPendentes} icon={<PendingActionsOutlinedIcon fontSize="small" />} tone="warning" />
+        <MetricCard label="Entregues" value={pedidosEntregues} icon={<CheckCircleOutlineOutlinedIcon fontSize="small" />} tone="success" />
       </div>
       
       {/* Error Alert */}
       {error && (
         // ... (bloco error, sem alteração) ...
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>⚠️</span>
+          <span style={styles.alertIcon}><ErrorOutlineOutlinedIcon sx={{ fontSize: 18 }} /></span>
           <span>{error}</span>
         </div>
       )}
@@ -164,7 +181,7 @@ export const PedidosPage = () => {
         {pedidos.length === 0 ? (
           // ... (bloco emptyState, sem alteração) ...
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>🧾</span>
+            <span style={styles.emptyIcon}><ReceiptLongOutlinedIcon sx={{ fontSize: 52 }} /></span>
             <h3 style={styles.emptyTitle}>Nenhum pedido encontrado</h3>
             <p style={styles.emptyText}>Quando as vendas começarem, elas aparecerão aqui.</p>
           </div>
@@ -214,7 +231,7 @@ export const PedidosPage = () => {
                         onClick={() => handleOpenEntregaModal(pedido)}
                         style={styles.deliverButton}
                       >
-                        🚚 Entregar
+                        <LocalShippingOutlinedIcon sx={{ fontSize: 16 }} /> Entregar
                       </button>
                     ) : (
                       <button 
@@ -222,7 +239,7 @@ export const PedidosPage = () => {
                         onClick={() => handleVerDetalhes(pedido.id)}
                         style={styles.detailsButton}
                       >
-                        👁️ Ver Detalhes
+                        <VisibilityOutlinedIcon sx={{ fontSize: 16 }} /> Ver detalhes
                       </button>
                     )}
                   </td>
@@ -238,7 +255,7 @@ export const PedidosPage = () => {
         <div style={styles.modalOverlay} onClick={() => !isLoadingDetails && setSelectedPedido(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>🧾 Detalhes do Pedido</h3>
+              <h3 style={styles.modalTitle}>Detalhes do pedido</h3>
               <button
                 type="button"
                 onClick={() => setSelectedPedido(null)}
@@ -284,7 +301,7 @@ export const PedidosPage = () => {
                   {selectedPedido.conta ? (
                     // 1. Se HÁ uma conta (entrega automática)
                     <div style={styles.contaCard}>
-                      <h4 style={styles.contaTitle}>🔐 Credenciais Entregues</h4>
+                      <h4 style={styles.contaTitle}><KeyOutlinedIcon sx={{ fontSize: 16, verticalAlign: 'text-bottom', marginRight: '6px' }} />Credenciais entregues</h4>
                       <div style={styles.contaRow}>
                         <span style={styles.contaLabel}>Login:</span>
                         <button
@@ -313,14 +330,14 @@ export const PedidosPage = () => {
                   ) : (
                     // 2. Se NÃO HÁ conta (entrega manual)
                     <div style={styles.contaCard}>
-                      <h4 style={styles.contaTitle}>📧 Entrega Manual</h4>
+                      <h4 style={styles.contaTitle}><AlternateEmailOutlinedIcon sx={{ fontSize: 16, verticalAlign: 'text-bottom', marginRight: '6px' }} />Entrega manual</h4>
                       <div style={styles.contaRow}>
-                        <span style={styles.contaLabel}>Email do Cliente (copie e envie o convite):</span>
+                        <span style={styles.contaLabel}>E-mail do cliente (copie e envie o convite):</span>
                         <button
                           type="button"
                           style={styles.copyBox}
                           onClick={() => copyToClipboard(selectedPedido.email_cliente || '', 'email')}
-                          aria-label="Copiar email do cliente"
+                          aria-label="Copiar e-mail do cliente"
                         >
                           <span style={styles.contaValue}>{selectedPedido.email_cliente}</span>
                           <span style={styles.copyButton}>Copiar</span>
@@ -333,8 +350,8 @@ export const PedidosPage = () => {
                             <button
                               type="button"
                               style={styles.copyBox}
-                              onClick={() => copyToClipboard(selectedPedido.conta_mae!.login, 'login da conta mae')}
-                              aria-label="Copiar login da conta mae"
+                              onClick={() => copyToClipboard(selectedPedido.conta_mae!.login, 'login da conta mãe')}
+                              aria-label="Copiar login da conta mãe"
                             >
                               <span style={styles.contaValue}>{selectedPedido.conta_mae.login}</span>
                               <span style={styles.copyButton}>Copiar</span>
@@ -347,8 +364,8 @@ export const PedidosPage = () => {
                         </>
                       )}
                       <div style={styles.manualInfo}>
-                        <span style={styles.manualInfoIcon}>ℹ️</span>
-                        <span>Este pedido é de entrega manual. Use o email acima para enviar o convite da plataforma (ex: Youtube, Canva).</span>
+                        <span style={styles.manualInfoIcon}><InfoOutlinedIcon sx={{ fontSize: 18 }} /></span>
+                        <span>Este pedido é de entrega manual. Use o e-mail acima para enviar o convite da plataforma (ex.: YouTube, Canva).</span>
                       </div>
                     </div>
                   )}
@@ -371,7 +388,7 @@ export const PedidosPage = () => {
           <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <form onSubmit={handleSubmitEntrega}>
               <div style={styles.modalHeader}>
-                <h3 style={styles.modalTitle}>🚚 Realizar Entrega Manual</h3>
+                <h3 style={styles.modalTitle}>Realizar entrega manual</h3>
                 <button
                   type="button"
                   onClick={handleCloseEntregaModal}
@@ -390,7 +407,7 @@ export const PedidosPage = () => {
                 
                 <div style={styles.inputGroup}>
                   <label htmlFor="pedido-entrega-login" style={styles.label}>
-                    Login (Email)
+                    Login (e-mail)
                   </label>
                   <input
                     id="pedido-entrega-login"
@@ -421,7 +438,7 @@ export const PedidosPage = () => {
                 </div>
                 
                 <div style={styles.manualInfo}>
-                  <span style={styles.manualInfoIcon}>ℹ️</span>
+                  <span style={styles.manualInfoIcon}><InfoOutlinedIcon sx={{ fontSize: 18 }} /></span>
                   <span>Ao confirmar, as credenciais acima serão enviadas para o cliente via bot.</span>
                 </div>
               </div>
@@ -448,6 +465,7 @@ const styles: Record<string, React.CSSProperties> = {
   loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '16px' },
   spinner: { width: '48px', height: '48px', border: '4px solid var(--border-subtle)', borderTop: '4px solid var(--brand-500)', borderRadius: '50%', animation: 'spin 1s linear infinite' },
   loadingText: { fontSize: '16px', color: 'var(--text-secondary)' },
+  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' },
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' },
   title: { margin: '0 0 4px 0', fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)' },
   subtitle: { margin: 0, fontSize: '15px', color: 'var(--text-secondary)' },
@@ -460,7 +478,7 @@ const styles: Record<string, React.CSSProperties> = {
   userCell: { display: 'flex', flexDirection: 'column', gap: '2px', whiteSpace: 'normal' }, // whiteSpace
   userId: { fontSize: '12px', color: 'var(--text-secondary)' },
   price: { fontSize: '14px', fontWeight: 600, color: '#10b981' },
-  detailsButton: { padding: '8px 16px', fontSize: '13px', fontWeight: 600, backgroundColor: 'var(--surface-muted)', color: '#374151', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+  detailsButton: { padding: '8px 16px', fontSize: '13px', fontWeight: 600, backgroundColor: 'var(--surface-muted)', color: '#374151', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' },
   emptyState: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', gap: '16px' },
   emptyIcon: { fontSize: '64px', opacity: 0.5 },
   emptyTitle: { margin: 0, fontSize: '20px', color: 'var(--text-primary)' },
@@ -478,7 +496,10 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#fff', 
     border: 'none', 
     borderRadius: '8px', 
-    cursor: 'pointer' 
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
   },
   emailText: {
     fontFamily: 'monospace',

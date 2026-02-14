@@ -62,7 +62,7 @@ export const ConfiguracoesPage = () => {
         const response = await getAdminConfig();
         setConfig(response.data);
       } catch {
-        setError('Falha ao carregar configuracoes. A API pode estar offline.');
+        setError('Falha ao carregar configurações. A API pode estar offline.');
       } finally {
         setIsLoading(false);
       }
@@ -92,9 +92,9 @@ export const ConfiguracoesPage = () => {
         afiliado_valor_premio: parseFloat(config.afiliado_valor_premio) || 0,
       });
       setConfig(response.data);
-      showToast('Configuracoes salvas com sucesso.', 'success');
+      showToast('Configurações salvas com sucesso.', 'success');
     } catch (err: unknown) {
-      const message = getApiErrorMessage(err, 'Falha ao salvar configuracoes.');
+      const message = getApiErrorMessage(err, 'Falha ao salvar configurações.');
       setError(message);
       showToast(message, 'error');
     } finally {
@@ -103,16 +103,16 @@ export const ConfiguracoesPage = () => {
   };
 
   const getValorLabel = () => {
-    if (config.afiliado_tipo_premio === 'cashback_pendente') return 'Valor do bonus (%)';
+    if (config.afiliado_tipo_premio === 'cashback_pendente') return 'Valor do bônus (%)';
     if (config.afiliado_tipo_premio === 'giftcard_imediato') return 'Valor do gift card (R$)';
-    return 'Valor do premio';
+    return 'Valor do prêmio';
   };
 
   if (isLoading) {
     return (
       <div style={styles.loadingContainer}>
         <div style={styles.spinner} />
-        <p style={styles.loadingText}>Carregando configuracoes...</p>
+        <p style={styles.loadingText}>Carregando configurações...</p>
       </div>
     );
   }
@@ -121,7 +121,7 @@ export const ConfiguracoesPage = () => {
     <div style={styles.container}>
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>Configuracoes do Sistema</h1>
+          <h1 style={styles.title}>Configurações do Sistema</h1>
           <p style={styles.subtitle}>Gerencie regras do bot e afiliados</p>
         </div>
       </div>
@@ -158,7 +158,7 @@ export const ConfiguracoesPage = () => {
           <div style={styles.optionsGrid}>
             <div style={styles.inputGroup}>
               <label htmlFor="afiliado_gatilho" style={styles.label}>
-                Gatilho do premio
+                Gatilho do prêmio
               </label>
               <select
                 id="afiliado_gatilho"
@@ -174,7 +174,7 @@ export const ConfiguracoesPage = () => {
 
             <div style={styles.inputGroup}>
               <label htmlFor="afiliado_tipo_premio" style={styles.label}>
-                Tipo de premio
+                Tipo de prêmio
               </label>
               <select
                 id="afiliado_tipo_premio"
@@ -183,7 +183,7 @@ export const ConfiguracoesPage = () => {
                 onChange={handleChange}
                 style={styles.input}
               >
-                <option value="cashback_pendente">Bonus % na proxima recarga</option>
+                <option value="cashback_pendente">Bônus % na próxima recarga</option>
                 <option value="giftcard_imediato">Gerar gift card (valor fixo)</option>
               </select>
             </div>
@@ -209,7 +209,7 @@ export const ConfiguracoesPage = () => {
 
         <div style={styles.formActions}>
           <button type="submit" style={styles.submitButton} disabled={isSaving || isLoading}>
-            {isSaving ? 'Salvando...' : 'Salvar configuracoes'}
+            {isSaving ? 'Salvando...' : 'Salvar configurações'}
           </button>
         </div>
       </form>

@@ -1,7 +1,16 @@
 import { useState, useEffect } from 'react';
+import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
+import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined';
+import SupportAgentOutlinedIcon from '@mui/icons-material/SupportAgentOutlined';
+import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import { getDashboardKPIs, getTopProdutos, getRecentPedidos } from '../services/apiClient';
 import type { IDashboardRecentPedido } from '../types/api.types'; 
 import { getApiErrorMessage } from '../utils/errors';
+import { MetricCard, PageHeader } from '../components/UI';
 
 interface IKPIs {
   faturamento_24h: string;
@@ -59,7 +68,7 @@ export const DashboardPage = () => {
     // ... (bloco isLoading) ...
     return (
       <div style={styles.loadingContainer}>
-        <div style={styles.spinner}>⏳</div>
+        <div style={styles.spinner} />
         <p style={styles.loadingText}>Carregando dados...</p>
       </div>
     );
@@ -69,7 +78,7 @@ export const DashboardPage = () => {
     // ... (bloco error) ...
     return (
       <div style={styles.errorContainer}>
-        <span style={styles.errorIcon}>⚠️</span>
+        <span style={styles.errorIcon}><ErrorOutlineOutlinedIcon sx={{ fontSize: 58 }} /></span>
         <h2 style={styles.errorTitle}>Erro ao Carregar</h2>
         <p style={styles.errorText}>{error}</p>
       </div>
@@ -78,52 +87,18 @@ export const DashboardPage = () => {
 
   return (
     <div style={styles.container}>
-      {/* Welcome Section */}
-      <div style={styles.welcomeSection}>
-        {/* ... (código de welcome) ... */}
-        <div>
-          <h1 style={styles.welcomeTitle}>Bem-vindo de volta! 👋</h1>
-          <p style={styles.welcomeText}>Aqui está um resumo das últimas 24 horas</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        subtitle="Resumo das ultimas 24 horas."
+        icon={<DashboardOutlinedIcon fontSize="small" />}
+      />
 
       {/* KPI Cards */}
       <div style={styles.kpiGrid}>
-        {/* ... (código dos kpis) ... */}
-        <div style={{...styles.kpiCard, ...styles.kpiCard1}}>
-          <div style={styles.kpiIcon}>💰</div>
-          <div style={styles.kpiContent}>
-            <p style={styles.kpiLabel}>Faturamento</p>
-            <h2 style={styles.kpiValue}>R$ {kpis?.faturamento_24h || '0,00'}</h2>
-            <span style={styles.kpiBadge}>Últimas 24h</span>
-          </div>
-        </div>
-        <div style={{...styles.kpiCard, ...styles.kpiCard2}}>
-          <div style={styles.kpiIcon}>🛒</div>
-          <div style={styles.kpiContent}>
-            <p style={styles.kpiLabel}>Vendas</p>
-            <h2 style={styles.kpiValue}>{kpis?.vendas_24h || 0}</h2>
-            <span style={styles.kpiBadge}>Últimas 24h</span>
-          </div>
-        </div>
-        <div style={{...styles.kpiCard, ...styles.kpiCard3}}>
-          <div style={styles.kpiIcon}>👥</div>
-          <div style={styles.kpiContent}>
-            <p style={styles.kpiLabel}>Novos Usuários</p>
-            <h2 style={styles.kpiValue}>{kpis?.novos_usuarios_24h || 0}</h2>
-            <span style={styles.kpiBadge}>Últimas 24h</span>
-          </div>
-        </div>
-        <div style={{...styles.kpiCard, ...styles.kpiCard4}}>
-          <div style={styles.kpiIcon}>🎟️</div>
-          <div style={styles.kpiContent}>
-            <p style={styles.kpiLabel}>Tickets Abertos</p>
-            <h2 style={styles.kpiValue}>{kpis?.tickets_abertos || 0}</h2>
-            <span style={{...styles.kpiBadge, ...styles.alertBadge}}>
-              {kpis?.tickets_abertos ? 'Requer atenção' : 'Tudo certo'}
-            </span>
-          </div>
-        </div>
+        <MetricCard label="Faturamento" value={`R$ ${kpis?.faturamento_24h || '0,00'}`} icon={<PaidOutlinedIcon fontSize="small" />} tone="success" />
+        <MetricCard label="Vendas" value={kpis?.vendas_24h || 0} icon={<ShoppingCartOutlinedIcon fontSize="small" />} tone="info" />
+        <MetricCard label="Novos usuarios" value={kpis?.novos_usuarios_24h || 0} icon={<PersonAddAltOutlinedIcon fontSize="small" />} tone="neutral" />
+        <MetricCard label="Tickets abertos" value={kpis?.tickets_abertos || 0} icon={<SupportAgentOutlinedIcon fontSize="small" />} tone={(kpis?.tickets_abertos || 0) > 0 ? 'warning' : 'success'} />
       </div>
 
       {/* SEÇÃO DE CONTEÚDO DUPLO */}
@@ -132,7 +107,7 @@ export const DashboardPage = () => {
         <div style={styles.section}>
           {/* ... (código /top-produtos) ... */}
           <div style={styles.sectionHeader}>
-            <h2 style={styles.sectionTitle}>🏆 Produtos Mais Vendidos</h2>
+            <h2 style={styles.sectionTitle}><EmojiEventsOutlinedIcon sx={{ fontSize: 18, verticalAlign: 'text-bottom', marginRight: '6px' }} />Produtos Mais Vendidos</h2>
             <span style={styles.sectionSubtitle}>Por faturamento total</span>
           </div>
 
@@ -161,7 +136,7 @@ export const DashboardPage = () => {
             </div>
           ) : (
             <div style={styles.emptyState}>
-              <span style={styles.emptyIcon}>📦</span>
+              <span style={styles.emptyIcon}><ShoppingCartOutlinedIcon sx={{ fontSize: 52 }} /></span>
               <p style={styles.emptyText}>Nenhuma venda registrada ainda</p>
             </div>
           )}
@@ -170,7 +145,7 @@ export const DashboardPage = () => {
         {/* --- SEÇÃO DE ÚLTIMOS PEDIDOS (MODIFICADA) --- */}
         <div style={styles.section}>
           <div style={styles.sectionHeader}>
-            <h2 style={styles.sectionTitle}>🕓 Últimos Pedidos</h2>
+            <h2 style={styles.sectionTitle}><ReceiptLongOutlinedIcon sx={{ fontSize: 18, verticalAlign: 'text-bottom', marginRight: '6px' }} />Últimos Pedidos</h2>
             <span style={styles.sectionSubtitle}>Os 5 pedidos mais recentes</span>
           </div>
 
@@ -178,9 +153,7 @@ export const DashboardPage = () => {
             <div style={styles.productsGrid}>
               {recentPedidos.map((pedido) => (
                 <div key={pedido.id} style={styles.productCard}>
-                  <div style={{...styles.productRank, backgroundColor: '#10b981'}}>
-                    🛒
-                  </div>
+                  <div style={{...styles.productRank, backgroundColor: '#10b981'}}><ShoppingCartOutlinedIcon sx={{ fontSize: 20 }} /></div>
                   <div style={styles.productInfo}>
                     <h3 style={styles.productName}>{pedido.produto_nome}</h3>
                     <div style={styles.productStats}>
@@ -209,7 +182,7 @@ export const DashboardPage = () => {
             </div>
           ) : (
             <div style={styles.emptyState}>
-              <span style={styles.emptyIcon}>🛒</span>
+              <span style={styles.emptyIcon}><ReceiptLongOutlinedIcon sx={{ fontSize: 52 }} /></span>
               <p style={styles.emptyText}>Nenhum pedido recente</p>
             </div>
           )}
@@ -234,8 +207,12 @@ const styles: Record<string, React.CSSProperties> = {
     gap: '16px',
   },
   spinner: {
-    fontSize: '48px',
-    animation: 'spin 2s linear infinite',
+    width: '48px',
+    height: '48px',
+    border: '4px solid var(--border-subtle)',
+    borderTop: '4px solid var(--brand-500)',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
   },
   loadingText: {
     fontSize: '16px',
@@ -278,9 +255,9 @@ const styles: Record<string, React.CSSProperties> = {
   },
   kpiGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-    gap: '20px',
-    marginBottom: '40px',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+    gap: '16px',
+    marginBottom: '32px',
   },
   kpiCard: {
     backgroundColor: '#fff',
@@ -342,7 +319,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   dualGrid: {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr', 
+    gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
     gap: '24px',
   },
   section: {

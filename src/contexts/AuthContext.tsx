@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsAdmin(true);
       localStorage.setItem('authToken', access_token);
     } catch (error: unknown) {
-      throw new Error(getApiErrorMessage(error, 'Email ou senha invalidos.'));
+      throw new Error(getApiErrorMessage(error, 'E-mail ou senha inválidos.'));
     } finally {
       setIsLoading(false);
     }

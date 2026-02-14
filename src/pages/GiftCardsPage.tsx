@@ -1,8 +1,16 @@
 import { useState, useEffect } from 'react';
+import CardGiftcardOutlinedIcon from '@mui/icons-material/CardGiftcardOutlined';
+import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
+import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
+import PendingActionsOutlinedIcon from '@mui/icons-material/PendingActionsOutlined';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { getAdminGiftCards, createGiftCard, deleteGiftCard } from '../services/apiClient';
 import type { IGiftCardAdminRead } from '../types/api.types';
 import { useToast } from '../contexts/ToastContext';
 import { getApiErrorMessage } from '../utils/errors';
+import { MetricCard, PageHeader } from '../components/UI';
 
 type FilterStatus = 'todos' | 'usados' | 'nao_usados';
 
@@ -111,21 +119,26 @@ export const GiftCardsPage = () => {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div>
-          <h1 style={styles.title}>🎁 Gift Cards</h1>
-          <p style={styles.subtitle}>Crie e gerencie códigos de presente</p>
-        </div>
-        <button type="button" onClick={() => setShowForm(!showForm)} style={styles.addButton}>
-          {showForm ? '✕ Cancelar' : '➕ Novo Gift Card'}
-        </button>
-      </div>
+      <PageHeader
+        title="Gift Cards"
+        subtitle="Crie e gerencie codigos de presente."
+        icon={<CardGiftcardOutlinedIcon fontSize="small" />}
+        action={(
+          <button type="button" onClick={() => setShowForm(!showForm)} style={styles.addButton}>
+            {showForm ? 'Cancelar' : (
+              <>
+                <AddOutlinedIcon sx={{ fontSize: 16, marginRight: '6px', verticalAlign: 'text-bottom' }} />
+                Novo Gift Card
+              </>
+            )}
+          </button>
+        )}
+      />
 
       {/* Error Alert */}
       {error && (
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>⚠️</span>
+          <span style={styles.alertIcon}><ErrorOutlineOutlinedIcon sx={{ fontSize: 18 }} /></span>
           <span>{error}</span>
         </div>
       )}
@@ -203,27 +216,9 @@ export const GiftCardsPage = () => {
 
       {/* Stats */}
       <div style={styles.statsGrid}>
-        <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#dbeafe', color: '#1e40af'}}>🎫</span>
-          <div>
-            <p style={styles.statLabel}>Total de Códigos</p>
-            <h3 style={styles.statValue}>{giftCards.length}</h3>
-          </div>
-        </div>
-        <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46'}}>✓</span>
-          <div>
-            <p style={styles.statLabel}>Códigos Usados</p>
-            <h3 style={styles.statValue}>{giftCards.filter(gc => gc.is_utilizado).length}</h3>
-          </div>
-        </div>
-        <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#fef3c7', color: '#92400e'}}>⏳</span>
-          <div>
-            <p style={styles.statLabel}>Disponíveis</p>
-            <h3 style={styles.statValue}>{giftCards.filter(gc => !gc.is_utilizado).length}</h3>
-          </div>
-        </div>
+        <MetricCard label="Total de códigos" value={giftCards.length} icon={<CardGiftcardOutlinedIcon fontSize="small" />} tone="info" />
+        <MetricCard label="Códigos usados" value={giftCards.filter(gc => gc.is_utilizado).length} icon={<CheckCircleOutlineOutlinedIcon fontSize="small" />} tone="success" />
+        <MetricCard label="Disponíveis" value={giftCards.filter(gc => !gc.is_utilizado).length} icon={<PendingActionsOutlinedIcon fontSize="small" />} tone="warning" />
       </div>
 
       {/* Filters */}
@@ -256,7 +251,7 @@ export const GiftCardsPage = () => {
       <div style={styles.giftCardsGrid}>
         {giftCards.length === 0 ? (
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>🎁</span>
+            <span style={styles.emptyIcon}><CardGiftcardOutlinedIcon sx={{ fontSize: 52 }} /></span>
             <h3 style={styles.emptyTitle}>Nenhum gift card encontrado</h3>
             <p style={styles.emptyText}>
               {filterStatus === 'nao_usados' ? 'Nenhum código disponível no momento' :
@@ -280,7 +275,7 @@ export const GiftCardsPage = () => {
                   ...styles.badge,
                   ...(gc.is_utilizado ? styles.badgeUsed : styles.badgeAvailable)
                 }}>
-                  {gc.is_utilizado ? '✓ Usado' : '⏳ Disponível'}
+                  {gc.is_utilizado ? 'Usado' : 'Disponível'}
                 </span>
               </div>
 
@@ -337,7 +332,7 @@ export const GiftCardsPage = () => {
                     style={{...styles.actionBtn, ...styles.deleteBtn}}
                     title="Excluir gift card"
                   >
-                    🗑️ Excluir
+                    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} /> Excluir
                   </button>
                 </div>
               )}
@@ -351,7 +346,7 @@ export const GiftCardsPage = () => {
         <div style={styles.modalOverlay} onClick={() => setDeletingGiftCard(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>⚠️ Confirmar Exclusão</h3>
+              <h3 style={styles.modalTitle}>Confirmar Exclusão</h3>
               <button
                 type="button"
                 onClick={() => setDeletingGiftCard(null)}
@@ -370,12 +365,12 @@ export const GiftCardsPage = () => {
                 <span style={styles.codeDisplayValue}>{deletingGiftCard.codigo}</span>
               </div>
               <div style={styles.warningBox}>
-                <span style={styles.warningIcon}>ℹ️</span>
+                <span style={styles.warningIcon}><InfoOutlinedIcon sx={{ fontSize: 18 }} /></span>
                 <p style={styles.warningText}>
                   Esta ação não pode ser desfeita. O gift card será removido permanentemente do sistema.
                   {deletingGiftCard.is_utilizado && (
                     <span style={{fontWeight: 600, display: 'block', marginTop: '8px'}}>
-                      ⚠️ <strong>ATENÇÃO:</strong> Este gift card já foi utilizado!
+                      <strong>ATENÇÃO:</strong> Este gift card já foi utilizado!
                     </span>
                   )}
                 </p>
@@ -445,7 +440,7 @@ const styles: Record<string, React.CSSProperties> = {
   cardFooter: { paddingTop: '12px', borderTop: '1px solid var(--border-subtle)', marginBottom: '12px' },
   cardId: { fontSize: '11px', color: 'var(--text-muted)' },
   actionButtons: { display: 'flex', gap: '8px', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)' },
-  actionBtn: { flex: 1, padding: '10px 16px', fontSize: '13px', fontWeight: 600, border: 'none', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s ease' },
+  actionBtn: { flex: 1, padding: '10px 16px', fontSize: '13px', fontWeight: 600, border: 'none', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s ease', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' },
   deleteBtn: { backgroundColor: '#fee2e2', color: '#991b1b' },
   emptyState: { gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', gap: '16px' },
   emptyIcon: { fontSize: '64px', opacity: 0.5 },

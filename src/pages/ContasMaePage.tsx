@@ -11,6 +11,11 @@ import {
 import type { IContaMae, IContaMaeDetalhes } from '../types/api.types';
 import { useToast } from '../contexts/ToastContext';
 import { getApiErrorMessage } from '../utils/errors';
+import { MetricCard, PageHeader } from '../components/UI';
+import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
+import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
+import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
+import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
 
 interface IProduto {
   id: string;
@@ -100,10 +105,10 @@ export const ContasMaePage = () => {
           ...(novaSenha && { senha: novaSenha }),
         };
         await updateContaMae(editingConta.id, updateData);
-        showToast('Conta mae atualizada com sucesso!', 'success');
+        showToast('Conta mãe atualizada com sucesso!', 'success');
       } else {
         if (!novaSenha) {
-          showToast('A senha e obrigatoria ao criar nova conta.', 'warning');
+          showToast('A senha é obrigatória ao criar nova conta.', 'warning');
           return;
         }
         await createContaMae({
@@ -114,14 +119,14 @@ export const ContasMaePage = () => {
           data_expiracao: novoDataExpiracao || null,
           is_ativo: novoIsAtivo,
         });
-        showToast('Conta mae criada com sucesso!', 'success');
+        showToast('Conta mãe criada com sucesso!', 'success');
       }
 
       resetForm();
       carregarDados();
     } catch (err: unknown) {
       console.error('Erro ao salvar conta mãe:', err);
-      const errorMsg = getApiErrorMessage(err, 'Falha ao salvar conta mae.');
+      const errorMsg = getApiErrorMessage(err, 'Falha ao salvar conta mãe.');
       showToast(errorMsg, 'error');
     }
   };
@@ -141,12 +146,12 @@ export const ContasMaePage = () => {
     if (!deletingConta) return;
     try {
       await deleteContaMae(deletingConta.id);
-      showToast('Conta mae excluida com sucesso!', 'success');
+      showToast('Conta mãe excluída com sucesso!', 'success');
       setDeletingConta(null);
       carregarDados();
     } catch (err: unknown) {
       console.error('Erro ao excluir conta mãe:', err);
-      const errorMsg = getApiErrorMessage(err, 'Falha ao excluir conta mae.');
+      const errorMsg = getApiErrorMessage(err, 'Falha ao excluir conta mãe.');
       showToast(errorMsg, 'error');
       setDeletingConta(null);
     }
@@ -160,7 +165,7 @@ export const ContasMaePage = () => {
       setInviteEmail('');
     } catch (err: unknown) {
       console.error('Erro ao buscar detalhes:', err);
-      const errorMsg = getApiErrorMessage(err, 'Falha ao carregar detalhes da conta mae.');
+      const errorMsg = getApiErrorMessage(err, 'Falha ao carregar detalhes da conta mãe.');
       showToast(errorMsg, 'error');
     } finally {
       setIsLoadingDetails(false);
@@ -170,7 +175,7 @@ export const ContasMaePage = () => {
   const handleAddInvite = async () => {
     if (!selectedConta) return;
     if (!inviteEmail.trim()) {
-      showToast('Informe o email do convidado.', 'warning');
+      showToast('Informe o e-mail do convidado.', 'warning');
       return;
     }
 
@@ -189,7 +194,7 @@ export const ContasMaePage = () => {
 
   const copyToClipboard = async (text: string, label: string) => {
     if (!text) {
-      showToast(`Nao ha ${label} para copiar.`, 'warning');
+      showToast(`Não há ${label} para copiar.`, 'warning');
       return;
     }
 
@@ -221,15 +226,21 @@ export const ContasMaePage = () => {
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
-        <div>
-          <h1 style={styles.title}>👩‍💼 Contas Mãe</h1>
-          <p style={styles.subtitle}>Gerencie as contas que convidam clientes por email</p>
-        </div>
-        <button type="button" onClick={() => (showForm ? resetForm() : setShowForm(true))} style={styles.addButton}>
-          {showForm ? '✖ Cancelar' : '➕ Nova Conta Mãe'}
-        </button>
-      </div>
+      <PageHeader
+        title="Contas Mãe"
+        subtitle="Gerencie as contas que convidam clientes por e-mail."
+        icon={<GroupOutlinedIcon fontSize="small" />}
+        action={(
+          <button type="button" onClick={() => (showForm ? resetForm() : setShowForm(true))} style={styles.addButton}>
+            {showForm ? 'Cancelar' : (
+              <>
+                <AddOutlinedIcon sx={{ fontSize: 16, marginRight: '6px', verticalAlign: 'text-bottom' }} />
+                Nova Conta Mãe
+              </>
+            )}
+          </button>
+        )}
+      />
 
       {error && (
         <div style={styles.alert}>
@@ -264,14 +275,14 @@ export const ContasMaePage = () => {
                 ))}
               </select>
               {editingConta && (
-                <small style={styles.inputHint}>O produto no pode ser alterado aps criao</small>
+                <small style={styles.inputHint}>O produto não pode ser alterado após a criação</small>
               )}
             </div>
 
             <div style={styles.inputRow}>
               <div style={styles.inputGroup}>
                 <label htmlFor="conta-mae-login" style={styles.label}>
-                  Login (Email)
+                  Login (e-mail)
                 </label>
                 <input
                   id="conta-mae-login"
@@ -285,7 +296,7 @@ export const ContasMaePage = () => {
               </div>
               <div style={styles.inputGroup}>
                 <label htmlFor="conta-mae-senha" style={styles.label}>
-                  Senha {editingConta && '(deixe vazio para no alterar)'}
+                  Senha {editingConta && '(deixe vazio para não alterar)'}
                 </label>
                 <input
                   id="conta-mae-senha"
@@ -377,27 +388,14 @@ export const ContasMaePage = () => {
       </div>
 
       <div style={styles.statsGrid}>
-        <div style={styles.statCard}>
-          <div style={styles.statIcon}>📊</div>
-          <div>
-            <p style={styles.statLabel}>Contas (Filtro)</p>
-            <h3 style={styles.statValue}>{filteredContas.length}</h3>
-          </div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={{ ...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46' }}>✅</div>
-          <div>
-            <p style={styles.statLabel}>Ativas</p>
-            <h3 style={styles.statValue}>{filteredContas.filter((c) => c.is_ativo).length}</h3>
-          </div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={{ ...styles.statIcon, backgroundColor: '#fee2e2', color: '#991b1b' }}>⏳</div>
-          <div>
-            <p style={styles.statLabel}>Próximas de Expirar</p>
-            <h3 style={styles.statValue}>{filteredContas.filter((c) => (c.dias_restantes ?? 999) <= 7).length}</h3>
-          </div>
-        </div>
+        <MetricCard label="Contas (filtro)" value={filteredContas.length} icon={<GroupOutlinedIcon fontSize="small" />} tone="info" />
+        <MetricCard label="Ativas" value={filteredContas.filter((c) => c.is_ativo).length} icon={<TaskAltOutlinedIcon fontSize="small" />} tone="success" />
+        <MetricCard
+          label="Próximas de expirar"
+          value={filteredContas.filter((c) => (c.dias_restantes ?? 999) <= 7).length}
+          icon={<AccessTimeOutlinedIcon fontSize="small" />}
+          tone="warning"
+        />
       </div>
 
       <div style={styles.estoqueGrid}>
@@ -502,7 +500,7 @@ export const ContasMaePage = () => {
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
-            aria-label="Detalhes da conta mae"
+            aria-label="Detalhes da conta mãe"
           >
             <div style={styles.modalHeader}>
               <h3 style={styles.modalTitle}>👩‍💼 Conta Mãe</h3>
@@ -510,7 +508,7 @@ export const ContasMaePage = () => {
                 type="button"
                 onClick={() => setSelectedConta(null)}
                 style={styles.modalClose}
-                aria-label="Fechar detalhes da conta mae"
+                aria-label="Fechar detalhes da conta mãe"
               >
                 x
               </button>
@@ -549,7 +547,7 @@ export const ContasMaePage = () => {
                     </button>
                   </div>
                   <div style={styles.infoBox}>
-                    <span style={styles.infoLabel}>Expirao</span>
+                    <span style={styles.infoLabel}>Expiração</span>
                     <span style={styles.infoValue}>{formatDate(selectedConta.data_expiracao)}</span>
                   </div>
                   <div style={styles.infoBox}>
@@ -563,13 +561,13 @@ export const ContasMaePage = () => {
                 </div>
 
                 <div style={styles.inviteSection}>
-                  <h4 style={styles.sectionTitle}>Adicionar Email Convidado</h4>
+                  <h4 style={styles.sectionTitle}>Adicionar e-mail convidado</h4>
                   {isSlotsFull && (
                     <p style={styles.warningText}>Esta conta já atingiu o máximo de slots.</p>
                   )}
                   <div style={styles.inviteRow}>
                     <label htmlFor="conta-mae-invite-email" style={styles.srOnly}>
-                      Email do convidado
+                      E-mail do convidado
                     </label>
                     <input
                       id="conta-mae-invite-email"
@@ -587,7 +585,7 @@ export const ContasMaePage = () => {
                 </div>
 
                 <div style={styles.inviteList}>
-                  <h4 style={styles.sectionTitle}>Emails atribudos</h4>
+                  <h4 style={styles.sectionTitle}>E-mails atribuídos</h4>
                   {selectedConta.convites.length === 0 ? (
                     <p style={styles.emptyText}>Nenhum convite registrado.</p>
                   ) : (
@@ -616,7 +614,7 @@ export const ContasMaePage = () => {
                 type="button"
                 onClick={() => setDeletingConta(null)}
                 style={styles.modalClose}
-                aria-label="Fechar confirmacao de exclusao"
+                aria-label="Fechar confirmação de exclusão"
               >
                 x
               </button>
@@ -628,7 +626,7 @@ export const ContasMaePage = () => {
               <div style={styles.warningBox}>
                 <span style={styles.warningIcon}>!</span>
                 <p style={styles.warningText}>
-                  Esta ao no pode ser desfeita. Os convites vinculados sero removidos.
+                  Esta ação não pode ser desfeita. Os convites vinculados serão removidos.
                 </p>
               </div>
             </div>

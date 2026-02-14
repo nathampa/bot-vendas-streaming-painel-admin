@@ -1,25 +1,37 @@
-import { useState, type CSSProperties } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
+import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
+import SupportAgentOutlinedIcon from '@mui/icons-material/SupportAgentOutlined';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
+import CardGiftcardOutlinedIcon from '@mui/icons-material/CardGiftcardOutlined';
+import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 
 type MenuItem = {
   path: string;
-  icon: string;
+  icon: ReactNode;
   label: string;
 };
 
 const menuItems: MenuItem[] = [
-  { path: '/dashboard', icon: 'DB', label: 'Dashboard' },
-  { path: '/produtos', icon: 'PR', label: 'Produtos' },
-  { path: '/estoque', icon: 'ES', label: 'Estoque' },
-  { path: '/contas-mae', icon: 'CM', label: 'Contas Mae' },
-  { path: '/tickets', icon: 'TK', label: 'Tickets' },
-  { path: '/pedidos', icon: 'PD', label: 'Pedidos' },
-  { path: '/usuarios', icon: 'US', label: 'Usuarios' },
-  { path: '/recargas', icon: 'RC', label: 'Recargas' },
-  { path: '/giftcards', icon: 'GC', label: 'Gift Cards' },
-  { path: '/sugestoes', icon: 'SG', label: 'Sugestoes' },
-  { path: '/configuracoes', icon: 'CF', label: 'Configuracoes' },
+  { path: '/dashboard', icon: <DashboardOutlinedIcon sx={{ fontSize: 17 }} />, label: 'Dashboard' },
+  { path: '/produtos', icon: <StorefrontOutlinedIcon sx={{ fontSize: 17 }} />, label: 'Produtos' },
+  { path: '/estoque', icon: <Inventory2OutlinedIcon sx={{ fontSize: 17 }} />, label: 'Estoque' },
+  { path: '/contas-mae', icon: <GroupsOutlinedIcon sx={{ fontSize: 17 }} />, label: 'Contas Mãe' },
+  { path: '/tickets', icon: <SupportAgentOutlinedIcon sx={{ fontSize: 17 }} />, label: 'Tickets' },
+  { path: '/pedidos', icon: <ReceiptLongOutlinedIcon sx={{ fontSize: 17 }} />, label: 'Pedidos' },
+  { path: '/usuarios', icon: <PersonOutlineOutlinedIcon sx={{ fontSize: 17 }} />, label: 'Usuários' },
+  { path: '/recargas', icon: <AccountBalanceWalletOutlinedIcon sx={{ fontSize: 17 }} />, label: 'Recargas' },
+  { path: '/giftcards', icon: <CardGiftcardOutlinedIcon sx={{ fontSize: 17 }} />, label: 'Gift Cards' },
+  { path: '/sugestoes', icon: <LightbulbOutlinedIcon sx={{ fontSize: 17 }} />, label: 'Sugestões' },
+  { path: '/configuracoes', icon: <SettingsOutlinedIcon sx={{ fontSize: 17 }} />, label: 'Configurações' },
 ];
 
 export const AdminLayout = () => {
@@ -50,7 +62,7 @@ export const AdminLayout = () => {
           </div>
         </div>
 
-        <nav style={styles.nav} aria-label="Navegacao principal do painel">
+        <nav style={styles.nav} aria-label="Navegação principal do painel">
           {menuItems.map((item) => {
             const active = location.pathname === item.path;
             return (
@@ -70,7 +82,9 @@ export const AdminLayout = () => {
 
         <div style={styles.sidebarFooter}>
           <button type="button" onClick={handleLogout} style={styles.logoutButton} aria-label="Sair da conta">
-            <span style={styles.navIcon}>OUT</span>
+            <span style={styles.navIcon}>
+              <LogoutOutlinedIcon sx={{ fontSize: 17 }} />
+            </span>
             <span>Sair</span>
           </button>
         </div>
@@ -188,11 +202,15 @@ const styles: Record<string, CSSProperties> = {
     color: 'var(--text-inverse)',
   },
   navIcon: {
-    fontSize: '11px',
-    fontWeight: 700,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     width: '24px',
-    textAlign: 'center',
-    letterSpacing: 0.4,
+    height: '24px',
+    borderRadius: '7px',
+    backgroundColor: 'rgba(148, 163, 184, 0.15)',
+    color: 'inherit',
+    flexShrink: 0,
   },
   sidebarFooter: {
     padding: '20px 12px',

@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
+import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
+import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
+import TrendingUpOutlinedIcon from '@mui/icons-material/TrendingUpOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import { getAdminSugestoes } from '../services/apiClient';
 import type { ISugestaoAdminRead } from '../types/api.types';
+import { MetricCard, PageHeader } from '../components/UI';
 
 export const SugestoesPage = () => {
   const [sugestoes, setSugestoes] = useState<ISugestaoAdminRead[]>([]);
@@ -33,10 +39,10 @@ export const SugestoesPage = () => {
   };
 
   const getPopularityLabel = (contagem: number): string => {
-    if (contagem >= 20) return '🔥 Muito Popular';
-    if (contagem >= 10) return '⭐ Popular';
-    if (contagem >= 5) return '📈 Crescendo';
-    return '📊 Novo';
+    if (contagem >= 20) return 'Muito Popular';
+    if (contagem >= 10) return 'Popular';
+    if (contagem >= 5) return 'Crescendo';
+    return 'Novo';
   };
 
   const maxContagem = Math.max(...sugestoes.map(s => s.contagem), 1);
@@ -52,17 +58,15 @@ export const SugestoesPage = () => {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div>
-          <h1 style={styles.title}>💡 Sugestões dos Usuários</h1>
-          <p style={styles.subtitle}>Veja o que os usuários mais pedem (ordenado por popularidade)</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Sugestões dos Usuários"
+        subtitle="Veja o que os usuários mais pedem, ordenado por popularidade."
+        icon={<LightbulbOutlinedIcon fontSize="small" />}
+      />
 
       {/* Info Box */}
       <div style={styles.infoBox}>
-        <span style={styles.infoIcon}>ℹ️</span>
+        <span style={styles.infoIcon}><InfoOutlinedIcon sx={{ fontSize: 20 }} /></span>
         <div style={styles.infoContent}>
           <p style={styles.infoText}>
             <strong>Como funciona:</strong> A API agrupa sugestões idênticas automaticamente. 
@@ -73,37 +77,15 @@ export const SugestoesPage = () => {
 
       {/* Stats */}
       <div style={styles.statsGrid}>
-        <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#dbeafe', color: '#1e40af'}}>💡</span>
-          <div>
-            <p style={styles.statLabel}>Total de Sugestões</p>
-            <h3 style={styles.statValue}>{sugestoes.length}</h3>
-          </div>
-        </div>
-        <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#fef3c7', color: '#92400e'}}>🔥</span>
-          <div>
-            <p style={styles.statLabel}>Mais Pedido</p>
-            <h3 style={styles.statValue}>
-              {sugestoes.length > 0 ? sugestoes[0].nome_streaming : '---'}
-            </h3>
-          </div>
-        </div>
-        <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46'}}>📊</span>
-          <div>
-            <p style={styles.statLabel}>Total de Pedidos</p>
-            <h3 style={styles.statValue}>
-              {sugestoes.reduce((sum, s) => sum + s.contagem, 0)}
-            </h3>
-          </div>
-        </div>
+        <MetricCard label="Total de sugestões" value={sugestoes.length} icon={<LightbulbOutlinedIcon fontSize="small" />} tone="info" />
+        <MetricCard label="Mais pedido" value={sugestoes.length > 0 ? sugestoes[0].nome_streaming : '---'} icon={<EmojiEventsOutlinedIcon fontSize="small" />} tone="warning" />
+        <MetricCard label="Total de pedidos" value={sugestoes.reduce((sum, s) => sum + s.contagem, 0)} icon={<TrendingUpOutlinedIcon fontSize="small" />} tone="success" />
       </div>
 
       {/* Error Alert */}
       {error && (
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>⚠️</span>
+          <span style={styles.alertIcon}><ErrorOutlineOutlinedIcon sx={{ fontSize: 18 }} /></span>
           <span>{error}</span>
         </div>
       )}
@@ -112,7 +94,7 @@ export const SugestoesPage = () => {
       <div style={styles.sugestoesContainer}>
         {sugestoes.length === 0 ? (
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>💡</span>
+            <span style={styles.emptyIcon}><LightbulbOutlinedIcon sx={{ fontSize: 52 }} /></span>
             <h3 style={styles.emptyTitle}>Nenhuma sugestão ainda</h3>
             <p style={styles.emptyText}>
               Quando os usuários começarem a pedir novos streamings, eles aparecerão aqui
@@ -183,9 +165,9 @@ export const SugestoesPage = () => {
                       color: sugestao.status === 'EM_ANALISE' ? '#92400e' :
                              sugestao.status === 'DISPONIVEL' ? '#065f46' : 'var(--text-secondary)'
                     }}>
-                      {sugestao.status === 'PENDENTE' ? '⏳ Pendente' :
-                       sugestao.status === 'EM_ANALISE' ? '🔍 Em Análise' :
-                       sugestao.status === 'DISPONIVEL' ? '✅ Disponível' :
+                      {sugestao.status === 'PENDENTE' ? 'Pendente' :
+                       sugestao.status === 'EM_ANALISE' ? 'Em Análise' :
+                       sugestao.status === 'DISPONIVEL' ? 'Disponível' :
                        sugestao.status}
                     </span>
                   </div>
@@ -200,7 +182,7 @@ export const SugestoesPage = () => {
       {sugestoes.length > 0 && (
         <div style={styles.bottomInfo}>
           <p style={styles.bottomInfoText}>
-            💡 <strong>Dica:</strong> Priorize os streamings com mais pedidos para maximizar suas vendas!
+            <strong>Dica:</strong> Priorize os streamings com mais pedidos para maximizar suas vendas.
           </p>
         </div>
       )}
@@ -257,7 +239,9 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: '32px',
   },
   infoIcon: {
-    fontSize: '24px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   infoContent: {
     flex: 1,
@@ -439,7 +423,9 @@ const styles: Record<string, React.CSSProperties> = {
     boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
   },
   emptyIcon: {
-    fontSize: '64px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     opacity: 0.5,
   },
   emptyTitle: {

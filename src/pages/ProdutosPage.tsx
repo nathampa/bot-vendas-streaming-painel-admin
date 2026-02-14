@@ -1,7 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
+import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
+import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import ToggleOnOutlinedIcon from '@mui/icons-material/ToggleOnOutlined';
+import ToggleOffOutlinedIcon from '@mui/icons-material/ToggleOffOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { getAdminProdutos, createProduto, updateProduto, deleteProduto } from '../services/apiClient';
 import { useToast } from '../contexts/ToastContext';
 import { getApiErrorMessage } from '../utils/errors';
+import { MetricCard, PageHeader } from '../components/UI';
 
 // Interface do Produto
 interface IProduto {
@@ -135,6 +145,9 @@ export const ProdutosPage = () => {
     });
   }, [produtos, searchTerm, statusFilter]);
 
+  const produtosAtivos = produtos.filter((produto) => produto.is_ativo).length;
+  const produtosInativos = produtos.length - produtosAtivos;
+
   if (isLoading) {
     return (
       <div style={styles.loadingContainer}>
@@ -146,21 +159,32 @@ export const ProdutosPage = () => {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div>
-          <h1 style={styles.title}>🛍️ Produtos</h1>
-          <p style={styles.subtitle}>Gerencie o catálogo de produtos disponíveis</p>
-        </div>
-        <button type="button" onClick={() => showForm ? resetForm() : setShowForm(true)} style={styles.addButton}>
-          {showForm ? '✕ Cancelar' : '➕ Novo Produto'}
-        </button>
+      <PageHeader
+        title="Produtos"
+        subtitle="Gerencie o catalogo de produtos disponiveis."
+        icon={<StorefrontOutlinedIcon fontSize="small" />}
+        action={(
+          <button type="button" onClick={() => showForm ? resetForm() : setShowForm(true)} style={styles.addButton}>
+            {showForm ? 'Cancelar' : (
+              <>
+                <AddOutlinedIcon sx={{ fontSize: 16, marginRight: '6px', verticalAlign: 'text-bottom' }} />
+                Novo Produto
+              </>
+            )}
+          </button>
+        )}
+      />
+
+      <div style={styles.statsGrid}>
+        <MetricCard label="Total" value={produtos.length} icon={<Inventory2OutlinedIcon fontSize="small" />} tone="info" />
+        <MetricCard label="Ativos" value={produtosAtivos} icon={<ToggleOnOutlinedIcon fontSize="small" />} tone="success" />
+        <MetricCard label="Inativos" value={produtosInativos} icon={<ToggleOffOutlinedIcon fontSize="small" />} tone="warning" />
       </div>
 
       {/* Error Alert */}
       {error && (
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>⚠️</span>
+          <span style={styles.alertIcon}><ErrorOutlineOutlinedIcon sx={{ fontSize: 18 }} /></span>
           <span>{error}</span>
         </div>
       )}
@@ -197,7 +221,7 @@ export const ProdutosPage = () => {
       {showForm && (
         <div style={styles.formCard}>
           <h3 style={styles.formTitle}>
-            {editingProduct ? '✏️ Editar Produto' : '➕ Criar Novo Produto'}
+            {editingProduct ? 'Editar Produto' : 'Criar Novo Produto'}
           </h3>
           <form onSubmit={handleCreateOrUpdate} style={styles.form}>
             <div style={styles.inputGroup}>
@@ -231,7 +255,7 @@ export const ProdutosPage = () => {
                 value={novoInstrucoes}
                 onChange={(e) => setNovoInstrucoes(e.target.value)}
                 style={{...styles.input, minHeight: '100px', resize: 'vertical'} as React.CSSProperties}
-                placeholder="Ex: 🚫 Não altere o nome dos perfis..."
+                placeholder="Ex: Não altere o nome dos perfis."
               />
             </div>
 
@@ -303,7 +327,7 @@ export const ProdutosPage = () => {
       <div style={styles.productsGrid}>
         {filteredProdutos.length === 0 ? (
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>📦</span>
+            <span style={styles.emptyIcon}><Inventory2OutlinedIcon sx={{ fontSize: 52 }} /></span>
             <h3 style={styles.emptyTitle}>
               {produtos.length === 0 ? "Nenhum produto cadastrado" : "Nenhum produto encontrado"}
             </h3>
@@ -321,13 +345,13 @@ export const ProdutosPage = () => {
                     ...styles.badge,
                     ...(produto.is_ativo ? styles.badgeActive : styles.badgeInactive)
                   }}>
-                    {produto.is_ativo ? '✓ Ativo' : '✕ Inativo'}
+                    {produto.is_ativo ? 'Ativo' : 'Inativo'}
                   </span>
                   <span style={{...styles.badge, ...styles.badgeEmail}}>
                     {
-                      produto.tipo_entrega === 'AUTOMATICA' ? '🤖 Automático' :
-                      produto.tipo_entrega === 'SOLICITA_EMAIL' ? '@ Requer Email' :
-                      '👨‍💻 Entrega Manual'
+                      produto.tipo_entrega === 'AUTOMATICA' ? 'Automatico' :
+                      produto.tipo_entrega === 'SOLICITA_EMAIL' ? '@ Requer e-mail' :
+                      'Entrega Manual'
                     }
                   </span>
                 </div>
@@ -364,7 +388,7 @@ export const ProdutosPage = () => {
                   style={{...styles.actionBtn, ...styles.editBtn}}
                   title="Editar produto"
                 >
-                  ✏️ Editar
+                  <EditOutlinedIcon sx={{ fontSize: 16 }} /> Editar
                 </button>
                 <button
                   type="button"
@@ -372,7 +396,7 @@ export const ProdutosPage = () => {
                   style={{...styles.actionBtn, ...styles.deleteBtn}}
                   title="Excluir produto"
                 >
-                  🗑️ Excluir
+                  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} /> Excluir
                 </button>
               </div>
             </div>
@@ -385,7 +409,7 @@ export const ProdutosPage = () => {
         <div style={styles.modalOverlay} onClick={() => setDeletingProduct(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>⚠️ Confirmar Exclusão</h3>
+              <h3 style={styles.modalTitle}>Confirmar Exclusão</h3>
               <button
                 type="button"
                 onClick={() => setDeletingProduct(null)}
@@ -400,7 +424,7 @@ export const ProdutosPage = () => {
                 Tem certeza que deseja excluir o produto <strong>"{deletingProduct.nome}"</strong>?
               </p>
               <div style={styles.warningBox}>
-                <span style={styles.warningIcon}>ℹ️</span>
+                <span style={styles.warningIcon}><InfoOutlinedIcon sx={{ fontSize: 18 }} /></span>
                 <p style={styles.warningText}>
                   Esta ação não pode ser desfeita. O produto será removido permanentemente do catálogo.
                 </p>
@@ -427,6 +451,7 @@ const styles: Record<string, React.CSSProperties> = {
   loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '16px' },
   spinner: { width: '48px', height: '48px', border: '4px solid var(--border-subtle)', borderTop: '4px solid var(--brand-500)', borderRadius: '50%', animation: 'spin 1s linear infinite' },
   loadingText: { fontSize: '16px', color: 'var(--text-secondary)' },
+  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' },
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' },
   title: { margin: '0 0 4px 0', fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)' },
   subtitle: { margin: 0, fontSize: '15px', color: 'var(--text-secondary)' },
@@ -523,7 +548,7 @@ const styles: Record<string, React.CSSProperties> = {
   productMeta: { textAlign: 'right' },
   metaText: { fontSize: '12px', color: 'var(--text-muted)' },
   actionButtons: { display: 'flex', gap: '8px', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)' },
-  actionBtn: { flex: 1, padding: '10px 16px', fontSize: '13px', fontWeight: 600, border: 'none', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s ease' },
+  actionBtn: { flex: 1, padding: '10px 16px', fontSize: '13px', fontWeight: 600, border: 'none', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s ease', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' },
   editBtn: { backgroundColor: '#dbeafe', color: '#1e40af' },
   deleteBtn: { backgroundColor: '#fee2e2', color: '#991b1b' },
   emptyState: { gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', gap: '16px' },

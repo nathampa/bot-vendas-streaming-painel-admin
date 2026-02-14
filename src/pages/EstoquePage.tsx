@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react';
 import { getAdminEstoque, getAdminProdutos, createEstoque, updateEstoque, deleteEstoque } from '../services/apiClient';
 import { useToast } from '../contexts/ToastContext';
 import { getApiErrorMessage } from '../utils/errors';
+import { MetricCard, PageHeader } from '../components/UI';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
+import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
+import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 
 interface IEstoque {
   id: string;
@@ -113,7 +118,7 @@ export const EstoquePage = () => {
         showToast('Conta atualizada com sucesso!', 'success');
       } else {
         if (!novaSenha) {
-          showToast('A senha e obrigatoria ao criar nova conta.', 'warning');
+          showToast('A senha é obrigatória ao criar nova conta.', 'warning');
           return;
         }
         await createEstoque(data);
@@ -145,7 +150,7 @@ export const EstoquePage = () => {
 
     try {
       await deleteEstoque(deletingEstoque.id);
-      showToast('Conta excluida com sucesso!', 'success');
+      showToast('Conta excluída com sucesso!', 'success');
       setDeletingEstoque(null);
       carregarDados();
     } catch (err: unknown) {
@@ -220,16 +225,21 @@ export const EstoquePage = () => {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div>
-          <h1 style={styles.title}>📦 Estoque</h1>
-          <p style={styles.subtitle}>Gerencie as contas disponíveis para venda</p>
-        </div>
-        <button type="button" onClick={() => showForm ? resetForm() : setShowForm(true)} style={styles.addButton}>
-          {showForm ? '✕ Cancelar' : '➕ Abastecer Estoque'}
-        </button>
-      </div>
+      <PageHeader
+        title="Estoque"
+        subtitle="Gerencie as contas disponíveis para venda."
+        icon={<Inventory2OutlinedIcon fontSize="small" />}
+        action={(
+          <button type="button" onClick={() => showForm ? resetForm() : setShowForm(true)} style={styles.addButton}>
+            {showForm ? 'Cancelar' : (
+              <>
+                <AddOutlinedIcon sx={{ fontSize: 16, marginRight: '6px', verticalAlign: 'text-bottom' }} />
+                Abastecer Estoque
+              </>
+            )}
+          </button>
+        )}
+      />
 
       {/* Error Alert */}
       {error && (
@@ -275,7 +285,7 @@ export const EstoquePage = () => {
             <div style={styles.inputRow}>
               <div style={styles.inputGroup}>
                 <label htmlFor="estoque-login" style={styles.label}>
-                  Login (Email)
+                  Login (e-mail)
                 </label>
                 <input
                   id="estoque-login"
@@ -422,29 +432,20 @@ export const EstoquePage = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div style={styles.statsGrid}>
-        <div style={styles.statCard}>
-          <div style={styles.statIcon}>📊</div>
-          <div>
-            <p style={styles.statLabel}>Contas (Filtro)</p>
-            <h3 style={styles.statValue}>{filteredEstoque.length}</h3>
-          </div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={{...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46'}}>✓</div>
-          <div>
-            <p style={styles.statLabel}>Prontas p/ Venda</p>
-            <h3 style={styles.statValue}>{filteredEstoque.filter(e => e.is_ativo && !e.requer_atencao).length}</h3>
-          </div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={{...styles.statIcon, backgroundColor: '#fee2e2', color: '#991b1b'}}>⚠</div>
-          <div>
-            <p style={styles.statLabel}>Requer Atenção</p>
-            <h3 style={styles.statValue}>{filteredEstoque.filter(e => e.requer_atencao).length}</h3>
-          </div>
-        </div>
+        <MetricCard label="Contas (filtro)" value={filteredEstoque.length} icon={<Inventory2OutlinedIcon fontSize="small" />} tone="info" />
+        <MetricCard
+          label="Prontas p/ venda"
+          value={filteredEstoque.filter((e) => e.is_ativo && !e.requer_atencao).length}
+          icon={<TaskAltOutlinedIcon fontSize="small" />}
+          tone="success"
+        />
+        <MetricCard
+          label="Requer atenção"
+          value={filteredEstoque.filter((e) => e.requer_atencao).length}
+          icon={<WarningAmberOutlinedIcon fontSize="small" />}
+          tone="warning"
+        />
       </div>
 
       {/* Estoque Grid */}
@@ -597,7 +598,7 @@ export const EstoquePage = () => {
                 type="button"
                 onClick={() => setDeletingEstoque(null)}
                 style={styles.modalClose}
-                aria-label="Fechar confirmacao de exclusao"
+                aria-label="Fechar confirmação de exclusão"
               >
                 x
               </button>
@@ -636,12 +637,12 @@ export const EstoquePage = () => {
         <div style={styles.modalOverlay} onClick={() => setResolvingEstoque(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>Confirmar Resolucao</h3>
+              <h3 style={styles.modalTitle}>Confirmar Resolução</h3>
               <button
                 type="button"
                 onClick={() => setResolvingEstoque(null)}
                 style={styles.modalClose}
-                aria-label="Fechar confirmacao de resolucao"
+                aria-label="Fechar confirmação de resolução"
               >
                 x
               </button>
@@ -653,7 +654,7 @@ export const EstoquePage = () => {
               <div style={styles.warningBox}>
                 <span style={styles.warningIcon}>i</span>
                 <p style={styles.warningText}>
-                  A flag "Requer Atencao" sera removida e a conta volta para o fluxo normal.
+                  A flag "Requer Atenção" será removida e a conta volta para o fluxo normal.
                 </p>
               </div>
             </div>

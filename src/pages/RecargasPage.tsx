@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
+import PendingActionsOutlinedIcon from '@mui/icons-material/PendingActionsOutlined';
+import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import { getAdminRecargas } from '../services/apiClient';
 import type { IRecargaAdminList } from '../types/api.types';
+import { MetricCard, PageHeader } from '../components/UI';
 
 export const RecargasPage = () => {
   const [recargas, setRecargas] = useState<IRecargaAdminList[]>([]);
@@ -37,13 +43,16 @@ export const RecargasPage = () => {
 
   const getStatusBadge = (status: string) => {
     if (status === 'PAGO') {
-      return <span style={{...styles.badge, ...styles.badgeSuccess}}>✓ Pago</span>;
+      return <span style={{...styles.badge, ...styles.badgeSuccess}}>Pago</span>;
     }
     if (status === 'PENDENTE') {
-      return <span style={{...styles.badge, ...styles.badgeWarning}}>⏳ Pendente</span>;
+      return <span style={{...styles.badge, ...styles.badgeWarning}}>Pendente</span>;
     }
-    return <span style={{...styles.badge, ...styles.badgeError}}>✕ Falhou</span>;
+    return <span style={{...styles.badge, ...styles.badgeError}}>Falhou</span>;
   };
+
+  const recargasPagas = recargas.filter((recarga) => recarga.status_pagamento === 'PAGO').length;
+  const recargasPendentes = recargas.filter((recarga) => recarga.status_pagamento === 'PENDENTE').length;
 
   if (isLoading) {
     return (
@@ -56,17 +65,21 @@ export const RecargasPage = () => {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div>
-          <h1 style={styles.title}>💰 Recargas</h1>
-          <p style={styles.subtitle}>Histórico das últimas 50 recargas de saldo</p>
-        </div>
+      <PageHeader
+        title="Recargas"
+        subtitle="Historico das ultimas 50 recargas de saldo."
+        icon={<AccountBalanceWalletOutlinedIcon fontSize="small" />}
+      />
+
+      <div style={styles.statsGrid}>
+        <MetricCard label="Total" value={recargas.length} icon={<ReceiptLongOutlinedIcon fontSize="small" />} tone="info" />
+        <MetricCard label="Pagas" value={recargasPagas} icon={<CheckCircleOutlineOutlinedIcon fontSize="small" />} tone="success" />
+        <MetricCard label="Pendentes" value={recargasPendentes} icon={<PendingActionsOutlinedIcon fontSize="small" />} tone="warning" />
       </div>
       
       {error && (
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>⚠️</span>
+          <span style={styles.alertIcon}><ErrorOutlineOutlinedIcon sx={{ fontSize: 18 }} /></span>
           <span>{error}</span>
         </div>
       )}
@@ -75,7 +88,7 @@ export const RecargasPage = () => {
       <div style={styles.tableContainer}>
         {recargas.length === 0 ? (
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>💰</span>
+            <span style={styles.emptyIcon}><AccountBalanceWalletOutlinedIcon sx={{ fontSize: 52 }} /></span>
             <h3 style={styles.emptyTitle}>Nenhuma recarga encontrada</h3>
             <p style={styles.emptyText}>Quando usuários adicionarem saldo, aparecerá aqui.</p>
           </div>
@@ -127,6 +140,7 @@ const styles: Record<string, React.CSSProperties> = {
   loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '16px' },
   spinner: { width: '48px', height: '48px', border: '4px solid var(--border-subtle)', borderTop: '4px solid var(--brand-500)', borderRadius: '50%', animation: 'spin 1s linear infinite' },
   loadingText: { fontSize: '16px', color: 'var(--text-secondary)' },
+  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' },
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' },
   title: { margin: '0 0 4px 0', fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)' },
   subtitle: { margin: 0, fontSize: '15px', color: 'var(--text-secondary)' },
