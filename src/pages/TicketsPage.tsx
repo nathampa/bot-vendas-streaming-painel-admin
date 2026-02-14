@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { getAdminTickets, getTicketDetalhes, resolverTicket } from '../services/apiClient';
 import type { ITicketLista, ITicketDetalhes } from '../types/api.types';
+import { useToast } from '../contexts/ToastContext';
 import { getApiErrorMessage } from '../utils/errors';
 
 type TicketStatus = 'ABERTO' | 'EM_ANALISE' | 'RESOLVIDO' | 'FECHADO' | null;
 type ResolverAction = 'TROCAR_CONTA' | 'REEMBOLSAR_CARTEIRA' | 'FECHAR_MANUALMENTE';
 
 export const TicketsPage = () => {
+  const { showToast } = useToast();
   const [tickets, setTickets] = useState<ITicketLista[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<ITicketDetalhes | null>(null);
   const [isLoadingList, setIsLoadingList] = useState(true);
@@ -71,7 +73,7 @@ export const TicketsPage = () => {
     setIsLoadingDetails(true);
     try {
       await resolverTicket(selectedTicket.id, resolverAction, mensagem);
-      alert('Solicitacao enviada! Processando...');
+      showToast('Solicitacao enviada! Processando...', 'success');
       handleCloseResolverDialog();
       setSelectedTicket(null);
       setFilterStatus('EM_ANALISE');
@@ -79,27 +81,27 @@ export const TicketsPage = () => {
     } catch (err: unknown) {
       console.error('Erro ao resolver ticket:', err);
       const errorMsg = getApiErrorMessage(err, 'Falha ao enviar solicitacao.');
-      alert(`Erro: ${errorMsg}`);
+      showToast(errorMsg, 'error');
     } finally {
       setIsLoadingDetails(false);
     }
   };
   const getStatusBadge = (status: string) => {
     const badges: Record<string, { color: string; bg: string; label: string }> = {
-      ABERTO: { color: '#f59e0b', bg: '#fef3c7', label: '🔴 Aberto' },
-      EM_ANALISE: { color: '#3b82f6', bg: '#dbeafe', label: '🔵 Em Análise' },
-      RESOLVIDO: { color: '#10b981', bg: '#d1fae5', label: '✅ Resolvido' },
-      FECHADO: { color: '#6b7280', bg: '#f3f4f6', label: '⚫ Fechado' },
+      ABERTO: { color: '#f59e0b', bg: '#fef3c7', label: 'ðŸ”´ Aberto' },
+      EM_ANALISE: { color: '#3b82f6', bg: '#dbeafe', label: 'ðŸ”µ Em AnÃ¡lise' },
+      RESOLVIDO: { color: '#10b981', bg: '#d1fae5', label: 'âœ… Resolvido' },
+      FECHADO: { color: 'var(--text-secondary)', bg: '#f3f4f6', label: 'âš« Fechado' },
     };
     return badges[status] || badges.ABERTO;
   };
 
   const getMotivoLabel = (motivo: string) => {
     const motivos: Record<string, string> = {
-      LOGIN_INVALIDO: '🔐 Login Inválido',
-      SEM_ASSINATURA: '📭 Sem Assinatura',
-      CONTA_CAIU: '💥 Conta Caiu',
-      OUTRO: '❓ Outro',
+      LOGIN_INVALIDO: 'ðŸ” Login InvÃ¡lido',
+      SEM_ASSINATURA: 'ðŸ“­ Sem Assinatura',
+      CONTA_CAIU: 'ðŸ’¥ Conta Caiu',
+      OUTRO: 'â“ Outro',
     };
     return motivos[motivo] || motivo;
   };
@@ -123,29 +125,29 @@ export const TicketsPage = () => {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>🎟️ Tickets de Suporte</h1>
-          <p style={styles.subtitle}>Gerencie e resolva os tickets dos usuários</p>
+          <h1 style={styles.title}>ðŸŽŸï¸ Tickets de Suporte</h1>
+          <p style={styles.subtitle}>Gerencie e resolva os tickets dos usuÃ¡rios</p>
         </div>
       </div>
 
       {/* Stats */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#fef3c7', color: '#92400e'}}>🔴</span>
+          <span style={{...styles.statIcon, backgroundColor: '#fef3c7', color: '#92400e'}}>ðŸ”´</span>
           <div>
             <p style={styles.statLabel}>Abertos</p>
             <h3 style={styles.statValue}>{tickets.filter(t => t.status === 'ABERTO').length}</h3>
           </div>
         </div>
         <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#dbeafe', color: '#1e40af'}}>🔵</span>
+          <span style={{...styles.statIcon, backgroundColor: '#dbeafe', color: '#1e40af'}}>ðŸ”µ</span>
           <div>
-            <p style={styles.statLabel}>Em Análise</p>
+            <p style={styles.statLabel}>Em AnÃ¡lise</p>
             <h3 style={styles.statValue}>{tickets.filter(t => t.status === 'EM_ANALISE').length}</h3>
           </div>
         </div>
         <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46'}}>✅</span>
+          <span style={{...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46'}}>âœ…</span>
           <div>
             <p style={styles.statLabel}>Resolvidos</p>
             <h3 style={styles.statValue}>{tickets.filter(t => t.status === 'RESOLVIDO').length}</h3>
@@ -160,26 +162,22 @@ export const TicketsPage = () => {
           <div style={styles.panelCard}>
             {/* Filters */}
             <div style={styles.filtersContainer}>
-              <button
-                onClick={() => setFilterStatus('ABERTO')}
+              <button type="button" onClick={() => setFilterStatus('ABERTO')}
                 style={{...styles.filterButton, ...(filterStatus === 'ABERTO' && styles.filterButtonActive)}}
               >
                 Abertos
               </button>
-              <button
-                onClick={() => setFilterStatus('EM_ANALISE')}
+              <button type="button" onClick={() => setFilterStatus('EM_ANALISE')}
                 style={{...styles.filterButton, ...(filterStatus === 'EM_ANALISE' && styles.filterButtonActive)}}
               >
-                Em Análise
+                Em AnÃ¡lise
               </button>
-              <button
-                onClick={() => setFilterStatus('RESOLVIDO')}
+              <button type="button" onClick={() => setFilterStatus('RESOLVIDO')}
                 style={{...styles.filterButton, ...(filterStatus === 'RESOLVIDO' && styles.filterButtonActive)}}
               >
                 Resolvidos
               </button>
-              <button
-                onClick={() => setFilterStatus(null)}
+              <button type="button" onClick={() => setFilterStatus(null)}
                 style={{...styles.filterButton, ...(filterStatus === null && styles.filterButtonActive)}}
               >
                 Todos
@@ -194,8 +192,8 @@ export const TicketsPage = () => {
               </div>
             ) : tickets.length === 0 ? (
               <div style={styles.emptyList}>
-                <span style={{fontSize: '48px', opacity: 0.5}}>🎟️</span>
-                <p style={{margin: 0, color: '#6b7280'}}>Nenhum ticket encontrado</p>
+                <span style={{fontSize: '48px', opacity: 0.5}}>ðŸŽŸï¸</span>
+                <p style={{margin: 0, color: 'var(--text-secondary)'}}>Nenhum ticket encontrado</p>
               </div>
             ) : (
               <div style={styles.ticketsList}>
@@ -207,6 +205,15 @@ export const TicketsPage = () => {
                     <div
                       key={ticket.id}
                       onClick={() => handleVerDetalhes(ticket.id)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          handleVerDetalhes(ticket.id);
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Abrir detalhes do ticket ${ticket.id}`}
                       style={{
                         ...styles.ticketItem,
                         ...(isSelected && styles.ticketItemActive)
@@ -240,9 +247,9 @@ export const TicketsPage = () => {
               </div>
             ) : !selectedTicket ? (
               <div style={styles.emptyDetails}>
-                <span style={{fontSize: '64px', opacity: 0.3}}>👈</span>
-                <h3 style={{margin: '16px 0 8px 0', color: '#1a1d29'}}>Selecione um Ticket</h3>
-                <p style={{margin: 0, color: '#6b7280', fontSize: '14px'}}>
+                <span style={{fontSize: '64px', opacity: 0.3}}>ðŸ‘ˆ</span>
+                <h3 style={{margin: '16px 0 8px 0', color: 'var(--text-primary)'}}>Selecione um Ticket</h3>
+                <p style={{margin: 0, color: 'var(--text-secondary)', fontSize: '14px'}}>
                   Clique em um ticket da lista para ver os detalhes
                 </p>
               </div>
@@ -251,8 +258,13 @@ export const TicketsPage = () => {
                 {/* Header */}
                 <div style={styles.detailsHeader}>
                   <h2 style={styles.detailsTitle}>Detalhes do Ticket</h2>
-                  <button onClick={() => setSelectedTicket(null)} style={styles.closeButton}>
-                    ✕
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTicket(null)}
+                    style={styles.closeButton}
+                    aria-label="Fechar painel de detalhes"
+                  >
+                    âœ•
                   </button>
                 </div>
 
@@ -268,7 +280,7 @@ export const TicketsPage = () => {
                     </span>
                   </div>
                   <div style={styles.infoCard}>
-                    <span style={styles.infoLabel}>Usuário</span>
+                    <span style={styles.infoLabel}>UsuÃ¡rio</span>
                     <span style={styles.infoValue}>{selectedTicket.usuario_telegram_id}</span>
                   </div>
                   <div style={styles.infoCard}>
@@ -283,15 +295,15 @@ export const TicketsPage = () => {
 
                 {selectedTicket.descricao_outros && (
                   <div style={styles.descricaoCard}>
-                    <span style={styles.descricaoLabel}>Descrição</span>
+                    <span style={styles.descricaoLabel}>DescriÃ§Ã£o</span>
                     <p style={styles.descricaoText}>{selectedTicket.descricao_outros}</p>
                   </div>
                 )}
 
-                {/* Conta Problemática */}
+                {/* Conta ProblemÃ¡tica */}
                 {contaProblematica ? (
                   <div style={styles.contaCard}>
-                    <h3 style={styles.contaTitle}>🔐 Conta Problemática</h3>
+                    <h3 style={styles.contaTitle}>ðŸ” Conta ProblemÃ¡tica</h3>
                     <div style={styles.contaInfo}>
                       <div style={styles.contaRow}>
                         <span style={styles.contaLabel}>Login:</span>
@@ -313,9 +325,9 @@ export const TicketsPage = () => {
                   </div>
                 ) : (
                   <div style={styles.contaCard}>
-                    <h3 style={styles.contaTitle}>🧾 Conta Não Associada</h3>
+                    <h3 style={styles.contaTitle}>ðŸ§¾ Conta NÃ£o Associada</h3>
                     <p style={styles.contaEmptyText}>
-                      Este pedido é de entrega manual e não possui conta vinculada.
+                      Este pedido Ã© de entrega manual e nÃ£o possui conta vinculada.
                     </p>
                   </div>
                 )}
@@ -323,27 +335,24 @@ export const TicketsPage = () => {
                 {/* Actions */}
                 {selectedTicket.status === 'ABERTO' && (
                   <div style={styles.actionsSection}>
-                    <h3 style={styles.actionsTitle}>Ações de Resolução</h3>
+                    <h3 style={styles.actionsTitle}>AÃ§Ãµes de ResoluÃ§Ã£o</h3>
                     <div style={styles.actionsGrid}>
                       {contaProblematica && (
-                        <button
-                          onClick={() => handleOpenResolverDialog('TROCAR_CONTA')}
+                        <button type="button" onClick={() => handleOpenResolverDialog('TROCAR_CONTA')}
                           style={{...styles.actionButton, ...styles.actionButtonSwap}}
                         >
-                          🔁 Trocar Conta
+                          ðŸ” Trocar Conta
                         </button>
                       )}
-                      <button
-                        onClick={() => handleOpenResolverDialog('REEMBOLSAR_CARTEIRA')}
+                      <button type="button" onClick={() => handleOpenResolverDialog('REEMBOLSAR_CARTEIRA')}
                         style={{...styles.actionButton, ...styles.actionButtonRefund}}
                       >
-                        💰 Reembolsar
+                        ðŸ’° Reembolsar
                       </button>
-                      <button
-                        onClick={() => handleOpenResolverDialog('FECHAR_MANUALMENTE')}
+                      <button type="button" onClick={() => handleOpenResolverDialog('FECHAR_MANUALMENTE')}
                         style={{...styles.actionButton, ...styles.actionButtonClose}}
                       >
-                        ✓ Fechar Manual
+                        âœ“ Fechar Manual
                       </button>
                     </div>
                   </div>
@@ -359,7 +368,13 @@ export const TicketsPage = () => {
           <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div style={styles.modalHeader}>
               <h3 style={styles.modalTitle}>{resolverDialogTitle}</h3>
-              <button onClick={handleCloseResolverDialog} style={styles.modalClose} disabled={isLoadingDetails}>
+              <button
+                type="button"
+                onClick={handleCloseResolverDialog}
+                style={styles.modalClose}
+                disabled={isLoadingDetails}
+                aria-label="Fechar modal de resolucao"
+              >
                 X
               </button>
             </div>
@@ -367,8 +382,11 @@ export const TicketsPage = () => {
               <p style={styles.modalText}>{resolverDialogDescription}</p>
               {resolverAction === 'FECHAR_MANUALMENTE' && (
                 <div style={styles.inputGroup}>
-                  <label style={styles.inputLabel}>Mensagem para o usuario (opcional)</label>
+                  <label htmlFor="ticket-resolver-mensagem" style={styles.inputLabel}>
+                    Mensagem para o usuario (opcional)
+                  </label>
                   <textarea
+                    id="ticket-resolver-mensagem"
                     value={resolverMensagem}
                     onChange={(e) => setResolverMensagem(e.target.value)}
                     rows={4}
@@ -379,10 +397,10 @@ export const TicketsPage = () => {
               )}
             </div>
             <div style={styles.modalFooter}>
-              <button onClick={handleCloseResolverDialog} style={styles.modalCancelBtn} disabled={isLoadingDetails}>
+              <button type="button" onClick={handleCloseResolverDialog} style={styles.modalCancelBtn} disabled={isLoadingDetails}>
                 Cancelar
               </button>
-              <button onClick={handleResolver} style={styles.modalConfirmBtn} disabled={isLoadingDetails}>
+              <button type="button" onClick={handleResolver} style={styles.modalConfirmBtn} disabled={isLoadingDetails}>
                 {isLoadingDetails ? 'Processando...' : 'Confirmar'}
               </button>
             </div>
@@ -405,12 +423,12 @@ const styles: Record<string, React.CSSProperties> = {
     margin: '0 0 4px 0',
     fontSize: '28px',
     fontWeight: 700,
-    color: '#1a1d29',
+    color: 'var(--text-primary)',
   },
   subtitle: {
     margin: 0,
     fontSize: '15px',
-    color: '#6b7280',
+    color: 'var(--text-secondary)',
   },
   statsGrid: {
     display: 'grid',
@@ -439,13 +457,13 @@ const styles: Record<string, React.CSSProperties> = {
   statLabel: {
     margin: '0 0 4px 0',
     fontSize: '13px',
-    color: '#6b7280',
+    color: 'var(--text-secondary)',
   },
   statValue: {
     margin: 0,
     fontSize: '24px',
     fontWeight: 700,
-    color: '#1a1d29',
+    color: 'var(--text-primary)',
   },
   mainContent: {
     display: 'grid',
@@ -470,22 +488,22 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     gap: '8px',
     padding: '16px',
-    borderBottom: '1px solid #e5e7eb',
+    borderBottom: '1px solid var(--border-subtle)',
     flexWrap: 'wrap',
   },
   filterButton: {
     padding: '8px 16px',
     fontSize: '13px',
     fontWeight: 600,
-    backgroundColor: '#f9fafb',
-    color: '#6b7280',
+    backgroundColor: 'var(--surface-soft)',
+    color: 'var(--text-secondary)',
     border: 'none',
     borderRadius: '8px',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
   },
   filterButtonActive: {
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    background: 'linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%)',
     color: '#fff',
   },
   ticketsList: {
@@ -497,14 +515,14 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '16px',
     marginBottom: '8px',
     borderRadius: '8px',
-    backgroundColor: '#f9fafb',
+    backgroundColor: 'var(--surface-soft)',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     border: '2px solid transparent',
   },
   ticketItemActive: {
     backgroundColor: '#ede9fe',
-    borderColor: '#667eea',
+    borderColor: 'var(--brand-500)',
   },
   ticketItemHeader: {
     display: 'flex',
@@ -520,17 +538,17 @@ const styles: Record<string, React.CSSProperties> = {
   },
   ticketDate: {
     fontSize: '12px',
-    color: '#6b7280',
+    color: 'var(--text-secondary)',
   },
   ticketMotivo: {
     margin: '8px 0',
     fontSize: '14px',
     fontWeight: 600,
-    color: '#1a1d29',
+    color: 'var(--text-primary)',
   },
   ticketId: {
     fontSize: '11px',
-    color: '#9ca3af',
+    color: 'var(--text-muted)',
   },
   loadingSmall: {
     display: 'flex',
@@ -543,8 +561,8 @@ const styles: Record<string, React.CSSProperties> = {
   spinnerSmall: {
     width: '32px',
     height: '32px',
-    border: '3px solid #e5e7eb',
-    borderTop: '3px solid #667eea',
+    border: '3px solid var(--border-subtle)',
+    borderTop: '3px solid var(--brand-500)',
     borderRadius: '50%',
     animation: 'spin 1s linear infinite',
   },
@@ -579,14 +597,14 @@ const styles: Record<string, React.CSSProperties> = {
     margin: 0,
     fontSize: '20px',
     fontWeight: 700,
-    color: '#1a1d29',
+    color: 'var(--text-primary)',
   },
   closeButton: {
     width: '32px',
     height: '32px',
     borderRadius: '8px',
-    backgroundColor: '#f5f7fa',
-    color: '#6b7280',
+    backgroundColor: 'var(--surface-muted)',
+    color: 'var(--text-secondary)',
     border: 'none',
     fontSize: '18px',
     cursor: 'pointer',
@@ -602,7 +620,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   infoCard: {
     padding: '12px',
-    backgroundColor: '#f9fafb',
+    backgroundColor: 'var(--surface-soft)',
     borderRadius: '8px',
     display: 'flex',
     flexDirection: 'column',
@@ -610,12 +628,12 @@ const styles: Record<string, React.CSSProperties> = {
   },
   infoLabel: {
     fontSize: '12px',
-    color: '#6b7280',
+    color: 'var(--text-secondary)',
     fontWeight: 500,
   },
   infoValue: {
     fontSize: '14px',
-    color: '#1a1d29',
+    color: 'var(--text-primary)',
     fontWeight: 600,
   },
   descricaoCard: {
@@ -639,7 +657,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   contaCard: {
     padding: '16px',
-    backgroundColor: '#f9fafb',
+    backgroundColor: 'var(--surface-soft)',
     borderRadius: '8px',
     marginBottom: '20px',
   },
@@ -647,7 +665,7 @@ const styles: Record<string, React.CSSProperties> = {
     margin: '0 0 12px 0',
     fontSize: '16px',
     fontWeight: 600,
-    color: '#1a1d29',
+    color: 'var(--text-primary)',
   },
   contaInfo: {
     display: 'flex',
@@ -662,27 +680,27 @@ const styles: Record<string, React.CSSProperties> = {
   contaEmptyText: {
     margin: 0,
     fontSize: '14px',
-    color: '#6b7280',
+    color: 'var(--text-secondary)',
   },
   contaLabel: {
     fontSize: '13px',
-    color: '#6b7280',
+    color: 'var(--text-secondary)',
     fontWeight: 500,
   },
   contaValue: {
     fontSize: '14px',
-    color: '#1a1d29',
+    color: 'var(--text-primary)',
     fontWeight: 600,
   },
   actionsSection: {
     paddingTop: '20px',
-    borderTop: '2px solid #e5e7eb',
+    borderTop: '2px solid var(--border-subtle)',
   },
   actionsTitle: {
     margin: '0 0 16px 0',
     fontSize: '16px',
     fontWeight: 600,
-    color: '#1a1d29',
+    color: 'var(--text-primary)',
   },
   actionsGrid: {
     display: 'grid',
@@ -705,7 +723,7 @@ const styles: Record<string, React.CSSProperties> = {
     background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
   },
   actionButtonClose: {
-    background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+    background: 'linear-gradient(135deg, var(--text-secondary) 0%, #4b5563 100%)',
   },
   modalOverlay: {
     position: 'fixed',
@@ -727,7 +745,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   modalHeader: {
     padding: '20px 24px',
-    borderBottom: '1px solid #e5e7eb',
+    borderBottom: '1px solid var(--border-subtle)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -736,14 +754,14 @@ const styles: Record<string, React.CSSProperties> = {
     margin: 0,
     fontSize: '18px',
     fontWeight: 700,
-    color: '#1a1d29',
+    color: 'var(--text-primary)',
   },
   modalClose: {
     background: 'none',
     border: 'none',
     fontSize: '18px',
     cursor: 'pointer',
-    color: '#6b7280',
+    color: 'var(--text-secondary)',
     padding: '4px',
   },
   modalBody: {
@@ -768,7 +786,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   textarea: {
     width: '100%',
-    border: '1px solid #d1d5db',
+    border: '1px solid var(--border-default)',
     borderRadius: '8px',
     padding: '10px 12px',
     fontFamily: 'inherit',
@@ -777,7 +795,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   modalFooter: {
     padding: '16px 24px 20px',
-    borderTop: '1px solid #e5e7eb',
+    borderTop: '1px solid var(--border-subtle)',
     display: 'flex',
     gap: '12px',
     justifyContent: 'flex-end',
@@ -803,6 +821,8 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
   },
 };
+
+
 
 
 

@@ -43,7 +43,7 @@ const PublicRoute = () => {
 };
 
 const PageFallback = () => (
-  <div style={{ display: 'grid', placeItems: 'center', minHeight: '40vh', color: '#6b7280' }}>
+  <div style={{ display: 'grid', placeItems: 'center', minHeight: '40vh', color: 'var(--text-secondary)' }}>
     Carregando pagina...
   </div>
 );
@@ -80,4 +80,5 @@ function App() {
 }
 
 export default App;
+
 

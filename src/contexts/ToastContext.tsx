@@ -25,10 +25,26 @@ type ToastContextType = {
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 const variantStyles: Record<ToastVariant, CSSProperties> = {
-  success: { backgroundColor: '#dcfce7', color: '#166534', borderColor: '#86efac' },
-  error: { backgroundColor: '#fee2e2', color: '#991b1b', borderColor: '#fecaca' },
-  info: { backgroundColor: '#dbeafe', color: '#1e40af', borderColor: '#bfdbfe' },
-  warning: { backgroundColor: '#fef3c7', color: '#92400e', borderColor: '#fde68a' },
+  success: {
+    backgroundColor: 'var(--status-success-bg)',
+    color: 'var(--status-success-fg)',
+    borderColor: 'var(--status-success-border)',
+  },
+  error: {
+    backgroundColor: 'var(--status-error-bg)',
+    color: 'var(--status-error-fg)',
+    borderColor: 'var(--status-error-border)',
+  },
+  info: {
+    backgroundColor: 'var(--status-info-bg)',
+    color: 'var(--status-info-fg)',
+    borderColor: 'var(--status-info-border)',
+  },
+  warning: {
+    backgroundColor: 'var(--status-warning-bg)',
+    color: 'var(--status-warning-fg)',
+    borderColor: 'var(--status-warning-border)',
+  },
 };
 
 export const ToastProvider = ({ children }: { children: ReactNode }) => {
@@ -49,12 +65,13 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
     const originalAlert = window.alert;
     window.alert = (message?: string) => {
       const text = String(message ?? '');
+      const lower = text.toLowerCase();
       const variant: ToastVariant =
-        text.includes('❌') || text.toLowerCase().includes('erro')
+        lower.includes('erro')
           ? 'error'
-          : text.includes('⚠') || text.toLowerCase().includes('atenc')
+          : lower.includes('atenc')
             ? 'warning'
-            : text.includes('✅')
+            : lower.includes('sucesso')
               ? 'success'
               : 'info';
       showToast(text, variant);
@@ -106,4 +123,5 @@ const styles: Record<string, CSSProperties> = {
     boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
   },
 };
+
 

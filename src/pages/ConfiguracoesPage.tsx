@@ -19,7 +19,7 @@ const globalStyles = `
     height: 0;
   }
   .config-switch input:checked + .config-slider {
-    background-color: #667eea;
+    background-color: var(--brand-500);
   }
   .config-slider:before {
     position: absolute;
@@ -140,7 +140,7 @@ export const ConfiguracoesPage = () => {
           <label htmlFor="afiliado_ativo" style={styles.switchLabel}>
             Ativar sistema de afiliados
           </label>
-          <label className="config-switch" style={styles.switch}>
+          <div className="config-switch" style={styles.switch}>
             <input
               type="checkbox"
               id="afiliado_ativo"
@@ -149,7 +149,7 @@ export const ConfiguracoesPage = () => {
               onChange={handleChange}
             />
             <span className="config-slider" style={styles.slider} />
-          </label>
+          </div>
         </div>
 
         <hr style={styles.hr} />
@@ -230,15 +230,15 @@ const styles: Record<string, React.CSSProperties> = {
   spinner: {
     width: '48px',
     height: '48px',
-    border: '4px solid #e5e7eb',
-    borderTop: '4px solid #667eea',
+    border: '4px solid var(--border-subtle)',
+    borderTop: '4px solid var(--brand-500)',
     borderRadius: '50%',
     animation: 'spin 1s linear infinite',
   },
-  loadingText: { fontSize: '16px', color: '#6b7280' },
+  loadingText: { fontSize: '16px', color: 'var(--text-secondary)' },
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' },
-  title: { margin: '0 0 4px 0', fontSize: '28px', fontWeight: 700, color: '#1a1d29' },
-  subtitle: { margin: 0, fontSize: '15px', color: '#6b7280' },
+  title: { margin: '0 0 4px 0', fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)' },
+  subtitle: { margin: 0, fontSize: '15px', color: 'var(--text-secondary)' },
   alertError: {
     display: 'flex',
     alignItems: 'center',
@@ -261,20 +261,20 @@ const styles: Record<string, React.CSSProperties> = {
     margin: '0 0 24px 0',
     fontSize: '20px',
     fontWeight: 700,
-    color: '#1a1d29',
+    color: 'var(--text-primary)',
     paddingBottom: '16px',
-    borderBottom: '1px solid #e5e7eb',
+    borderBottom: '1px solid var(--border-subtle)',
   },
   checkboxGroup: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0' },
   switchLabel: { fontSize: '16px', fontWeight: 600, color: '#374151', cursor: 'pointer' },
-  hr: { border: 'none', height: '1px', backgroundColor: '#e5e7eb', margin: '16px 0' },
+  hr: { border: 'none', height: '1px', backgroundColor: 'var(--border-subtle)', margin: '16px 0' },
   optionsGrid: { display: 'grid', gridTemplateColumns: '1fr', gap: '24px' },
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
   label: { fontSize: '14px', fontWeight: 600, color: '#374151' },
   input: {
     padding: '12px 16px',
     fontSize: '15px',
-    border: '2px solid #e5e7eb',
+    border: '2px solid var(--border-subtle)',
     borderRadius: '8px',
     width: '100%',
     fontFamily: 'inherit',
@@ -284,13 +284,13 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'flex-end',
     paddingTop: '24px',
     marginTop: '24px',
-    borderTop: '1px solid #e5e7eb',
+    borderTop: '1px solid var(--border-subtle)',
   },
   submitButton: {
     padding: '12px 24px',
     fontSize: '14px',
     fontWeight: 600,
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    background: 'linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%)',
     color: '#fff',
     border: 'none',
     borderRadius: '8px',
@@ -314,4 +314,5 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: '28px',
   },
 };
+
 

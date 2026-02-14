@@ -14,8 +14,8 @@ export const SugestoesPage = () => {
       setSugestoes(response.data);
       setError(null);
     } catch (err) {
-      console.error("Erro ao buscar sugestões:", err);
-      setError("Falha ao carregar sugestões.");
+      console.error("Erro ao buscar sugestÃµes:", err);
+      setError("Falha ao carregar sugestÃµes.");
     } finally {
       setIsLoading(false);
     }
@@ -28,15 +28,15 @@ export const SugestoesPage = () => {
   const getPopularityColor = (contagem: number): string => {
     if (contagem >= 20) return '#ef4444'; // Vermelho - Muito popular
     if (contagem >= 10) return '#f59e0b'; // Amarelo - Popular
-    if (contagem >= 5) return '#3b82f6';  // Azul - Médio
-    return '#6b7280'; // Cinza - Baixo
+    if (contagem >= 5) return '#3b82f6';  // Azul - MÃ©dio
+    return 'var(--text-secondary)'; // Cinza - Baixo
   };
 
   const getPopularityLabel = (contagem: number): string => {
-    if (contagem >= 20) return '🔥 Muito Popular';
-    if (contagem >= 10) return '⭐ Popular';
-    if (contagem >= 5) return '📈 Crescendo';
-    return '📊 Novo';
+    if (contagem >= 20) return 'ðŸ”¥ Muito Popular';
+    if (contagem >= 10) return 'â­ Popular';
+    if (contagem >= 5) return 'ðŸ“ˆ Crescendo';
+    return 'ðŸ“Š Novo';
   };
 
   const maxContagem = Math.max(...sugestoes.map(s => s.contagem), 1);
@@ -45,7 +45,7 @@ export const SugestoesPage = () => {
     return (
       <div style={styles.loadingContainer}>
         <div style={styles.spinner} />
-        <p style={styles.loadingText}>Carregando sugestões...</p>
+        <p style={styles.loadingText}>Carregando sugestÃµes...</p>
       </div>
     );
   }
@@ -55,18 +55,18 @@ export const SugestoesPage = () => {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>💡 Sugestões dos Usuários</h1>
-          <p style={styles.subtitle}>Veja o que os usuários mais pedem (ordenado por popularidade)</p>
+          <h1 style={styles.title}>ðŸ’¡ SugestÃµes dos UsuÃ¡rios</h1>
+          <p style={styles.subtitle}>Veja o que os usuÃ¡rios mais pedem (ordenado por popularidade)</p>
         </div>
       </div>
 
       {/* Info Box */}
       <div style={styles.infoBox}>
-        <span style={styles.infoIcon}>ℹ️</span>
+        <span style={styles.infoIcon}>â„¹ï¸</span>
         <div style={styles.infoContent}>
           <p style={styles.infoText}>
-            <strong>Como funciona:</strong> A API agrupa sugestões idênticas automaticamente. 
-            Por exemplo, "disney plus" e "Disney Plus" são contados juntos.
+            <strong>Como funciona:</strong> A API agrupa sugestÃµes idÃªnticas automaticamente. 
+            Por exemplo, "disney plus" e "Disney Plus" sÃ£o contados juntos.
           </p>
         </div>
       </div>
@@ -74,14 +74,14 @@ export const SugestoesPage = () => {
       {/* Stats */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#dbeafe', color: '#1e40af'}}>💡</span>
+          <span style={{...styles.statIcon, backgroundColor: '#dbeafe', color: '#1e40af'}}>ðŸ’¡</span>
           <div>
-            <p style={styles.statLabel}>Total de Sugestões</p>
+            <p style={styles.statLabel}>Total de SugestÃµes</p>
             <h3 style={styles.statValue}>{sugestoes.length}</h3>
           </div>
         </div>
         <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#fef3c7', color: '#92400e'}}>🔥</span>
+          <span style={{...styles.statIcon, backgroundColor: '#fef3c7', color: '#92400e'}}>ðŸ”¥</span>
           <div>
             <p style={styles.statLabel}>Mais Pedido</p>
             <h3 style={styles.statValue}>
@@ -90,7 +90,7 @@ export const SugestoesPage = () => {
           </div>
         </div>
         <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46'}}>📊</span>
+          <span style={{...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46'}}>ðŸ“Š</span>
           <div>
             <p style={styles.statLabel}>Total de Pedidos</p>
             <h3 style={styles.statValue}>
@@ -103,19 +103,19 @@ export const SugestoesPage = () => {
       {/* Error Alert */}
       {error && (
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>⚠️</span>
+          <span style={styles.alertIcon}>âš ï¸</span>
           <span>{error}</span>
         </div>
       )}
 
-      {/* Sugestões Grid */}
+      {/* SugestÃµes Grid */}
       <div style={styles.sugestoesContainer}>
         {sugestoes.length === 0 ? (
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>💡</span>
-            <h3 style={styles.emptyTitle}>Nenhuma sugestão ainda</h3>
+            <span style={styles.emptyIcon}>ðŸ’¡</span>
+            <h3 style={styles.emptyTitle}>Nenhuma sugestÃ£o ainda</h3>
             <p style={styles.emptyText}>
-              Quando os usuários começarem a pedir novos streamings, eles aparecerão aqui
+              Quando os usuÃ¡rios comeÃ§arem a pedir novos streamings, eles aparecerÃ£o aqui
             </p>
           </div>
         ) : (
@@ -130,7 +130,7 @@ export const SugestoesPage = () => {
                   key={sugestao.nome_streaming}
                   style={{
                     ...styles.sugestaoCard,
-                    borderColor: isTop3 ? color : '#e5e7eb'
+                    borderColor: isTop3 ? color : 'var(--border-subtle)'
                   }}
                 >
                   {/* Ranking Badge */}
@@ -151,7 +151,7 @@ export const SugestoesPage = () => {
                   {/* Contagem */}
                   <div style={styles.contagemSection}>
                     <div style={styles.contagemHeader}>
-                      <span style={styles.contagemLabel}>Número de Pedidos</span>
+                      <span style={styles.contagemLabel}>NÃºmero de Pedidos</span>
                       <span style={{...styles.contagemValue, color: color}}>
                         {sugestao.contagem}
                       </span>
@@ -181,11 +181,11 @@ export const SugestoesPage = () => {
                       backgroundColor: sugestao.status === 'EM_ANALISE' ? '#fef3c7' : 
                                      sugestao.status === 'DISPONIVEL' ? '#d1fae5' : '#f3f4f6',
                       color: sugestao.status === 'EM_ANALISE' ? '#92400e' :
-                             sugestao.status === 'DISPONIVEL' ? '#065f46' : '#6b7280'
+                             sugestao.status === 'DISPONIVEL' ? '#065f46' : 'var(--text-secondary)'
                     }}>
-                      {sugestao.status === 'PENDENTE' ? '⏳ Pendente' :
-                       sugestao.status === 'EM_ANALISE' ? '🔍 Em Análise' :
-                       sugestao.status === 'DISPONIVEL' ? '✅ Disponível' :
+                      {sugestao.status === 'PENDENTE' ? 'â³ Pendente' :
+                       sugestao.status === 'EM_ANALISE' ? 'ðŸ” Em AnÃ¡lise' :
+                       sugestao.status === 'DISPONIVEL' ? 'âœ… DisponÃ­vel' :
                        sugestao.status}
                     </span>
                   </div>
@@ -200,7 +200,7 @@ export const SugestoesPage = () => {
       {sugestoes.length > 0 && (
         <div style={styles.bottomInfo}>
           <p style={styles.bottomInfoText}>
-            💡 <strong>Dica:</strong> Priorize os streamings com mais pedidos para maximizar suas vendas!
+            ðŸ’¡ <strong>Dica:</strong> Priorize os streamings com mais pedidos para maximizar suas vendas!
           </p>
         </div>
       )}
@@ -224,14 +224,14 @@ const styles: Record<string, React.CSSProperties> = {
   spinner: {
     width: '48px',
     height: '48px',
-    border: '4px solid #e5e7eb',
-    borderTop: '4px solid #667eea',
+    border: '4px solid var(--border-subtle)',
+    borderTop: '4px solid var(--brand-500)',
     borderRadius: '50%',
     animation: 'spin 1s linear infinite',
   },
   loadingText: {
     fontSize: '16px',
-    color: '#6b7280',
+    color: 'var(--text-secondary)',
   },
   header: {
     marginBottom: '32px',
@@ -240,12 +240,12 @@ const styles: Record<string, React.CSSProperties> = {
     margin: '0 0 4px 0',
     fontSize: '28px',
     fontWeight: 700,
-    color: '#1a1d29',
+    color: 'var(--text-primary)',
   },
   subtitle: {
     margin: 0,
     fontSize: '15px',
-    color: '#6b7280',
+    color: 'var(--text-secondary)',
   },
   infoBox: {
     display: 'flex',
@@ -295,7 +295,7 @@ const styles: Record<string, React.CSSProperties> = {
   statLabel: {
     margin: '0 0 4px 0',
     fontSize: '13px',
-    color: '#6b7280',
+    color: 'var(--text-secondary)',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
   },
@@ -303,7 +303,7 @@ const styles: Record<string, React.CSSProperties> = {
     margin: 0,
     fontSize: '24px',
     fontWeight: 700,
-    color: '#1a1d29',
+    color: 'var(--text-primary)',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -365,7 +365,7 @@ const styles: Record<string, React.CSSProperties> = {
     margin: 0,
     fontSize: '20px',
     fontWeight: 700,
-    color: '#1a1d29',
+    color: 'var(--text-primary)',
     flex: 1,
     textTransform: 'capitalize',
   },
@@ -385,7 +385,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   contagemLabel: {
     fontSize: '13px',
-    color: '#6b7280',
+    color: 'var(--text-secondary)',
     fontWeight: 500,
   },
   contagemValue: {
@@ -395,7 +395,7 @@ const styles: Record<string, React.CSSProperties> = {
   progressBar: {
     width: '100%',
     height: '12px',
-    backgroundColor: '#e5e7eb',
+    backgroundColor: 'var(--border-subtle)',
     borderRadius: '6px',
     overflow: 'hidden',
     marginBottom: '6px',
@@ -414,11 +414,11 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     gap: '8px',
     paddingTop: '16px',
-    borderTop: '1px solid #e5e7eb',
+    borderTop: '1px solid var(--border-subtle)',
   },
   statusLabel: {
     fontSize: '13px',
-    color: '#6b7280',
+    color: 'var(--text-secondary)',
     fontWeight: 500,
   },
   statusBadge: {
@@ -445,12 +445,12 @@ const styles: Record<string, React.CSSProperties> = {
   emptyTitle: {
     margin: 0,
     fontSize: '20px',
-    color: '#1a1d29',
+    color: 'var(--text-primary)',
   },
   emptyText: {
     margin: 0,
     fontSize: '14px',
-    color: '#6b7280',
+    color: 'var(--text-secondary)',
     textAlign: 'center',
   },
   bottomInfo: {
@@ -466,3 +466,4 @@ const styles: Record<string, React.CSSProperties> = {
     lineHeight: 1.5,
   },
 };
+

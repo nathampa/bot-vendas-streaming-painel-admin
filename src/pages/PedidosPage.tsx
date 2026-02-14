@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { getAdminPedidos, getPedidoDetalhes, entregarPedidoManual } from '../services/apiClient';
 import type { IPedidoAdminList, IPedidoAdminDetails } from '../types/api.types';
+import { useToast } from '../contexts/ToastContext';
 import { getApiErrorMessage } from '../utils/errors';
 
 export const PedidosPage = () => {
+  const { showToast } = useToast();
   const [pedidos, setPedidos] = useState<IPedidoAdminList[]>([]);
   const [selectedPedido, setSelectedPedido] = useState<IPedidoAdminDetails | null>(null);
   const [isLoadingList, setIsLoadingList] = useState(true);
@@ -41,7 +43,7 @@ export const PedidosPage = () => {
     } catch (err: unknown) {
       console.error("Erro ao buscar detalhes:", err);
       const errorMsg = getApiErrorMessage(err, "Falha ao carregar detalhes.");
-      alert(`❌ Erro: ${errorMsg}`);
+      showToast(errorMsg, 'error');
     } finally {
       setIsLoadingDetails(false);
     }
@@ -70,12 +72,21 @@ export const PedidosPage = () => {
     });
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    alert('📋 Copiado!');
+  const copyToClipboard = async (text: string, label: string) => {
+    if (!text) {
+      showToast(`Nao ha ${label} para copiar.`, 'warning');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast(`${label} copiado com sucesso.`, 'success');
+    } catch {
+      showToast(`Falha ao copiar ${label}.`, 'error');
+    }
   };
 
-  // Novas funções para o fluxo de entrega
+  // Novas funÃ§Ãµes para o fluxo de entrega
   const handleOpenEntregaModal = (pedido: IPedidoAdminList) => {
     setEntregaModalPedido(pedido);
     setEntregaLogin('');
@@ -93,31 +104,31 @@ export const PedidosPage = () => {
 
     setIsEntregaLoading(true);
     try {
-      // Chama a nova função da API
+      // Chama a nova funÃ§Ã£o da API
       await entregarPedidoManual(entregaModalPedido.id, {
         login: entregaLogin,
         senha: entregaSenha,
       });
 
-      alert("✅ Entrega realizada com sucesso! O cliente foi notificado.");
+      showToast('Entrega realizada com sucesso! O cliente foi notificado.', 'success');
       handleCloseEntregaModal();
       carregarPedidos(); // Recarrega a lista para atualizar o status
 
     } catch (err: unknown) {
       console.error("Erro ao entregar pedido:", err);
       const errorMsg = getApiErrorMessage(err, "Falha ao realizar entrega.");
-      alert(`❌ Erro: ${errorMsg}`);
+      showToast(errorMsg, 'error');
     } finally {
       setIsEntregaLoading(false);
     }
   };
   
-  // Nova função para badge de status
+  // Nova funÃ§Ã£o para badge de status
   const getStatusBadge = (status: 'ENTREGUE' | 'PENDENTE') => {
     if (status === 'PENDENTE') {
-      return <span style={{...styles.badge, ...styles.badgeWarning}}>⏳ Pendente</span>;
+      return <span style={{...styles.badge, ...styles.badgeWarning}}>â³ Pendente</span>;
     }
-    return <span style={{...styles.badge, ...styles.badgeSuccess}}>✅ Entregue</span>;
+    return <span style={{...styles.badge, ...styles.badgeSuccess}}>âœ… Entregue</span>;
   };
 
   if (isLoadingList) {
@@ -134,16 +145,16 @@ export const PedidosPage = () => {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>🧾 Pedidos</h1>
-          <p style={styles.subtitle}>Histórico de todas as vendas realizadas</p>
+          <h1 style={styles.title}>ðŸ§¾ Pedidos</h1>
+          <p style={styles.subtitle}>HistÃ³rico de todas as vendas realizadas</p>
         </div>
       </div>
       
       {/* Error Alert */}
       {error && (
-        // ... (bloco error, sem alteração) ...
+        // ... (bloco error, sem alteraÃ§Ã£o) ...
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>⚠️</span>
+          <span style={styles.alertIcon}>âš ï¸</span>
           <span>{error}</span>
         </div>
       )}
@@ -151,11 +162,11 @@ export const PedidosPage = () => {
       {/* Tabela de Pedidos */}
       <div style={styles.tableContainer}>
         {pedidos.length === 0 ? (
-          // ... (bloco emptyState, sem alteração) ...
+          // ... (bloco emptyState, sem alteraÃ§Ã£o) ...
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>🧾</span>
+            <span style={styles.emptyIcon}>ðŸ§¾</span>
             <h3 style={styles.emptyTitle}>Nenhum pedido encontrado</h3>
-            <p style={styles.emptyText}>Quando as vendas começarem, elas aparecerão aqui.</p>
+            <p style={styles.emptyText}>Quando as vendas comeÃ§arem, elas aparecerÃ£o aqui.</p>
           </div>
         ) : (
           <table style={styles.table}>
@@ -163,11 +174,11 @@ export const PedidosPage = () => {
               <tr>
                 <th style={styles.th}>Data</th>
                 <th style={styles.th}>Produto</th>
-                <th style={styles.th}>Usuário</th>
+                <th style={styles.th}>UsuÃ¡rio</th>
                 <th style={styles.th}>Status</th> 
                 <th style={styles.th}>Entrega Info</th>
                 <th style={styles.th}>Valor</th>
-                <th style={styles.th}>Ações</th>
+                <th style={styles.th}>AÃ§Ãµes</th>
               </tr>
             </thead>
             <tbody>
@@ -199,17 +210,19 @@ export const PedidosPage = () => {
                   <td style={styles.td}>
                     {pedido.status_entrega === 'PENDENTE' ? (
                       <button 
+                        type="button"
                         onClick={() => handleOpenEntregaModal(pedido)}
                         style={styles.deliverButton}
                       >
-                        🚚 Entregar
+                        ðŸšš Entregar
                       </button>
                     ) : (
                       <button 
+                        type="button"
                         onClick={() => handleVerDetalhes(pedido.id)}
                         style={styles.detailsButton}
                       >
-                        👁️ Ver Detalhes
+                        ðŸ‘ï¸ Ver Detalhes
                       </button>
                     )}
                   </td>
@@ -225,12 +238,19 @@ export const PedidosPage = () => {
         <div style={styles.modalOverlay} onClick={() => !isLoadingDetails && setSelectedPedido(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>🧾 Detalhes do Pedido</h3>
-              <button onClick={() => setSelectedPedido(null)} style={styles.modalClose}>✕</button>
+              <h3 style={styles.modalTitle}>ðŸ§¾ Detalhes do Pedido</h3>
+              <button
+                type="button"
+                onClick={() => setSelectedPedido(null)}
+                style={styles.modalClose}
+                aria-label="Fechar detalhes do pedido"
+              >
+                x
+              </button>
             </div>
             
             {isLoadingDetails ? (
-              // ... (bloco loading, sem alteração) ...
+              // ... (bloco loading, sem alteraÃ§Ã£o) ...
               <div style={styles.loadingContainer}>
                 <div style={styles.spinner} />
                 <p style={styles.loadingText}>Carregando conta...</p>
@@ -238,9 +258,9 @@ export const PedidosPage = () => {
             ) : selectedPedido ? (
               <>
                 <div style={styles.modalBody}>
-                  {/* Informações do Pedido */}
+                  {/* InformaÃ§Ãµes do Pedido */}
                   <div style={styles.infoGrid}>
-                    {/* ... (info boxes, sem alteração) ... */}
+                    {/* ... (info boxes, sem alteraÃ§Ã£o) ... */}
                     <div style={styles.infoBox}>
                       <span style={styles.infoLabel}>Produto</span>
                       <span style={styles.infoValue}>{selectedPedido.produto_nome}</span>
@@ -250,7 +270,7 @@ export const PedidosPage = () => {
                       <span style={{...styles.infoValue, color: '#10b981'}}>R$ {selectedPedido.valor_pago}</span>
                     </div>
                     <div style={styles.infoBox}>
-                      <span style={styles.infoLabel}>Usuário</span>
+                      <span style={styles.infoLabel}>UsuÃ¡rio</span>
                       <span style={styles.infoValue}>{selectedPedido.usuario_nome_completo}</span>
                     </div>
                     <div style={styles.infoBox}>
@@ -259,60 +279,80 @@ export const PedidosPage = () => {
                     </div>
                   </div>
 
-                  {/* --- LÓGICA IF/ELSE ADICIONADA AQUI --- */}
+                  {/* --- LÃ“GICA IF/ELSE ADICIONADA AQUI --- */}
                   
                   {selectedPedido.conta ? (
-                    // 1. Se HÁ uma conta (entrega automática)
+                    // 1. Se HÃ uma conta (entrega automÃ¡tica)
                     <div style={styles.contaCard}>
-                      <h4 style={styles.contaTitle}>🔐 Credenciais Entregues</h4>
+                      <h4 style={styles.contaTitle}>ðŸ” Credenciais Entregues</h4>
                       <div style={styles.contaRow}>
                         <span style={styles.contaLabel}>Login:</span>
-                        <div style={styles.copyBox} onClick={() => copyToClipboard(selectedPedido.conta!.login)}>
+                        <button
+                          type="button"
+                          style={styles.copyBox}
+                          onClick={() => copyToClipboard(selectedPedido.conta!.login, 'login')}
+                          aria-label="Copiar login"
+                        >
                           <span style={styles.contaValue}>{selectedPedido.conta.login}</span>
-                          <button style={styles.copyButton} title="Copiar login">📋</button>
-                        </div>
+                          <span style={styles.copyButton}>Copiar</span>
+                        </button>
                       </div>
                       <div style={styles.contaRow}>
                         <span style={styles.contaLabel}>Senha:</span>
-                        <div style={styles.copyBox} onClick={() => copyToClipboard(selectedPedido.conta!.senha)}>
+                        <button
+                          type="button"
+                          style={styles.copyBox}
+                          onClick={() => copyToClipboard(selectedPedido.conta!.senha, 'senha')}
+                          aria-label="Copiar senha"
+                        >
                           <span style={styles.contaValue}>{selectedPedido.conta.senha}</span>
-                          <button style={styles.copyButton} title="Copiar senha">📋</button>
-                        </div>
+                          <span style={styles.copyButton}>Copiar</span>
+                        </button>
                       </div>
                     </div>
                   ) : (
-                    // 2. Se NÃO HÁ conta (entrega manual)
+                    // 2. Se NÃƒO HÃ conta (entrega manual)
                     <div style={styles.contaCard}>
-                      <h4 style={styles.contaTitle}>📧 Entrega Manual</h4>
+                      <h4 style={styles.contaTitle}>ðŸ“§ Entrega Manual</h4>
                       <div style={styles.contaRow}>
                         <span style={styles.contaLabel}>Email do Cliente (copie e envie o convite):</span>
-                        <div style={styles.copyBox} onClick={() => copyToClipboard(selectedPedido.email_cliente || '')}>
+                        <button
+                          type="button"
+                          style={styles.copyBox}
+                          onClick={() => copyToClipboard(selectedPedido.email_cliente || '', 'email')}
+                          aria-label="Copiar email do cliente"
+                        >
                           <span style={styles.contaValue}>{selectedPedido.email_cliente}</span>
-                          <button style={styles.copyButton} title="Copiar email">📋</button>
-                        </div>
+                          <span style={styles.copyButton}>Copiar</span>
+                        </button>
                       </div>
                       {selectedPedido.conta_mae && (
                         <>
                           <div style={styles.contaRow}>
-                            <span style={styles.contaLabel}>Conta mãe atribuída:</span>
-                            <div style={styles.copyBox} onClick={() => copyToClipboard(selectedPedido.conta_mae!.login)}>
+                            <span style={styles.contaLabel}>Conta mÃ£e atribuÃ­da:</span>
+                            <button
+                              type="button"
+                              style={styles.copyBox}
+                              onClick={() => copyToClipboard(selectedPedido.conta_mae!.login, 'login da conta mae')}
+                              aria-label="Copiar login da conta mae"
+                            >
                               <span style={styles.contaValue}>{selectedPedido.conta_mae.login}</span>
-                              <button style={styles.copyButton} title="Copiar login">📋</button>
-                            </div>
+                              <span style={styles.copyButton}>Copiar</span>
+                            </button>
                           </div>
                           <div style={styles.contaRow}>
-                            <span style={styles.contaLabel}>Expiração da conta mãe:</span>
+                            <span style={styles.contaLabel}>ExpiraÃ§Ã£o da conta mÃ£e:</span>
                             <span style={styles.contaValue}>{formatarDataCurta(selectedPedido.conta_mae.data_expiracao)}</span>
                           </div>
                         </>
                       )}
                       <div style={styles.manualInfo}>
-                        <span style={styles.manualInfoIcon}>ℹ️</span>
-                        <span>Este pedido é de entrega manual. Use o email acima para enviar o convite da plataforma (ex: Youtube, Canva).</span>
+                        <span style={styles.manualInfoIcon}>â„¹ï¸</span>
+                        <span>Este pedido Ã© de entrega manual. Use o email acima para enviar o convite da plataforma (ex: Youtube, Canva).</span>
                       </div>
                     </div>
                   )}
-                  {/* --- FIM DA LÓGICA IF/ELSE --- */}
+                  {/* --- FIM DA LÃ“GICA IF/ELSE --- */}
                   
                   {/* ID do Pedido */}
                   <div style={styles.idFooter}>
@@ -331,19 +371,29 @@ export const PedidosPage = () => {
           <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <form onSubmit={handleSubmitEntrega}>
               <div style={styles.modalHeader}>
-                <h3 style={styles.modalTitle}>🚚 Realizar Entrega Manual</h3>
-                <button type="button" onClick={handleCloseEntregaModal} style={styles.modalClose}>✕</button>
+                <h3 style={styles.modalTitle}>ðŸšš Realizar Entrega Manual</h3>
+                <button
+                  type="button"
+                  onClick={handleCloseEntregaModal}
+                  style={styles.modalClose}
+                  aria-label="Fechar entrega manual"
+                >
+                  x
+                </button>
               </div>
               
               <div style={styles.modalBody}>
                 <p style={styles.modalText}>
-                  Você está entregando o pedido: <strong>{entregaModalPedido.produto_nome}</strong><br/>
-                  Para o usuário: <strong>{entregaModalPedido.usuario_nome_completo}</strong>
+                  VocÃª estÃ¡ entregando o pedido: <strong>{entregaModalPedido.produto_nome}</strong><br/>
+                  Para o usuÃ¡rio: <strong>{entregaModalPedido.usuario_nome_completo}</strong>
                 </p>
                 
                 <div style={styles.inputGroup}>
-                  <label style={styles.label}>Login (Email)</label>
+                  <label htmlFor="pedido-entrega-login" style={styles.label}>
+                    Login (Email)
+                  </label>
                   <input
+                    id="pedido-entrega-login"
                     type="text"
                     value={entregaLogin}
                     onChange={(e) => setEntregaLogin(e.target.value)}
@@ -355,21 +405,24 @@ export const PedidosPage = () => {
                 </div>
                 
                 <div style={styles.inputGroup}>
-                  <label style={styles.label}>Senha</label>
+                  <label htmlFor="pedido-entrega-senha" style={styles.label}>
+                    Senha
+                  </label>
                   <input
+                    id="pedido-entrega-senha"
                     type="text"
                     value={entregaSenha}
                     onChange={(e) => setEntregaSenha(e.target.value)}
                     required
                     style={styles.input}
-                    placeholder="••••••••"
+                    placeholder="Digite a senha em texto"
                     disabled={isEntregaLoading}
                   />
                 </div>
                 
                 <div style={styles.manualInfo}>
-                  <span style={styles.manualInfoIcon}>ℹ️</span>
-                  <span>Ao confirmar, as credenciais acima serão enviadas para o cliente via bot.</span>
+                  <span style={styles.manualInfoIcon}>â„¹ï¸</span>
+                  <span>Ao confirmar, as credenciais acima serÃ£o enviadas para o cliente via bot.</span>
                 </div>
               </div>
 
@@ -393,25 +446,25 @@ export const PedidosPage = () => {
 const styles: Record<string, React.CSSProperties> = {
   container: { maxWidth: '1400px', margin: '0 auto' },
   loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '16px' },
-  spinner: { width: '48px', height: '48px', border: '4px solid #e5e7eb', borderTop: '4px solid #667eea', borderRadius: '50%', animation: 'spin 1s linear infinite' },
-  loadingText: { fontSize: '16px', color: '#6b7280' },
+  spinner: { width: '48px', height: '48px', border: '4px solid var(--border-subtle)', borderTop: '4px solid var(--brand-500)', borderRadius: '50%', animation: 'spin 1s linear infinite' },
+  loadingText: { fontSize: '16px', color: 'var(--text-secondary)' },
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' },
-  title: { margin: '0 0 4px 0', fontSize: '28px', fontWeight: 700, color: '#1a1d29' },
-  subtitle: { margin: 0, fontSize: '15px', color: '#6b7280' },
+  title: { margin: '0 0 4px 0', fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)' },
+  subtitle: { margin: 0, fontSize: '15px', color: 'var(--text-secondary)' },
   alert: { display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', backgroundColor: '#fee2e2', border: '1px solid #fecaca', borderRadius: '8px', color: '#991b1b', marginBottom: '24px' },
   alertIcon: { fontSize: '18px' },
   tableContainer: { backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'auto' }, // overflow: 'auto'
   table: { width: '100%', borderCollapse: 'collapse', minWidth: '800px' }, // minWidth
-  th: { padding: '14px 18px', textAlign: 'left', fontWeight: 600, fontSize: '13px', color: '#6b7280', backgroundColor: '#f9fafb', borderBottom: '2px solid #e5e7eb', textTransform: 'uppercase', letterSpacing: '0.5px' },
-  td: { padding: '16px 18px', borderBottom: '1px solid #f5f7fa', color: '#1a1d29', fontSize: '14px', whiteSpace: 'nowrap' }, // whiteSpace
+  th: { padding: '14px 18px', textAlign: 'left', fontWeight: 600, fontSize: '13px', color: 'var(--text-secondary)', backgroundColor: 'var(--surface-soft)', borderBottom: '2px solid var(--border-subtle)', textTransform: 'uppercase', letterSpacing: '0.5px' },
+  td: { padding: '16px 18px', borderBottom: '1px solid var(--surface-muted)', color: 'var(--text-primary)', fontSize: '14px', whiteSpace: 'nowrap' }, // whiteSpace
   userCell: { display: 'flex', flexDirection: 'column', gap: '2px', whiteSpace: 'normal' }, // whiteSpace
-  userId: { fontSize: '12px', color: '#6b7280' },
+  userId: { fontSize: '12px', color: 'var(--text-secondary)' },
   price: { fontSize: '14px', fontWeight: 600, color: '#10b981' },
-  detailsButton: { padding: '8px 16px', fontSize: '13px', fontWeight: 600, backgroundColor: '#f5f7fa', color: '#374151', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+  detailsButton: { padding: '8px 16px', fontSize: '13px', fontWeight: 600, backgroundColor: 'var(--surface-muted)', color: '#374151', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   emptyState: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', gap: '16px' },
   emptyIcon: { fontSize: '64px', opacity: 0.5 },
-  emptyTitle: { margin: 0, fontSize: '20px', color: '#1a1d29' },
-  emptyText: { margin: 0, fontSize: '14px', color: '#6b7280' },
+  emptyTitle: { margin: 0, fontSize: '20px', color: 'var(--text-primary)' },
+  emptyText: { margin: 0, fontSize: '14px', color: 'var(--text-secondary)' },
   
   // --- NOVOS ESTILOS ---
   badge: { padding: '4px 10px', fontSize: '11px', fontWeight: 600, borderRadius: '6px' },
@@ -421,7 +474,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '8px 16px', 
     fontSize: '13px', 
     fontWeight: 600, 
-    backgroundColor: '#667eea', 
+    backgroundColor: 'var(--brand-500)', 
     color: '#fff', 
     border: 'none', 
     borderRadius: '8px', 
@@ -430,13 +483,13 @@ const styles: Record<string, React.CSSProperties> = {
   emailText: {
     fontFamily: 'monospace',
     fontSize: '13px',
-    backgroundColor: '#f5f7fa',
+    backgroundColor: 'var(--surface-muted)',
     padding: '4px 8px',
     borderRadius: '6px',
     color: '#374151',
   },
   noData: {
-    color: '#9ca3af',
+    color: 'var(--text-muted)',
     fontStyle: 'italic',
   },
   manualInfo: {
@@ -469,7 +522,7 @@ const styles: Record<string, React.CSSProperties> = {
   input: { 
     padding: '12px 16px', 
     fontSize: '15px', 
-    border: '2px solid #e5e7eb', 
+    border: '2px solid var(--border-subtle)', 
     borderRadius: '8px', 
     width: '100%', 
     fontFamily: 'inherit' 
@@ -482,11 +535,11 @@ const styles: Record<string, React.CSSProperties> = {
   },
   modalFooter: { 
     padding: '24px', 
-    borderTop: '1px solid #e5e7eb', 
+    borderTop: '1px solid var(--border-subtle)', 
     display: 'flex', 
     gap: '12px', 
     justifyContent: 'flex-end',
-    backgroundColor: '#f9fafb',
+    backgroundColor: 'var(--surface-soft)',
     borderBottomLeftRadius: '16px',
     borderBottomRightRadius: '16px',
   },
@@ -495,8 +548,8 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '14px', 
     fontWeight: 600, 
     backgroundColor: '#fff', 
-    color: '#1a1d29', 
-    border: '1px solid #d1d5db',
+    color: 'var(--text-primary)', 
+    border: '1px solid var(--border-default)',
     borderRadius: '8px', 
     cursor: 'pointer' 
   },
@@ -515,22 +568,23 @@ const styles: Record<string, React.CSSProperties> = {
   // Estilos do Modal
   modalOverlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' },
   modal: { backgroundColor: '#fff', borderRadius: '16px', maxWidth: '550px', width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)', minHeight: '300px' },
-  modalHeader: { padding: '24px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  modalHeader: { padding: '24px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
   modalTitle: { margin: 0, fontSize: '20px', fontWeight: 700 },
-  modalClose: { background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', padding: '4px', color: '#6b7280' },
+  modalClose: { background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', padding: '4px', color: 'var(--text-secondary)' },
   modalBody: { padding: '24px' },
   infoGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' },
-  infoBox: { padding: '12px 16px', backgroundColor: '#f9fafb', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '6px' },
-  infoLabel: { fontSize: '13px', color: '#6b7280', fontWeight: 500 },
-  infoValue: { fontSize: '15px', color: '#1a1d29', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
-  contaCard: { padding: '20px', backgroundColor: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' },
-  contaTitle: { margin: '0 0 16px 0', fontSize: '16px', fontWeight: 600, color: '#1a1d29' },
+  infoBox: { padding: '12px 16px', backgroundColor: 'var(--surface-soft)', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '6px' },
+  infoLabel: { fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 },
+  infoValue: { fontSize: '15px', color: 'var(--text-primary)', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  contaCard: { padding: '20px', backgroundColor: 'var(--surface-soft)', borderRadius: '8px', border: '1px solid var(--border-subtle)' },
+  contaTitle: { margin: '0 0 16px 0', fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' },
   contaRow: { display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' },
-  contaLabel: { fontSize: '13px', color: '#6b7280', fontWeight: 500 },
-  contaValue: { fontSize: '16px', color: '#1a1d29', fontWeight: 600, fontFamily: 'monospace' },
-  copyBox: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #d1d5db', cursor: 'pointer', transition: 'all 0.2s ease' },
-  copyButton: { background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', padding: '4px' },
-  idFooter: { marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #e5e7eb', fontSize: '12px', color: '#9ca3af', textAlign: 'center' },
+  contaLabel: { fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 },
+  contaValue: { fontSize: '16px', color: 'var(--text-primary)', fontWeight: 600, fontFamily: 'monospace' },
+  copyBox: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid var(--border-default)', cursor: 'pointer', transition: 'all 0.2s ease', width: '100%', fontFamily: 'inherit', fontSize: 'inherit', textAlign: 'left' },
+  copyButton: { fontSize: '12px', fontWeight: 700, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.4px' },
+  idFooter: { marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)', fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center' },
 };
+
 
 

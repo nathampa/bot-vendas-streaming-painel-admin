@@ -1,12 +1,15 @@
-// Componentes UI reutilizáveis para o sistema
+import { useId } from 'react';
+
+// Componentes UI reutilizÃ¡veis para o sistema
 
 // Card Container
 export const Card = ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
   <div style={{
-    backgroundColor: '#fff',
-    borderRadius: '12px',
+    backgroundColor: 'var(--surface-base)',
+    borderRadius: '14px',
     padding: '24px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    boxShadow: 'var(--shadow-sm)',
+    border: '1px solid var(--border-subtle)',
     ...style
   }}>
     {children}
@@ -30,11 +33,11 @@ export const Button = ({
   style?: React.CSSProperties;
 }) => {
   const variants = {
-    primary: { background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff' },
-    secondary: { backgroundColor: '#f5f7fa', color: '#1a1d29' },
-    success: { backgroundColor: '#10b981', color: '#fff' },
-    danger: { backgroundColor: '#ef4444', color: '#fff' },
-    warning: { backgroundColor: '#f59e0b', color: '#fff' },
+    primary: { background: 'var(--brand-gradient)', color: 'var(--text-inverse)' },
+    secondary: { backgroundColor: 'var(--surface-muted)', color: 'var(--text-primary)' },
+    success: { backgroundColor: 'var(--success)', color: 'var(--text-inverse)' },
+    danger: { backgroundColor: 'var(--error)', color: 'var(--text-inverse)' },
+    warning: { backgroundColor: 'var(--warning)', color: 'var(--text-inverse)' },
   };
 
   return (
@@ -47,9 +50,9 @@ export const Button = ({
         fontSize: '14px',
         fontWeight: 600,
         border: 'none',
-        borderRadius: '8px',
+        borderRadius: '10px',
         cursor: disabled ? 'not-allowed' : 'pointer',
-        transition: 'all 0.2s ease',
+        transition: 'background-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast)',
         opacity: disabled ? 0.6 : 1,
         ...variants[variant],
         ...style
@@ -69,6 +72,7 @@ export const Input = ({
   placeholder,
   required,
   disabled,
+  id,
   style
 }: { 
   label?: string;
@@ -78,33 +82,40 @@ export const Input = ({
   placeholder?: string;
   required?: boolean;
   disabled?: boolean;
+  id?: string;
   style?: React.CSSProperties;
-}) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', ...style }}>
-    {label && (
-      <label style={{ fontSize: '14px', fontWeight: 600, color: '#374151' }}>
-        {label}
-      </label>
-    )}
-    <input
-      type={type}
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      required={required}
-      disabled={disabled}
-      style={{
-        padding: '12px 16px',
-        fontSize: '15px',
-        border: '2px solid #e5e7eb',
-        borderRadius: '8px',
-        transition: 'all 0.2s ease',
-        backgroundColor: disabled ? '#f5f7fa' : '#fff',
-        width: '100%',
-      }}
-    />
-  </div>
-);
+}) => {
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', ...style }}>
+      {label && (
+        <label htmlFor={inputId} style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+          {label}
+        </label>
+      )}
+      <input
+        id={inputId}
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        required={required}
+        disabled={disabled}
+        style={{
+          padding: '12px 16px',
+          fontSize: '15px',
+          border: '2px solid var(--border-subtle)',
+          borderRadius: '10px',
+          transition: 'border-color var(--transition-fast), box-shadow var(--transition-fast)',
+          backgroundColor: disabled ? 'var(--surface-muted)' : 'var(--surface-base)',
+          width: '100%',
+        }}
+      />
+    </div>
+  );
+};
 
 // Select Field
 export const Select = ({ 
@@ -114,6 +125,7 @@ export const Select = ({
   options,
   required,
   disabled,
+  id,
   style
 }: { 
   label?: string;
@@ -122,36 +134,43 @@ export const Select = ({
   options: { value: string; label: string }[];
   required?: boolean;
   disabled?: boolean;
+  id?: string;
   style?: React.CSSProperties;
-}) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', ...style }}>
-    {label && (
-      <label style={{ fontSize: '14px', fontWeight: 600, color: '#374151' }}>
-        {label}
-      </label>
-    )}
-    <select
-      value={value}
-      onChange={onChange}
-      required={required}
-      disabled={disabled}
-      style={{
-        padding: '12px 16px',
-        fontSize: '15px',
-        border: '2px solid #e5e7eb',
-        borderRadius: '8px',
-        transition: 'all 0.2s ease',
-        backgroundColor: disabled ? '#f5f7fa' : '#fff',
-        width: '100%',
-        cursor: 'pointer',
-      }}
-    >
-      {options.map(opt => (
-        <option key={opt.value} value={opt.value}>{opt.label}</option>
-      ))}
-    </select>
-  </div>
-);
+}) => {
+  const generatedId = useId();
+  const selectId = id ?? generatedId;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', ...style }}>
+      {label && (
+        <label htmlFor={selectId} style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+          {label}
+        </label>
+      )}
+      <select
+        id={selectId}
+        value={value}
+        onChange={onChange}
+        required={required}
+        disabled={disabled}
+        style={{
+          padding: '12px 16px',
+          fontSize: '15px',
+          border: '2px solid var(--border-subtle)',
+          borderRadius: '10px',
+          transition: 'border-color var(--transition-fast), box-shadow var(--transition-fast)',
+          backgroundColor: disabled ? 'var(--surface-muted)' : 'var(--surface-base)',
+          width: '100%',
+          cursor: 'pointer',
+        }}
+      >
+        {options.map(opt => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+      </select>
+    </div>
+  );
+};
 
 // Badge
 export const Badge = ({ 
@@ -162,11 +181,11 @@ export const Badge = ({
   variant?: 'default' | 'success' | 'warning' | 'error' | 'info';
 }) => {
   const variants = {
-    default: { backgroundColor: '#e5e7eb', color: '#374151' },
-    success: { backgroundColor: '#d1fae5', color: '#065f46' },
-    warning: { backgroundColor: '#fef3c7', color: '#92400e' },
-    error: { backgroundColor: '#fee2e2', color: '#991b1b' },
-    info: { backgroundColor: '#dbeafe', color: '#1e40af' },
+    default: { backgroundColor: 'var(--border-subtle)', color: 'var(--text-secondary)' },
+    success: { backgroundColor: 'var(--status-success-bg)', color: 'var(--status-success-fg)' },
+    warning: { backgroundColor: 'var(--status-warning-bg)', color: 'var(--status-warning-fg)' },
+    error: { backgroundColor: 'var(--status-error-bg)', color: 'var(--status-error-fg)' },
+    info: { backgroundColor: 'var(--status-info-bg)', color: 'var(--status-info-fg)' },
   };
 
   return (
@@ -197,12 +216,12 @@ export const LoadingSpinner = ({ text }: { text?: string }) => (
     <div style={{
       width: '48px',
       height: '48px',
-      border: '4px solid #e5e7eb',
-      borderTop: '4px solid #667eea',
+      border: '4px solid var(--border-subtle)',
+      borderTop: '4px solid var(--brand-500)',
       borderRadius: '50%',
       animation: 'spin 1s linear infinite',
     }} />
-    {text && <p style={{ fontSize: '16px', color: '#6b7280' }}>{text}</p>}
+    {text && <p style={{ fontSize: '16px', color: 'var(--text-secondary)' }}>{text}</p>}
   </div>
 );
 
@@ -225,8 +244,8 @@ export const EmptyState = ({
     gap: '12px',
   }}>
     <span style={{ fontSize: '64px', opacity: 0.5 }}>{icon}</span>
-    <h3 style={{ margin: 0, fontSize: '18px', color: '#1a1d29' }}>{title}</h3>
-    {description && <p style={{ margin: 0, fontSize: '14px', color: '#6b7280' }}>{description}</p>}
+    <h3 style={{ margin: 0, fontSize: '18px', color: 'var(--text-primary)' }}>{title}</h3>
+    {description && <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-secondary)' }}>{description}</p>}
   </div>
 );
 
@@ -240,28 +259,28 @@ export const Alert = ({
 }) => {
   const variants = {
     error: { 
-      backgroundColor: '#fee2e2', 
-      border: '1px solid #fecaca', 
-      color: '#991b1b',
-      icon: '⚠️'
+      backgroundColor: 'var(--status-error-bg)', 
+      border: '1px solid var(--status-error-border)', 
+      color: 'var(--status-error-fg)',
+      icon: '!'
     },
     warning: { 
-      backgroundColor: '#fef3c7', 
-      border: '1px solid #fde68a', 
-      color: '#92400e',
-      icon: '⚠️'
+      backgroundColor: 'var(--status-warning-bg)', 
+      border: '1px solid var(--status-warning-border)', 
+      color: 'var(--status-warning-fg)',
+      icon: '!'
     },
     success: { 
-      backgroundColor: '#d1fae5', 
-      border: '1px solid #a7f3d0', 
-      color: '#065f46',
-      icon: '✅'
+      backgroundColor: 'var(--status-success-bg)', 
+      border: '1px solid var(--status-success-border)', 
+      color: 'var(--status-success-fg)',
+      icon: 'OK'
     },
     info: { 
-      backgroundColor: '#dbeafe', 
-      border: '1px solid #bfdbfe', 
-      color: '#1e40af',
-      icon: 'ℹ️'
+      backgroundColor: 'var(--status-info-bg)', 
+      border: '1px solid var(--status-info-border)', 
+      color: 'var(--status-info-fg)',
+      icon: 'i'
     },
   };
 
@@ -300,14 +319,14 @@ export const SectionHeader = ({
     justifyContent: 'space-between',
     marginBottom: '24px',
     paddingBottom: '16px',
-    borderBottom: '1px solid #e5e7eb',
+    borderBottom: '1px solid var(--border-subtle)',
   }}>
     <div>
-      <h2 style={{ margin: '0 0 4px 0', fontSize: '20px', fontWeight: 700, color: '#1a1d29' }}>
+      <h2 style={{ margin: '0 0 4px 0', fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>
         {title}
       </h2>
       {subtitle && (
-        <p style={{ margin: 0, fontSize: '14px', color: '#6b7280' }}>
+        <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-secondary)' }}>
           {subtitle}
         </p>
       )}
@@ -342,31 +361,31 @@ export const Modal = ({
       padding: '20px',
     }} onClick={onClose}>
       <div style={{
-        backgroundColor: '#fff',
-        borderRadius: '16px',
+        backgroundColor: 'var(--surface-base)',
+        borderRadius: '18px',
         maxWidth: '500px',
         width: '100%',
         maxHeight: '90vh',
         overflow: 'auto',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+        boxShadow: 'var(--shadow-xl)',
       }} onClick={(e) => e.stopPropagation()}>
         <div style={{
           padding: '24px',
-          borderBottom: '1px solid #e5e7eb',
+          borderBottom: '1px solid var(--border-subtle)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
           <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700 }}>{title}</h2>
-          <button onClick={onClose} style={{
+          <button type="button" onClick={onClose} aria-label="Fechar modal" style={{
             background: 'none',
             border: 'none',
             fontSize: '24px',
             cursor: 'pointer',
             padding: '4px',
-            color: '#6b7280',
+            color: 'var(--text-secondary)',
           }}>
-            ×
+            x
           </button>
         </div>
         <div style={{ padding: '24px' }}>
@@ -376,3 +395,4 @@ export const Modal = ({
     </div>
   );
 };
+

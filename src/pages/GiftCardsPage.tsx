@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { getAdminGiftCards, createGiftCard, deleteGiftCard } from '../services/apiClient';
 import type { IGiftCardAdminRead } from '../types/api.types';
+import { useToast } from '../contexts/ToastContext';
 import { getApiErrorMessage } from '../utils/errors';
 
 type FilterStatus = 'todos' | 'usados' | 'nao_usados';
 
 export const GiftCardsPage = () => {
+  const { showToast } = useToast();
   const [giftCards, setGiftCards] = useState<IGiftCardAdminRead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,9 +53,9 @@ export const GiftCardsPage = () => {
 
     try {
       const response = await createGiftCard(data);
-      alert(
-        `✅ Gift Card(s) criado com sucesso!\n\n` +
-        `Códigos: ${response.data.codigos_gerados.join(', ')}`
+      showToast(
+        `Gift Card(s) criado(s) com sucesso. CÃ³digos: ${response.data.codigos_gerados.join(', ')}`,
+        'success',
       );
 
       setNovoValor('10');
@@ -65,7 +67,7 @@ export const GiftCardsPage = () => {
     } catch (err: unknown) {
       console.error("Erro ao criar gift card:", err);
       const errorMsg = getApiErrorMessage(err, "Falha ao criar gift card.");
-      alert(`❌ Erro: ${errorMsg}`);
+      showToast(errorMsg, 'error');
     }
   };
 
@@ -74,20 +76,28 @@ export const GiftCardsPage = () => {
 
     try {
       await deleteGiftCard(deletingGiftCard.id);
-      alert("✅ Gift Card excluído com sucesso!");
+      showToast('Gift Card excluÃ­do com sucesso!', 'success');
       setDeletingGiftCard(null);
       carregarGiftCards(filterStatus);
     } catch (err: unknown) {
       console.error("Erro ao excluir gift card:", err);
       const errorMsg = getApiErrorMessage(err, "Falha ao excluir gift card.");
-      alert(`❌ ${errorMsg}`);
+      showToast(errorMsg, 'error');
       setDeletingGiftCard(null);
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    alert('📋 Código copiado!');
+  const copyToClipboard = async (text: string) => {
+    if (!text) {
+      showToast('NÃ£o hÃ¡ cÃ³digo para copiar.', 'warning');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('CÃ³digo copiado com sucesso!', 'success');
+    } catch {
+      showToast('Falha ao copiar cÃ³digo.', 'error');
+    }
   };
 
   if (isLoading) {
@@ -104,18 +114,18 @@ export const GiftCardsPage = () => {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>🎁 Gift Cards</h1>
-          <p style={styles.subtitle}>Crie e gerencie códigos de presente</p>
+          <h1 style={styles.title}>ðŸŽ Gift Cards</h1>
+          <p style={styles.subtitle}>Crie e gerencie cÃ³digos de presente</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)} style={styles.addButton}>
-          {showForm ? '✕ Cancelar' : '➕ Novo Gift Card'}
+        <button type="button" onClick={() => setShowForm(!showForm)} style={styles.addButton}>
+          {showForm ? 'âœ• Cancelar' : 'âž• Novo Gift Card'}
         </button>
       </div>
 
       {/* Error Alert */}
       {error && (
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>⚠️</span>
+          <span style={styles.alertIcon}>âš ï¸</span>
           <span>{error}</span>
         </div>
       )}
@@ -127,8 +137,11 @@ export const GiftCardsPage = () => {
           <form onSubmit={handleCreateGiftCard} style={styles.form}>
             <div style={styles.inputRow}>
               <div style={styles.inputGroup}>
-                <label style={styles.label}>Valor (R$)</label>
+                <label htmlFor="giftcard-valor" style={styles.label}>
+                  Valor (R$)
+                </label>
                 <input
+                  id="giftcard-valor"
                   type="number"
                   step="0.01"
                   min="1"
@@ -141,8 +154,11 @@ export const GiftCardsPage = () => {
               </div>
 
               <div style={styles.inputGroup}>
-                <label style={styles.label}>Quantidade</label>
+                <label htmlFor="giftcard-quantidade" style={styles.label}>
+                  Quantidade
+                </label>
                 <input
+                  id="giftcard-quantidade"
                   type="number"
                   step="1"
                   min="1"
@@ -157,8 +173,11 @@ export const GiftCardsPage = () => {
             </div>
 
             <div style={styles.inputGroup}>
-              <label style={styles.label}>Código Personalizado (Opcional)</label>
+              <label htmlFor="giftcard-codigo" style={styles.label}>
+                CÃ³digo Personalizado (Opcional)
+              </label>
               <input
+                id="giftcard-codigo"
                 type="text"
                 value={novoCodigo}
                 onChange={(e) => setNovoCodigo(e.target.value)}
@@ -166,7 +185,7 @@ export const GiftCardsPage = () => {
                 placeholder="Ex: NATAL2025"
               />
               <small style={styles.inputHint}>
-                Se preenchido, a quantidade será ignorada (1 código personalizado)
+                Se preenchido, a quantidade serÃ¡ ignorada (1 cÃ³digo personalizado)
               </small>
             </div>
 
@@ -175,7 +194,7 @@ export const GiftCardsPage = () => {
                 Cancelar
               </button>
               <button type="submit" style={styles.submitButton}>
-                Gerar Código(s)
+                Gerar CÃ³digo(s)
               </button>
             </div>
           </form>
@@ -185,23 +204,23 @@ export const GiftCardsPage = () => {
       {/* Stats */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#dbeafe', color: '#1e40af'}}>🎫</span>
+          <span style={{...styles.statIcon, backgroundColor: '#dbeafe', color: '#1e40af'}}>ðŸŽ«</span>
           <div>
-            <p style={styles.statLabel}>Total de Códigos</p>
+            <p style={styles.statLabel}>Total de CÃ³digos</p>
             <h3 style={styles.statValue}>{giftCards.length}</h3>
           </div>
         </div>
         <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46'}}>✓</span>
+          <span style={{...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46'}}>âœ“</span>
           <div>
-            <p style={styles.statLabel}>Códigos Usados</p>
+            <p style={styles.statLabel}>CÃ³digos Usados</p>
             <h3 style={styles.statValue}>{giftCards.filter(gc => gc.is_utilizado).length}</h3>
           </div>
         </div>
         <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#fef3c7', color: '#92400e'}}>⏳</span>
+          <span style={{...styles.statIcon, backgroundColor: '#fef3c7', color: '#92400e'}}>â³</span>
           <div>
-            <p style={styles.statLabel}>Disponíveis</p>
+            <p style={styles.statLabel}>DisponÃ­veis</p>
             <h3 style={styles.statValue}>{giftCards.filter(gc => !gc.is_utilizado).length}</h3>
           </div>
         </div>
@@ -211,18 +230,21 @@ export const GiftCardsPage = () => {
       <div style={styles.filtersContainer}>
         <span style={styles.filtersLabel}>Filtrar por:</span>
         <button
+          type="button"
           onClick={() => setFilterStatus('nao_usados')}
           style={{...styles.filterButton, ...(filterStatus === 'nao_usados' && styles.filterButtonActive)}}
         >
-          Não Usados
+          NÃ£o Usados
         </button>
         <button
+          type="button"
           onClick={() => setFilterStatus('usados')}
           style={{...styles.filterButton, ...(filterStatus === 'usados' && styles.filterButtonActive)}}
         >
           Usados
         </button>
         <button
+          type="button"
           onClick={() => setFilterStatus('todos')}
           style={{...styles.filterButton, ...(filterStatus === 'todos' && styles.filterButtonActive)}}
         >
@@ -234,11 +256,11 @@ export const GiftCardsPage = () => {
       <div style={styles.giftCardsGrid}>
         {giftCards.length === 0 ? (
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>🎁</span>
+            <span style={styles.emptyIcon}>ðŸŽ</span>
             <h3 style={styles.emptyTitle}>Nenhum gift card encontrado</h3>
             <p style={styles.emptyText}>
-              {filterStatus === 'nao_usados' ? 'Nenhum código disponível no momento' :
-               filterStatus === 'usados' ? 'Nenhum código foi usado ainda' :
+              {filterStatus === 'nao_usados' ? 'Nenhum cÃ³digo disponÃ­vel no momento' :
+               filterStatus === 'usados' ? 'Nenhum cÃ³digo foi usado ainda' :
                'Comece criando seu primeiro gift card'}
             </p>
           </div>
@@ -248,7 +270,7 @@ export const GiftCardsPage = () => {
               key={gc.id}
               style={{
                 ...styles.giftCard,
-                borderColor: gc.is_utilizado ? '#d1d5db' : '#10b981'
+                borderColor: gc.is_utilizado ? 'var(--border-default)' : '#10b981'
               }}
             >
               {/* Header */}
@@ -258,18 +280,21 @@ export const GiftCardsPage = () => {
                   ...styles.badge,
                   ...(gc.is_utilizado ? styles.badgeUsed : styles.badgeAvailable)
                 }}>
-                  {gc.is_utilizado ? '✓ Usado' : '⏳ Disponível'}
+                  {gc.is_utilizado ? 'âœ“ Usado' : 'â³ DisponÃ­vel'}
                 </span>
               </div>
 
               {/* Code */}
               <div style={styles.codeContainer}>
-                <div style={styles.codeBox} onClick={() => copyToClipboard(gc.codigo)}>
+                <button
+                  type="button"
+                  style={styles.codeBox}
+                  onClick={() => copyToClipboard(gc.codigo)}
+                  aria-label={`Copiar cÃ³digo ${gc.codigo}`}
+                >
                   <span style={styles.codeText}>{gc.codigo}</span>
-                  <button style={styles.copyButton} title="Copiar código">
-                    📋
-                  </button>
-                </div>
+                  <span style={styles.copyButton}>Copiar</span>
+                </button>
               </div>
 
               {/* Info */}
@@ -289,7 +314,7 @@ export const GiftCardsPage = () => {
                       </span>
                     </div>
                     <div style={styles.infoRow}>
-                      <span style={styles.infoLabel}>Usuário ID:</span>
+                      <span style={styles.infoLabel}>UsuÃ¡rio ID:</span>
                       <span style={styles.infoValue}>
                         {gc.utilizado_por_telegram_id || '---'}
                       </span>
@@ -303,15 +328,16 @@ export const GiftCardsPage = () => {
                 <span style={styles.cardId}>ID: {gc.id.substring(0, 8)}...</span>
               </div>
 
-              {/* Action Buttons - Apenas para não utilizados */}
+              {/* Action Buttons - Apenas para nÃ£o utilizados */}
               {!gc.is_utilizado && (
                 <div style={styles.actionButtons}>
                   <button
+                    type="button"
                     onClick={() => setDeletingGiftCard(gc)}
                     style={{...styles.actionBtn, ...styles.deleteBtn}}
                     title="Excluir gift card"
                   >
-                    🗑️ Excluir
+                    ðŸ—‘ï¸ Excluir
                   </button>
                 </div>
               )}
@@ -325,34 +351,41 @@ export const GiftCardsPage = () => {
         <div style={styles.modalOverlay} onClick={() => setDeletingGiftCard(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>⚠️ Confirmar Exclusão</h3>
-              <button onClick={() => setDeletingGiftCard(null)} style={styles.modalClose}>✕</button>
+              <h3 style={styles.modalTitle}>âš ï¸ Confirmar ExclusÃ£o</h3>
+              <button
+                type="button"
+                onClick={() => setDeletingGiftCard(null)}
+                style={styles.modalClose}
+                aria-label="Fechar confirmaÃ§Ã£o de exclusÃ£o"
+              >
+                x
+              </button>
             </div>
             <div style={styles.modalBody}>
               <p style={styles.modalText}>
                 Tem certeza que deseja excluir o Gift Card de <strong>R$ {deletingGiftCard.valor}</strong>?
               </p>
               <div style={styles.codeDisplayBox}>
-                <span style={styles.codeDisplayLabel}>Código:</span>
+                <span style={styles.codeDisplayLabel}>CÃ³digo:</span>
                 <span style={styles.codeDisplayValue}>{deletingGiftCard.codigo}</span>
               </div>
               <div style={styles.warningBox}>
-                <span style={styles.warningIcon}>ℹ️</span>
+                <span style={styles.warningIcon}>â„¹ï¸</span>
                 <p style={styles.warningText}>
-                  Esta ação não pode ser desfeita. O gift card será removido permanentemente do sistema.
+                  Esta aÃ§Ã£o nÃ£o pode ser desfeita. O gift card serÃ¡ removido permanentemente do sistema.
                   {deletingGiftCard.is_utilizado && (
                     <span style={{fontWeight: 600, display: 'block', marginTop: '8px'}}>
-                      ⚠️ <strong>ATENÇÃO:</strong> Este gift card já foi utilizado!
+                      âš ï¸ <strong>ATENÃ‡ÃƒO:</strong> Este gift card jÃ¡ foi utilizado!
                     </span>
                   )}
                 </p>
               </div>
             </div>
             <div style={styles.modalFooter}>
-              <button onClick={() => setDeletingGiftCard(null)} style={styles.modalCancelBtn}>
+              <button type="button" onClick={() => setDeletingGiftCard(null)} style={styles.modalCancelBtn}>
                 Cancelar
               </button>
-              <button onClick={handleDelete} style={styles.modalDeleteBtn}>
+              <button type="button" onClick={handleDelete} style={styles.modalDeleteBtn}>
                 Sim, Excluir
               </button>
             </div>
@@ -366,73 +399,74 @@ export const GiftCardsPage = () => {
 const styles: Record<string, React.CSSProperties> = {
   container: { maxWidth: '1400px', margin: '0 auto' },
   loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '16px' },
-  spinner: { width: '48px', height: '48px', border: '4px solid #e5e7eb', borderTop: '4px solid #667eea', borderRadius: '50%', animation: 'spin 1s linear infinite' },
-  loadingText: { fontSize: '16px', color: '#6b7280' },
+  spinner: { width: '48px', height: '48px', border: '4px solid var(--border-subtle)', borderTop: '4px solid var(--brand-500)', borderRadius: '50%', animation: 'spin 1s linear infinite' },
+  loadingText: { fontSize: '16px', color: 'var(--text-secondary)' },
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' },
-  title: { margin: '0 0 4px 0', fontSize: '28px', fontWeight: 700, color: '#1a1d29' },
-  subtitle: { margin: 0, fontSize: '15px', color: '#6b7280' },
-  addButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+  title: { margin: '0 0 4px 0', fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)' },
+  subtitle: { margin: 0, fontSize: '15px', color: 'var(--text-secondary)' },
+  addButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   alert: { display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', backgroundColor: '#fee2e2', border: '1px solid #fecaca', borderRadius: '8px', color: '#991b1b', marginBottom: '24px' },
   alertIcon: { fontSize: '18px' },
   formCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '24px', marginBottom: '32px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
-  formTitle: { margin: '0 0 20px 0', fontSize: '18px', fontWeight: 700, color: '#1a1d29' },
+  formTitle: { margin: '0 0 20px 0', fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' },
   form: { display: 'flex', flexDirection: 'column', gap: '20px' },
   inputRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
   label: { fontSize: '14px', fontWeight: 600, color: '#374151' },
-  input: { padding: '12px 16px', fontSize: '15px', border: '2px solid #e5e7eb', borderRadius: '8px', width: '100%', fontFamily: 'inherit' },
-  inputHint: { fontSize: '12px', color: '#6b7280', fontStyle: 'italic' },
+  input: { padding: '12px 16px', fontSize: '15px', border: '2px solid var(--border-subtle)', borderRadius: '8px', width: '100%', fontFamily: 'inherit' },
+  inputHint: { fontSize: '12px', color: 'var(--text-secondary)', fontStyle: 'italic' },
   formActions: { display: 'flex', gap: '12px', justifyContent: 'flex-end' },
-  cancelButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#f5f7fa', color: '#1a1d29', border: 'none', borderRadius: '8px', cursor: 'pointer' },
-  submitButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+  cancelButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: 'var(--surface-muted)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+  submitButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' },
   statCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
   statIcon: { width: '48px', height: '48px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' },
-  statLabel: { margin: '0 0 4px 0', fontSize: '13px', color: '#6b7280' },
-  statValue: { margin: 0, fontSize: '24px', fontWeight: 700, color: '#1a1d29' },
+  statLabel: { margin: '0 0 4px 0', fontSize: '13px', color: 'var(--text-secondary)' },
+  statValue: { margin: 0, fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' },
   filtersContainer: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' },
-  filtersLabel: { fontSize: '14px', fontWeight: 600, color: '#6b7280' },
-  filterButton: { padding: '8px 16px', fontSize: '13px', fontWeight: 600, backgroundColor: '#f9fafb', color: '#6b7280', border: '2px solid transparent', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s ease' },
-  filterButtonActive: { backgroundColor: '#ede9fe', borderColor: '#667eea', color: '#667eea' },
+  filtersLabel: { fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' },
+  filterButton: { padding: '8px 16px', fontSize: '13px', fontWeight: 600, backgroundColor: 'var(--surface-soft)', color: 'var(--text-secondary)', border: '2px solid transparent', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s ease' },
+  filterButtonActive: { backgroundColor: '#ede9fe', borderColor: 'var(--brand-500)', color: 'var(--brand-500)' },
   giftCardsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' },
   giftCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '2px solid', transition: 'all 0.2s ease' },
   cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' },
   cardValue: { fontSize: '28px', fontWeight: 700, color: '#10b981' },
   badge: { padding: '4px 10px', fontSize: '11px', fontWeight: 600, borderRadius: '6px' },
   badgeAvailable: { backgroundColor: '#d1fae5', color: '#065f46' },
-  badgeUsed: { backgroundColor: '#f3f4f6', color: '#6b7280' },
+  badgeUsed: { backgroundColor: '#f3f4f6', color: 'var(--text-secondary)' },
   codeContainer: { marginBottom: '16px' },
-  codeBox: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', backgroundColor: '#f9fafb', borderRadius: '8px', border: '2px dashed #d1d5db', cursor: 'pointer', transition: 'all 0.2s ease' },
-  codeText: { fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: '#1a1d29', letterSpacing: '1px' },
-  copyButton: { background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', padding: '4px' },
+  codeBox: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', backgroundColor: 'var(--surface-soft)', borderRadius: '8px', border: '2px dashed var(--border-default)', cursor: 'pointer', transition: 'all 0.2s ease', width: '100%', fontFamily: 'inherit', fontSize: 'inherit', textAlign: 'left' },
+  codeText: { fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: 'var(--text-primary)', letterSpacing: '1px' },
+  copyButton: { fontSize: '12px', fontWeight: 700, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.4px' },
   cardInfo: { display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' },
   infoRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  infoLabel: { fontSize: '13px', color: '#6b7280' },
-  infoValue: { fontSize: '13px', color: '#1a1d29', fontWeight: 600 },
-  cardFooter: { paddingTop: '12px', borderTop: '1px solid #e5e7eb', marginBottom: '12px' },
-  cardId: { fontSize: '11px', color: '#9ca3af' },
-  actionButtons: { display: 'flex', gap: '8px', paddingTop: '12px', borderTop: '1px solid #e5e7eb' },
+  infoLabel: { fontSize: '13px', color: 'var(--text-secondary)' },
+  infoValue: { fontSize: '13px', color: 'var(--text-primary)', fontWeight: 600 },
+  cardFooter: { paddingTop: '12px', borderTop: '1px solid var(--border-subtle)', marginBottom: '12px' },
+  cardId: { fontSize: '11px', color: 'var(--text-muted)' },
+  actionButtons: { display: 'flex', gap: '8px', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)' },
   actionBtn: { flex: 1, padding: '10px 16px', fontSize: '13px', fontWeight: 600, border: 'none', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s ease' },
   deleteBtn: { backgroundColor: '#fee2e2', color: '#991b1b' },
   emptyState: { gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', gap: '16px' },
   emptyIcon: { fontSize: '64px', opacity: 0.5 },
-  emptyTitle: { margin: 0, fontSize: '20px', color: '#1a1d29' },
-  emptyText: { margin: 0, fontSize: '14px', color: '#6b7280', textAlign: 'center' },
+  emptyTitle: { margin: 0, fontSize: '20px', color: 'var(--text-primary)' },
+  emptyText: { margin: 0, fontSize: '14px', color: 'var(--text-secondary)', textAlign: 'center' },
   modalOverlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' },
   modal: { backgroundColor: '#fff', borderRadius: '16px', maxWidth: '500px', width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' },
-  modalHeader: { padding: '24px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  modalHeader: { padding: '24px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
   modalTitle: { margin: 0, fontSize: '20px', fontWeight: 700 },
-  modalClose: { background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', padding: '4px', color: '#6b7280' },
+  modalClose: { background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', padding: '4px', color: 'var(--text-secondary)' },
   modalBody: { padding: '24px' },
-  modalText: { margin: '0 0 16px 0', fontSize: '16px', color: '#1a1d29', lineHeight: 1.5 },
-  codeDisplayBox: { display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px 16px', backgroundColor: '#f9fafb', borderRadius: '8px', marginBottom: '16px' },
-  codeDisplayLabel: { fontSize: '12px', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase' },
-  codeDisplayValue: { fontSize: '20px', fontWeight: 700, fontFamily: 'monospace', color: '#1a1d29', letterSpacing: '1px' },
+  modalText: { margin: '0 0 16px 0', fontSize: '16px', color: 'var(--text-primary)', lineHeight: 1.5 },
+  codeDisplayBox: { display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px 16px', backgroundColor: 'var(--surface-soft)', borderRadius: '8px', marginBottom: '16px' },
+  codeDisplayLabel: { fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase' },
+  codeDisplayValue: { fontSize: '20px', fontWeight: 700, fontFamily: 'monospace', color: 'var(--text-primary)', letterSpacing: '1px' },
   warningBox: { display: 'flex', gap: '12px', padding: '12px', backgroundColor: '#fef3c7', borderRadius: '8px', border: '1px solid #fde68a' },
   warningIcon: { fontSize: '20px' },
   warningText: { margin: 0, fontSize: '14px', color: '#78350f', lineHeight: 1.5 },
-  modalFooter: { padding: '24px', borderTop: '1px solid #e5e7eb', display: 'flex', gap: '12px', justifyContent: 'flex-end' },
-  modalCancelBtn: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#f5f7fa', color: '#1a1d29', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+  modalFooter: { padding: '24px', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: '12px', justifyContent: 'flex-end' },
+  modalCancelBtn: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: 'var(--surface-muted)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   modalDeleteBtn: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
 };
+
 

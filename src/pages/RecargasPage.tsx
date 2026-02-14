@@ -37,12 +37,12 @@ export const RecargasPage = () => {
 
   const getStatusBadge = (status: string) => {
     if (status === 'PAGO') {
-      return <span style={{...styles.badge, ...styles.badgeSuccess}}>✓ Pago</span>;
+      return <span style={{...styles.badge, ...styles.badgeSuccess}}>âœ“ Pago</span>;
     }
     if (status === 'PENDENTE') {
-      return <span style={{...styles.badge, ...styles.badgeWarning}}>⏳ Pendente</span>;
+      return <span style={{...styles.badge, ...styles.badgeWarning}}>â³ Pendente</span>;
     }
-    return <span style={{...styles.badge, ...styles.badgeError}}>✕ Falhou</span>;
+    return <span style={{...styles.badge, ...styles.badgeError}}>âœ• Falhou</span>;
   };
 
   if (isLoading) {
@@ -59,14 +59,14 @@ export const RecargasPage = () => {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>💰 Recargas</h1>
-          <p style={styles.subtitle}>Histórico das últimas 50 recargas de saldo</p>
+          <h1 style={styles.title}>ðŸ’° Recargas</h1>
+          <p style={styles.subtitle}>HistÃ³rico das Ãºltimas 50 recargas de saldo</p>
         </div>
       </div>
       
       {error && (
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>⚠️</span>
+          <span style={styles.alertIcon}>âš ï¸</span>
           <span>{error}</span>
         </div>
       )}
@@ -75,16 +75,16 @@ export const RecargasPage = () => {
       <div style={styles.tableContainer}>
         {recargas.length === 0 ? (
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>💰</span>
+            <span style={styles.emptyIcon}>ðŸ’°</span>
             <h3 style={styles.emptyTitle}>Nenhuma recarga encontrada</h3>
-            <p style={styles.emptyText}>Quando usuários adicionarem saldo, aparecerá aqui.</p>
+            <p style={styles.emptyText}>Quando usuÃ¡rios adicionarem saldo, aparecerÃ¡ aqui.</p>
           </div>
         ) : (
           <table style={styles.table}>
             <thead>
               <tr>
-                <th style={styles.th}>Data Criação</th>
-                <th style={styles.th}>Usuário</th>
+                <th style={styles.th}>Data CriaÃ§Ã£o</th>
+                <th style={styles.th}>UsuÃ¡rio</th>
                 <th style={styles.th}>Valor</th>
                 <th style={styles.th}>Status</th>
                 <th style={styles.th}>Data Pagamento</th>
@@ -125,28 +125,29 @@ export const RecargasPage = () => {
 const styles: Record<string, React.CSSProperties> = {
   container: { maxWidth: '1400px', margin: '0 auto' },
   loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '16px' },
-  spinner: { width: '48px', height: '48px', border: '4px solid #e5e7eb', borderTop: '4px solid #667eea', borderRadius: '50%', animation: 'spin 1s linear infinite' },
-  loadingText: { fontSize: '16px', color: '#6b7280' },
+  spinner: { width: '48px', height: '48px', border: '4px solid var(--border-subtle)', borderTop: '4px solid var(--brand-500)', borderRadius: '50%', animation: 'spin 1s linear infinite' },
+  loadingText: { fontSize: '16px', color: 'var(--text-secondary)' },
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' },
-  title: { margin: '0 0 4px 0', fontSize: '28px', fontWeight: 700, color: '#1a1d29' },
-  subtitle: { margin: 0, fontSize: '15px', color: '#6b7280' },
+  title: { margin: '0 0 4px 0', fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)' },
+  subtitle: { margin: 0, fontSize: '15px', color: 'var(--text-secondary)' },
   alert: { display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', backgroundColor: '#fee2e2', border: '1px solid #fecaca', borderRadius: '8px', color: '#991b1b', marginBottom: '24px' },
   alertIcon: { fontSize: '18px' },
   tableContainer: { backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'auto' },
   table: { width: '100%', borderCollapse: 'collapse', minWidth: '800px' },
-  th: { padding: '14px 18px', textAlign: 'left', fontWeight: 600, fontSize: '13px', color: '#6b7280', backgroundColor: '#f9fafb', borderBottom: '2px solid #e5e7eb', textTransform: 'uppercase' },
-  td: { padding: '16px 18px', borderBottom: '1px solid #f5f7fa', color: '#1a1d29', fontSize: '14px', whiteSpace: 'nowrap' },
+  th: { padding: '14px 18px', textAlign: 'left', fontWeight: 600, fontSize: '13px', color: 'var(--text-secondary)', backgroundColor: 'var(--surface-soft)', borderBottom: '2px solid var(--border-subtle)', textTransform: 'uppercase' },
+  td: { padding: '16px 18px', borderBottom: '1px solid var(--surface-muted)', color: 'var(--text-primary)', fontSize: '14px', whiteSpace: 'nowrap' },
   userCell: { display: 'flex', flexDirection: 'column', gap: '2px' },
-  userId: { fontSize: '12px', color: '#6b7280' },
-  valor: { fontWeight: 600, color: '#1a1d29' },
-  gatewayId: { fontFamily: 'monospace', fontSize: '12px', color: '#6b7280' },
+  userId: { fontSize: '12px', color: 'var(--text-secondary)' },
+  valor: { fontWeight: 600, color: 'var(--text-primary)' },
+  gatewayId: { fontFamily: 'monospace', fontSize: '12px', color: 'var(--text-secondary)' },
   badge: { padding: '4px 10px', fontSize: '11px', fontWeight: 600, borderRadius: '6px' },
   badgeSuccess: { backgroundColor: '#d1fae5', color: '#065f46' },
   badgeWarning: { backgroundColor: '#fef3c7', color: '#92400e' },
   badgeError: { backgroundColor: '#fee2e2', color: '#991b1b' },
-  noData: { color: '#9ca3af', fontStyle: 'italic' },
+  noData: { color: 'var(--text-muted)', fontStyle: 'italic' },
   emptyState: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', gap: '16px' },
   emptyIcon: { fontSize: '64px', opacity: 0.5 },
-  emptyTitle: { margin: 0, fontSize: '20px', color: '#1a1d29' },
-  emptyText: { margin: 0, fontSize: '14px', color: '#6b7280' },
+  emptyTitle: { margin: 0, fontSize: '20px', color: 'var(--text-primary)' },
+  emptyText: { margin: 0, fontSize: '14px', color: 'var(--text-secondary)' },
 };
+

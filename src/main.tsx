@@ -7,7 +7,7 @@ import App from './App.tsx';
 
 // 1. Importa o seu CSS global personalizado
 import './index.css'; 
-// 2. Removemos todas as importações do @mui/material
+// 2. Removemos todas as importaÃ§Ãµes do @mui/material
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -21,4 +21,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </BrowserRouter>
   </React.StrictMode>,
 );
+
 

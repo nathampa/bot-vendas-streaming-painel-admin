@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getAdminProdutos, createProduto, updateProduto, deleteProduto } from '../services/apiClient';
+import { useToast } from '../contexts/ToastContext';
 import { getApiErrorMessage } from '../utils/errors';
 
 // Interface do Produto
@@ -15,6 +16,7 @@ interface IProduto {
 }
 
 export const ProdutosPage = () => {
+  const { showToast } = useToast();
   const [produtos, setProdutos] = useState<IProduto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,17 +80,17 @@ export const ProdutosPage = () => {
     try {
       if (editingProduct) {
         await updateProduto(editingProduct.id, data);
-        alert("✅ Produto atualizado com sucesso!");
+        showToast('Produto atualizado com sucesso!', 'success');
       } else {
         await createProduto(data);
-        alert("✅ Produto criado com sucesso!");
+        showToast('Produto criado com sucesso!', 'success');
       }
       resetForm();
-      carregarProdutos(); // A API já retorna a lista ordenada
+      carregarProdutos(); // A API jÃ¡ retorna a lista ordenada
     } catch (err: unknown) {
       console.error("Erro ao salvar produto:", err);
       const errorMsg = getApiErrorMessage(err, "Falha ao salvar produto.");
-      alert(`❌ Erro: ${errorMsg}`);
+      showToast(errorMsg, 'error');
     }
   };
 
@@ -107,13 +109,13 @@ export const ProdutosPage = () => {
     if (!deletingProduct) return;
     try {
       await deleteProduto(deletingProduct.id);
-      alert("✅ Produto excluído com sucesso!");
+      showToast('Produto excluÃ­do com sucesso!', 'success');
       setDeletingProduct(null);
       carregarProdutos();
     } catch (err: unknown) {
       console.error("Erro ao excluir produto:", err);
       const errorMsg = getApiErrorMessage(err, "Falha ao excluir produto.");
-      alert(`❌ ${errorMsg}`);
+      showToast(errorMsg, 'error');
       setDeletingProduct(null);
     }
   };
@@ -147,32 +149,40 @@ export const ProdutosPage = () => {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>🛍️ Produtos</h1>
-          <p style={styles.subtitle}>Gerencie o catálogo de produtos disponíveis</p>
+          <h1 style={styles.title}>ðŸ›ï¸ Produtos</h1>
+          <p style={styles.subtitle}>Gerencie o catÃ¡logo de produtos disponÃ­veis</p>
         </div>
-        <button onClick={() => showForm ? resetForm() : setShowForm(true)} style={styles.addButton}>
-          {showForm ? '✕ Cancelar' : '➕ Novo Produto'}
+        <button type="button" onClick={() => showForm ? resetForm() : setShowForm(true)} style={styles.addButton}>
+          {showForm ? 'âœ• Cancelar' : 'âž• Novo Produto'}
         </button>
       </div>
 
       {/* Error Alert */}
       {error && (
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>⚠️</span>
+          <span style={styles.alertIcon}>âš ï¸</span>
           <span>{error}</span>
         </div>
       )}
 
       {/* Barra de Filtros */}
       <div style={styles.filterBar}>
+        <label htmlFor="produto-filtro-nome" style={styles.srOnly}>
+          Pesquisar por nome do produto
+        </label>
         <input
+          id="produto-filtro-nome"
           type="text"
           placeholder="Pesquisar por nome..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={styles.filterInput}
         />
+        <label htmlFor="produto-filtro-status" style={styles.srOnly}>
+          Filtrar por status
+        </label>
         <select
+          id="produto-filtro-status"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as 'todos' | 'ativos' | 'inativos')}
           style={styles.filterSelect}
@@ -187,12 +197,13 @@ export const ProdutosPage = () => {
       {showForm && (
         <div style={styles.formCard}>
           <h3 style={styles.formTitle}>
-            {editingProduct ? '✏️ Editar Produto' : '➕ Criar Novo Produto'}
+            {editingProduct ? 'âœï¸ Editar Produto' : 'âž• Criar Novo Produto'}
           </h3>
           <form onSubmit={handleCreateOrUpdate} style={styles.form}>
             <div style={styles.inputGroup}>
-              <label style={styles.label}>Nome do Produto</label>
+              <label htmlFor="produto-nome" style={styles.label}>Nome do Produto</label>
               <input
+                id="produto-nome"
                 type="text"
                 value={novoNome}
                 onChange={(e) => setNovoNome(e.target.value)}
@@ -203,29 +214,32 @@ export const ProdutosPage = () => {
             </div>
 
             <div style={styles.inputGroup}>
-              <label style={styles.label}>Descrição</label>
+              <label htmlFor="produto-descricao" style={styles.label}>DescriÃ§Ã£o</label>
               <textarea
+                id="produto-descricao"
                 value={novoDescricao}
                 onChange={(e) => setNovoDescricao(e.target.value)}
                 style={{...styles.input, minHeight: '80px', resize: 'vertical'} as React.CSSProperties}
-                placeholder="Descrição do produto..."
+                placeholder="DescriÃ§Ã£o do produto..."
               />
             </div>
 
             <div style={styles.inputGroup}>
-              <label style={styles.label}>Instruções Pós-Compra (aparece após o pagamento)</label>
+              <label htmlFor="produto-instrucoes" style={styles.label}>InstruÃ§Ãµes PÃ³s-Compra (aparece apÃ³s o pagamento)</label>
               <textarea
+                id="produto-instrucoes"
                 value={novoInstrucoes}
                 onChange={(e) => setNovoInstrucoes(e.target.value)}
                 style={{...styles.input, minHeight: '100px', resize: 'vertical'} as React.CSSProperties}
-                placeholder="Ex: 🚫 Não altere o nome dos perfis..."
+                placeholder="Ex: ðŸš« NÃ£o altere o nome dos perfis..."
               />
             </div>
 
             <div style={styles.inputRow}>
               <div style={styles.inputGroup}>
-                <label style={styles.label}>Preço (R$)</label>
+                <label htmlFor="produto-preco" style={styles.label}>PreÃ§o (R$)</label>
                 <input
+                  id="produto-preco"
                   type="number"
                   step="0.01"
                   min="0"
@@ -238,26 +252,28 @@ export const ProdutosPage = () => {
               </div>
 
               <div style={styles.inputGroup}>
-                <label style={styles.label}>Status</label>
+                <label htmlFor="produto-status" style={styles.label}>Status</label>
                 <select
+                  id="produto-status"
                   value={novoIsAtivo ? 'true' : 'false'}
                   onChange={(e) => setNovoIsAtivo(e.target.value === 'true')}
                   style={styles.input}
                 >
-                  <option value="true">✓ Ativo</option>
-                  <option value="false">✕ Inativo</option>
+                  <option value="true">âœ“ Ativo</option>
+                  <option value="false">âœ• Inativo</option>
                 </select>
               </div>
             </div>
 
             <div style={styles.inputGroup}>
-              <label style={styles.label}>Tipo de Entrega</label>
+              <label htmlFor="produto-tipo-entrega" style={styles.label}>Tipo de Entrega</label>
               <select
+                id="produto-tipo-entrega"
                 value={novoTipoEntrega}
                 onChange={(e) => setNovoTipoEntrega(e.target.value as 'AUTOMATICA' | 'SOLICITA_EMAIL' | 'MANUAL_ADMIN')}
                 style={styles.input}
               >
-                <option value="AUTOMATICA">Entrega Automática (Padrão)</option>
+                <option value="AUTOMATICA">Entrega AutomÃ¡tica (PadrÃ£o)</option>
                 <option value="SOLICITA_EMAIL">Solicitar E-mail (Entrega Manual Externa)</option>
                 <option value="MANUAL_ADMIN">Entrega Manual (Pelo Painel Admin)</option>
               </select>
@@ -276,7 +292,7 @@ export const ProdutosPage = () => {
                 Cancelar
               </button>
               <button type="submit" style={styles.submitButton}>
-                {editingProduct ? 'Salvar Alterações' : 'Criar Produto'}
+                {editingProduct ? 'Salvar AlteraÃ§Ãµes' : 'Criar Produto'}
               </button>
             </div>
           </form>
@@ -287,12 +303,12 @@ export const ProdutosPage = () => {
       <div style={styles.productsGrid}>
         {filteredProdutos.length === 0 ? (
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>📦</span>
+            <span style={styles.emptyIcon}>ðŸ“¦</span>
             <h3 style={styles.emptyTitle}>
               {produtos.length === 0 ? "Nenhum produto cadastrado" : "Nenhum produto encontrado"}
             </h3>
             <p style={styles.emptyText}>
-              {produtos.length === 0 ? "Comece adicionando seu primeiro produto ao catálogo" : "Tente ajustar seus filtros."}
+              {produtos.length === 0 ? "Comece adicionando seu primeiro produto ao catÃ¡logo" : "Tente ajustar seus filtros."}
             </p>
           </div>
         ) : (
@@ -305,13 +321,13 @@ export const ProdutosPage = () => {
                     ...styles.badge,
                     ...(produto.is_ativo ? styles.badgeActive : styles.badgeInactive)
                   }}>
-                    {produto.is_ativo ? '✓ Ativo' : '✕ Inativo'}
+                    {produto.is_ativo ? 'âœ“ Ativo' : 'âœ• Inativo'}
                   </span>
                   <span style={{...styles.badge, ...styles.badgeEmail}}>
                     {
-                      produto.tipo_entrega === 'AUTOMATICA' ? '🤖 Automático' :
+                      produto.tipo_entrega === 'AUTOMATICA' ? 'ðŸ¤– AutomÃ¡tico' :
                       produto.tipo_entrega === 'SOLICITA_EMAIL' ? '@ Requer Email' :
-                      '👨‍💻 Entrega Manual'
+                      'ðŸ‘¨â€ðŸ’» Entrega Manual'
                     }
                   </span>
                 </div>
@@ -323,14 +339,14 @@ export const ProdutosPage = () => {
 
               {produto.instrucoes_pos_compra && (
                 <div style={styles.instructionsPreview}>
-                  <strong style={styles.instructionsLabel}>Instruções Pós-Compra:</strong>
+                  <strong style={styles.instructionsLabel}>InstruÃ§Ãµes PÃ³s-Compra:</strong>
                   <p style={styles.productDescription}>{produto.instrucoes_pos_compra}</p>
                 </div>
               )}
               
               <div style={styles.productFooter}>
                 <div style={styles.priceTag}>
-                  <span style={styles.priceLabel}>Preço</span>
+                  <span style={styles.priceLabel}>PreÃ§o</span>
                   <span style={styles.priceValue}>R$ {produto.preco}</span>
                 </div>
                 <div style={styles.productMeta}>
@@ -343,18 +359,20 @@ export const ProdutosPage = () => {
               {/* Action Buttons */}
               <div style={styles.actionButtons}>
                 <button
+                  type="button"
                   onClick={() => handleEdit(produto)}
                   style={{...styles.actionBtn, ...styles.editBtn}}
                   title="Editar produto"
                 >
-                  ✏️ Editar
+                  âœï¸ Editar
                 </button>
                 <button
+                  type="button"
                   onClick={() => setDeletingProduct(produto)}
                   style={{...styles.actionBtn, ...styles.deleteBtn}}
                   title="Excluir produto"
                 >
-                  🗑️ Excluir
+                  ðŸ—‘ï¸ Excluir
                 </button>
               </div>
             </div>
@@ -367,25 +385,32 @@ export const ProdutosPage = () => {
         <div style={styles.modalOverlay} onClick={() => setDeletingProduct(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>⚠️ Confirmar Exclusão</h3>
-              <button onClick={() => setDeletingProduct(null)} style={styles.modalClose}>✕</button>
+              <h3 style={styles.modalTitle}>âš ï¸ Confirmar ExclusÃ£o</h3>
+              <button
+                type="button"
+                onClick={() => setDeletingProduct(null)}
+                style={styles.modalClose}
+                aria-label="Fechar confirmaÃ§Ã£o de exclusÃ£o"
+              >
+                x
+              </button>
             </div>
             <div style={styles.modalBody}>
               <p style={styles.modalText}>
                 Tem certeza que deseja excluir o produto <strong>"{deletingProduct.nome}"</strong>?
               </p>
               <div style={styles.warningBox}>
-                <span style={styles.warningIcon}>ℹ️</span>
+                <span style={styles.warningIcon}>â„¹ï¸</span>
                 <p style={styles.warningText}>
-                  Esta ação não pode ser desfeita. O produto será removido permanentemente do catálogo.
+                  Esta aÃ§Ã£o nÃ£o pode ser desfeita. O produto serÃ¡ removido permanentemente do catÃ¡logo.
                 </p>
               </div>
             </div>
             <div style={styles.modalFooter}>
-              <button onClick={() => setDeletingProduct(null)} style={styles.modalCancelBtn}>
+              <button type="button" onClick={() => setDeletingProduct(null)} style={styles.modalCancelBtn}>
                 Cancelar
               </button>
-              <button onClick={handleDelete} style={styles.modalDeleteBtn}>
+              <button type="button" onClick={handleDelete} style={styles.modalDeleteBtn}>
                 Sim, Excluir
               </button>
             </div>
@@ -400,12 +425,12 @@ export const ProdutosPage = () => {
 const styles: Record<string, React.CSSProperties> = {
   container: { maxWidth: '1400px', margin: '0 auto' },
   loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '16px' },
-  spinner: { width: '48px', height: '48px', border: '4px solid #e5e7eb', borderTop: '4px solid #667eea', borderRadius: '50%', animation: 'spin 1s linear infinite' },
-  loadingText: { fontSize: '16px', color: '#6b7280' },
+  spinner: { width: '48px', height: '48px', border: '4px solid var(--border-subtle)', borderTop: '4px solid var(--brand-500)', borderRadius: '50%', animation: 'spin 1s linear infinite' },
+  loadingText: { fontSize: '16px', color: 'var(--text-secondary)' },
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' },
-  title: { margin: '0 0 4px 0', fontSize: '28px', fontWeight: 700, color: '#1a1d29' },
-  subtitle: { margin: 0, fontSize: '15px', color: '#6b7280' },
-  addButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+  title: { margin: '0 0 4px 0', fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)' },
+  subtitle: { margin: 0, fontSize: '15px', color: 'var(--text-secondary)' },
+  addButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   alert: { display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', backgroundColor: '#fee2e2', border: '1px solid #fecaca', borderRadius: '8px', color: '#991b1b', marginBottom: '24px' },
   alertIcon: { fontSize: '18px' },
   
@@ -423,7 +448,7 @@ const styles: Record<string, React.CSSProperties> = {
     flex: 2,
     padding: '12px 16px',
     fontSize: '15px',
-    border: '2px solid #e5e7eb',
+    border: '2px solid var(--border-subtle)',
     borderRadius: '8px',
     width: '100%',
   },
@@ -431,30 +456,41 @@ const styles: Record<string, React.CSSProperties> = {
     flex: 1,
     padding: '12px 16px',
     fontSize: '15px',
-    border: '2px solid #e5e7eb',
+    border: '2px solid var(--border-subtle)',
     borderRadius: '8px',
     backgroundColor: '#fff',
     width: '100%',
   },
+  srOnly: {
+    position: 'absolute',
+    width: '1px',
+    height: '1px',
+    padding: 0,
+    margin: '-1px',
+    overflow: 'hidden',
+    clip: 'rect(0, 0, 0, 0)',
+    whiteSpace: 'nowrap',
+    border: 0,
+  },
   
-  // Estilos do Formulário
+  // Estilos do FormulÃ¡rio
   formCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '24px', marginBottom: '32px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
-  formTitle: { margin: '0 0 20px 0', fontSize: '18px', fontWeight: 700, color: '#1a1d29' },
+  formTitle: { margin: '0 0 20px 0', fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' },
   form: { display: 'flex', flexDirection: 'column', gap: '20px' },
   inputRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
   label: { fontSize: '14px', fontWeight: 600, color: '#374151' },
-  input: { padding: '12px 16px', fontSize: '15px', border: '2px solid #e5e7eb', borderRadius: '8px', width: '100%', fontFamily: 'inherit' },
-  inputHint: { fontSize: '12px', color: '#6b7280', fontStyle: 'italic' },
+  input: { padding: '12px 16px', fontSize: '15px', border: '2px solid var(--border-subtle)', borderRadius: '8px', width: '100%', fontFamily: 'inherit' },
+  inputHint: { fontSize: '12px', color: 'var(--text-secondary)', fontStyle: 'italic' },
   formActions: { display: 'flex', gap: '12px', justifyContent: 'flex-end' },
-  cancelButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#f5f7fa', color: '#1a1d29', border: 'none', borderRadius: '8px', cursor: 'pointer' },
-  submitButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+  cancelButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: 'var(--surface-muted)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+  submitButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
 
   // Estilos dos Cards de Produto
   productsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' },
   productCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '2px solid transparent' },
   productHeader: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px', gap: '12px' },
-  productName: { margin: 0, fontSize: '18px', fontWeight: 600, color: '#1a1d29', flex: 1 },
+  productName: { margin: 0, fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', flex: 1 },
   badges: {
     display: 'flex',
     flexDirection: 'column',
@@ -466,11 +502,11 @@ const styles: Record<string, React.CSSProperties> = {
   badgeActive: { backgroundColor: '#d1fae5', color: '#065f46' },
   badgeInactive: { backgroundColor: '#fee2e2', color: '#991b1b' },
   badgeEmail: { backgroundColor: '#dbeafe', color: '#1e40af' },
-  productDescription: { margin: '0 0 16px 0', fontSize: '14px', color: '#6b7280', lineHeight: 1.5 },
+  productDescription: { margin: '0 0 16px 0', fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.5 },
   instructionsPreview: { 
     margin: '0 0 16px 0', 
     padding: '12px', 
-    backgroundColor: '#f9fafb', 
+    backgroundColor: 'var(--surface-soft)', 
     borderRadius: '8px' 
   },
   instructionsLabel: { 
@@ -480,34 +516,35 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'block', 
     marginBottom: '4px' 
   },
-  productFooter: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid #e5e7eb', marginBottom: '12px' },
+  productFooter: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)', marginBottom: '12px' },
   priceTag: { display: 'flex', flexDirection: 'column', gap: '2px' },
-  priceLabel: { fontSize: '12px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' },
+  priceLabel: { fontSize: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' },
   priceValue: { fontSize: '24px', fontWeight: 700, color: '#10b981' },
   productMeta: { textAlign: 'right' },
-  metaText: { fontSize: '12px', color: '#9ca3af' },
-  actionButtons: { display: 'flex', gap: '8px', paddingTop: '12px', borderTop: '1px solid #e5e7eb' },
+  metaText: { fontSize: '12px', color: 'var(--text-muted)' },
+  actionButtons: { display: 'flex', gap: '8px', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)' },
   actionBtn: { flex: 1, padding: '10px 16px', fontSize: '13px', fontWeight: 600, border: 'none', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s ease' },
   editBtn: { backgroundColor: '#dbeafe', color: '#1e40af' },
   deleteBtn: { backgroundColor: '#fee2e2', color: '#991b1b' },
   emptyState: { gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', gap: '16px' },
   emptyIcon: { fontSize: '64px', opacity: 0.5 },
-  emptyTitle: { margin: 0, fontSize: '20px', color: '#1a1d29' },
-  emptyText: { margin: 0, fontSize: '14px', color: '#6b7280' },
+  emptyTitle: { margin: 0, fontSize: '20px', color: 'var(--text-primary)' },
+  emptyText: { margin: 0, fontSize: '14px', color: 'var(--text-secondary)' },
   
   // Estilos do Modal de Delete
   modalOverlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' },
   modal: { backgroundColor: '#fff', borderRadius: '16px', maxWidth: '500px', width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' },
-  modalHeader: { padding: '24px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  modalHeader: { padding: '24px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
   modalTitle: { margin: 0, fontSize: '20px', fontWeight: 700 },
-  modalClose: { background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', padding: '4px', color: '#6b7280' },
+  modalClose: { background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', padding: '4px', color: 'var(--text-secondary)' },
   modalBody: { padding: '24px' },
-  modalText: { margin: '0 0 16px 0', fontSize: '16px', color: '#1a1d29', lineHeight: 1.5 },
+  modalText: { margin: '0 0 16px 0', fontSize: '16px', color: 'var(--text-primary)', lineHeight: 1.5 },
   warningBox: { display: 'flex', gap: '12px', padding: '12px', backgroundColor: '#fef3c7', borderRadius: '8px', border: '1px solid #fde68a' },
   warningIcon: { fontSize: '20px' },
   warningText: { margin: 0, fontSize: '14px', color: '#78350f', lineHeight: 1.5 },
-  modalFooter: { padding: '24px', borderTop: '1px solid #e5e7eb', display: 'flex', gap: '12px', justifyContent: 'flex-end' },
-  modalCancelBtn: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#f5f7fa', color: '#1a1d29', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+  modalFooter: { padding: '24px', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: '12px', justifyContent: 'flex-end' },
+  modalCancelBtn: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: 'var(--surface-muted)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   modalDeleteBtn: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
 };
+
 

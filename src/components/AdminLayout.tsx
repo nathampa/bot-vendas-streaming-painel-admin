@@ -69,7 +69,7 @@ export const AdminLayout = () => {
         </nav>
 
         <div style={styles.sidebarFooter}>
-          <button onClick={handleLogout} style={styles.logoutButton} aria-label="Sair da conta">
+          <button type="button" onClick={handleLogout} style={styles.logoutButton} aria-label="Sair da conta">
             <span style={styles.navIcon}>OUT</span>
             <span>Sair</span>
           </button>
@@ -112,8 +112,7 @@ const styles: Record<string, CSSProperties> = {
   container: {
     display: 'flex',
     minHeight: '100vh',
-    backgroundColor: '#f5f7fa',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    backgroundColor: 'var(--surface-muted)',
   },
   sidebar: {
     position: 'fixed',
@@ -121,19 +120,19 @@ const styles: Record<string, CSSProperties> = {
     top: 0,
     bottom: 0,
     width: '260px',
-    backgroundColor: '#1a1d29',
-    color: '#fff',
+    backgroundColor: 'var(--surface-dark)',
+    color: 'var(--text-inverse)',
     display: 'flex',
     flexDirection: 'column',
     overflowY: 'auto',
     WebkitOverflowScrolling: 'touch',
-    boxShadow: '2px 0 10px rgba(0,0,0,0.1)',
+    boxShadow: 'var(--shadow-lg)',
     zIndex: 1000,
     transition: 'transform 0.3s ease',
   },
   sidebarHeader: {
     padding: '24px 20px',
-    borderBottom: '1px solid rgba(255,255,255,0.1)',
+    borderBottom: '1px solid rgba(248,250,252,0.12)',
   },
   logo: {
     display: 'flex',
@@ -144,7 +143,7 @@ const styles: Record<string, CSSProperties> = {
     width: '42px',
     height: '42px',
     borderRadius: '10px',
-    backgroundColor: '#2d3142',
+    background: 'var(--brand-gradient)',
     display: 'grid',
     placeItems: 'center',
     fontSize: '12px',
@@ -158,12 +157,12 @@ const styles: Record<string, CSSProperties> = {
     margin: 0,
     fontSize: '16px',
     fontWeight: 600,
-    color: '#fff',
+    color: 'var(--text-inverse)',
   },
   logoSubtitle: {
     margin: '2px 0 0 0',
     fontSize: '12px',
-    color: '#8b92a7',
+    color: 'rgba(248,250,252,0.65)',
   },
   nav: {
     flex: 1,
@@ -178,15 +177,15 @@ const styles: Record<string, CSSProperties> = {
     gap: '12px',
     padding: '12px 16px',
     textDecoration: 'none',
-    color: '#8b92a7',
+    color: 'rgba(248,250,252,0.68)',
     borderRadius: '8px',
     transition: 'background-color 0.2s ease, color 0.2s ease',
     fontSize: '14px',
     fontWeight: 500,
   },
   navLinkActive: {
-    backgroundColor: '#2d3142',
-    color: '#fff',
+    backgroundColor: 'rgba(45,127,224,0.24)',
+    color: 'var(--text-inverse)',
   },
   navIcon: {
     fontSize: '11px',
@@ -197,7 +196,7 @@ const styles: Record<string, CSSProperties> = {
   },
   sidebarFooter: {
     padding: '20px 12px',
-    borderTop: '1px solid rgba(255,255,255,0.1)',
+    borderTop: '1px solid rgba(248,250,252,0.12)',
   },
   logoutButton: {
     width: '100%',
@@ -206,8 +205,8 @@ const styles: Record<string, CSSProperties> = {
     gap: '12px',
     padding: '12px 16px',
     backgroundColor: 'transparent',
-    border: '1px solid rgba(255,255,255,0.1)',
-    color: '#8b92a7',
+    border: '1px solid rgba(248,250,252,0.16)',
+    color: 'rgba(248,250,252,0.72)',
     borderRadius: '8px',
     cursor: 'pointer',
     fontSize: '14px',
@@ -222,8 +221,9 @@ const styles: Record<string, CSSProperties> = {
     minHeight: '100vh',
   },
   topBar: {
-    backgroundColor: '#fff',
-    borderBottom: '1px solid #e5e7eb',
+    backgroundColor: 'rgba(255,255,255,0.88)',
+    backdropFilter: 'blur(8px)',
+    borderBottom: '1px solid var(--border-subtle)',
     padding: '16px 24px',
     display: 'flex',
     alignItems: 'center',
@@ -235,12 +235,12 @@ const styles: Record<string, CSSProperties> = {
   menuButton: {
     display: 'none',
     backgroundColor: 'transparent',
-    border: '1px solid #d1d5db',
+    border: '1px solid var(--border-default)',
     fontSize: '12px',
     fontWeight: 700,
     cursor: 'pointer',
     padding: '8px',
-    color: '#1a1d29',
+    color: 'var(--text-primary)',
   },
   topBarContent: {
     flex: 1,
@@ -252,19 +252,20 @@ const styles: Record<string, CSSProperties> = {
     margin: 0,
     fontSize: '20px',
     fontWeight: 600,
-    color: '#1a1d29',
+    color: 'var(--text-primary)',
   },
   userInfo: {
     display: 'flex',
     alignItems: 'center',
     padding: '8px 12px',
-    backgroundColor: '#f5f7fa',
+    backgroundColor: 'var(--surface-soft)',
+    border: '1px solid var(--border-subtle)',
     borderRadius: '8px',
   },
   userName: {
     fontSize: '14px',
     fontWeight: 500,
-    color: '#1a1d29',
+    color: 'var(--text-primary)',
   },
   content: {
     flex: 1,
@@ -298,4 +299,5 @@ const mobileStyles = `
     }
   }
 `;
+
 

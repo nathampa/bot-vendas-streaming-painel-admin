@@ -9,6 +9,7 @@ import {
   addContaMaeConvite,
 } from '../services/apiClient';
 import type { IContaMae, IContaMaeDetalhes } from '../types/api.types';
+import { useToast } from '../contexts/ToastContext';
 import { getApiErrorMessage } from '../utils/errors';
 
 interface IProduto {
@@ -17,6 +18,7 @@ interface IProduto {
 }
 
 export const ContasMaePage = () => {
+  const { showToast } = useToast();
   const [contas, setContas] = useState<IContaMae[]>([]);
   const [produtos, setProdutos] = useState<IProduto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,7 +50,7 @@ export const ContasMaePage = () => {
       setError(null);
     } catch (err) {
       console.error('Erro ao buscar dados:', err);
-      setError('Falha ao carregar contas mãe.');
+      setError('Falha ao carregar contas mÃ£e.');
     } finally {
       setIsLoading(false);
     }
@@ -84,7 +86,7 @@ export const ContasMaePage = () => {
     e.preventDefault();
 
     if (!selectedProdutoId) {
-      alert('⚠️ Por favor, selecione um produto.');
+      showToast('Por favor, selecione um produto.', 'warning');
       return;
     }
 
@@ -98,10 +100,10 @@ export const ContasMaePage = () => {
           ...(novaSenha && { senha: novaSenha }),
         };
         await updateContaMae(editingConta.id, updateData);
-        alert('✅ Conta mãe atualizada com sucesso!');
+        showToast('Conta mae atualizada com sucesso!', 'success');
       } else {
         if (!novaSenha) {
-          alert('⚠️ A senha é obrigatória ao criar nova conta.');
+          showToast('A senha e obrigatoria ao criar nova conta.', 'warning');
           return;
         }
         await createContaMae({
@@ -112,15 +114,15 @@ export const ContasMaePage = () => {
           data_expiracao: novoDataExpiracao || null,
           is_ativo: novoIsAtivo,
         });
-        alert('✅ Conta mãe criada com sucesso!');
+        showToast('Conta mae criada com sucesso!', 'success');
       }
 
       resetForm();
       carregarDados();
     } catch (err: unknown) {
-      console.error('Erro ao salvar conta mãe:', err);
+      console.error('Erro ao salvar conta mÃ£e:', err);
       const errorMsg = getApiErrorMessage(err, 'Falha ao salvar conta mae.');
-      alert(`❌ Erro: ${errorMsg}`);
+      showToast(errorMsg, 'error');
     }
   };
 
@@ -139,13 +141,13 @@ export const ContasMaePage = () => {
     if (!deletingConta) return;
     try {
       await deleteContaMae(deletingConta.id);
-      alert('✅ Conta mãe excluída com sucesso!');
+      showToast('Conta mae excluida com sucesso!', 'success');
       setDeletingConta(null);
       carregarDados();
     } catch (err: unknown) {
-      console.error('Erro ao excluir conta mãe:', err);
+      console.error('Erro ao excluir conta mÃ£e:', err);
       const errorMsg = getApiErrorMessage(err, 'Falha ao excluir conta mae.');
-      alert(` ${errorMsg}`);
+      showToast(errorMsg, 'error');
       setDeletingConta(null);
     }
   };
@@ -159,7 +161,7 @@ export const ContasMaePage = () => {
     } catch (err: unknown) {
       console.error('Erro ao buscar detalhes:', err);
       const errorMsg = getApiErrorMessage(err, 'Falha ao carregar detalhes da conta mae.');
-      alert(`❌ Erro: ${errorMsg}`);
+      showToast(errorMsg, 'error');
     } finally {
       setIsLoadingDetails(false);
     }
@@ -168,7 +170,7 @@ export const ContasMaePage = () => {
   const handleAddInvite = async () => {
     if (!selectedConta) return;
     if (!inviteEmail.trim()) {
-      alert('⚠️ Informe o email do convidado.');
+      showToast('Informe o email do convidado.', 'warning');
       return;
     }
 
@@ -181,13 +183,22 @@ export const ContasMaePage = () => {
     } catch (err: unknown) {
       console.error('Erro ao adicionar convite:', err);
       const errorMsg = getApiErrorMessage(err, 'Falha ao adicionar convite.');
-      alert(` ${errorMsg}`);
+      showToast(errorMsg, 'error');
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    alert('📋 Copiado!');
+  const copyToClipboard = async (text: string, label: string) => {
+    if (!text) {
+      showToast(`Nao ha ${label} para copiar.`, 'warning');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast(`${label} copiado com sucesso.`, 'success');
+    } catch {
+      showToast(`Falha ao copiar ${label}.`, 'error');
+    }
   };
 
   const filteredContas = contas.filter((conta) => {
@@ -203,7 +214,7 @@ export const ContasMaePage = () => {
     return (
       <div style={styles.loadingContainer}>
         <div style={styles.spinner} />
-        <p style={styles.loadingText}>Carregando contas mãe...</p>
+        <p style={styles.loadingText}>Carregando contas mÃ£e...</p>
       </div>
     );
   }
@@ -212,17 +223,17 @@ export const ContasMaePage = () => {
     <div style={styles.container}>
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>👩‍💼 Contas Mãe</h1>
+          <h1 style={styles.title}>ðŸ‘©â€ðŸ’¼ Contas MÃ£e</h1>
           <p style={styles.subtitle}>Gerencie as contas que convidam clientes por email</p>
         </div>
-        <button onClick={() => (showForm ? resetForm() : setShowForm(true))} style={styles.addButton}>
-          {showForm ? '✖ Cancelar' : '➕ Nova Conta Mãe'}
+        <button type="button" onClick={() => (showForm ? resetForm() : setShowForm(true))} style={styles.addButton}>
+          {showForm ? 'âœ– Cancelar' : 'âž• Nova Conta MÃ£e'}
         </button>
       </div>
 
       {error && (
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>⚠️</span>
+          <span style={styles.alertIcon}>âš ï¸</span>
           <span>{error}</span>
         </div>
       )}
@@ -230,12 +241,15 @@ export const ContasMaePage = () => {
       {showForm && (
         <div style={styles.formCard}>
           <h3 style={styles.formTitle}>
-            {editingConta ? '✏️ Editar Conta Mãe' : '➕ Cadastrar Conta Mãe'}
+            {editingConta ? 'âœï¸ Editar Conta MÃ£e' : 'âž• Cadastrar Conta MÃ£e'}
           </h3>
           <form onSubmit={handleCreateOrUpdate} style={styles.form}>
             <div style={styles.inputGroup}>
-              <label style={styles.label}>Produto</label>
+              <label htmlFor="conta-mae-produto" style={styles.label}>
+                Produto
+              </label>
               <select
+                id="conta-mae-produto"
                 value={selectedProdutoId}
                 onChange={(e) => setSelectedProdutoId(e.target.value)}
                 required
@@ -256,8 +270,11 @@ export const ContasMaePage = () => {
 
             <div style={styles.inputRow}>
               <div style={styles.inputGroup}>
-                <label style={styles.label}>Login (Email)</label>
+                <label htmlFor="conta-mae-login" style={styles.label}>
+                  Login (Email)
+                </label>
                 <input
+                  id="conta-mae-login"
                   type="text"
                   value={novoLogin}
                   onChange={(e) => setNovoLogin(e.target.value)}
@@ -267,25 +284,29 @@ export const ContasMaePage = () => {
                 />
               </div>
               <div style={styles.inputGroup}>
-                <label style={styles.label}>
+                <label htmlFor="conta-mae-senha" style={styles.label}>
                   Senha {editingConta && '(deixe vazio para no alterar)'}
                 </label>
                 <input
+                  id="conta-mae-senha"
                   type="text"
                   autoComplete="off"
                   value={novaSenha}
                   onChange={(e) => setNovaSenha(e.target.value)}
                   required={!editingConta}
                   style={styles.input}
-                  placeholder=""
+                  placeholder="Digite a senha em texto"
                 />
               </div>
             </div>
 
             <div style={styles.inputRow}>
               <div style={styles.inputGroup}>
-                <label style={styles.label}>Máximo de Slots</label>
+                <label htmlFor="conta-mae-max-slots" style={styles.label}>
+                  MÃ¡ximo de Slots
+                </label>
                 <input
+                  id="conta-mae-max-slots"
                   type="number"
                   step="1"
                   min="1"
@@ -296,8 +317,11 @@ export const ContasMaePage = () => {
                 />
               </div>
               <div style={styles.inputGroup}>
-                <label style={styles.label}>Data de Expiração</label>
+                <label htmlFor="conta-mae-data-expiracao" style={styles.label}>
+                  Data de ExpiraÃ§Ã£o
+                </label>
                 <input
+                  id="conta-mae-data-expiracao"
                   type="date"
                   value={novoDataExpiracao}
                   onChange={(e) => setNovoDataExpiracao(e.target.value)}
@@ -307,23 +331,26 @@ export const ContasMaePage = () => {
             </div>
 
             <div style={styles.inputGroup}>
-              <label style={styles.label}>Status</label>
+              <label htmlFor="conta-mae-status" style={styles.label}>
+                Status
+              </label>
               <select
+                id="conta-mae-status"
                 value={novoIsAtivo ? 'true' : 'false'}
                 onChange={(e) => setNovoIsAtivo(e.target.value === 'true')}
                 style={styles.input}
               >
-                <option value="true">✓ Ativa</option>
-                <option value="false">✖ Inativa</option>
+                <option value="true">âœ“ Ativa</option>
+                <option value="false">âœ– Inativa</option>
               </select>
             </div>
 
             <div style={styles.formActions}>
               <button type="button" onClick={resetForm} style={styles.cancelButton}>
-               ✖ Cancelar
+               âœ– Cancelar
               </button>
               <button type="submit" style={styles.submitButton}>
-                {editingConta ? 'Salvar Alterações' : 'Cadastrar Conta'}
+                {editingConta ? 'Salvar AlteraÃ§Ãµes' : 'Cadastrar Conta'}
               </button>
             </div>
           </form>
@@ -334,8 +361,11 @@ export const ContasMaePage = () => {
         <h3 style={styles.filterTitle}>Filtrar Contas</h3>
         <div style={styles.filterInputs}>
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Buscar por Produto ou Login</label>
+            <label htmlFor="conta-mae-filtro" style={styles.label}>
+              Buscar por Produto ou Login
+            </label>
             <input
+              id="conta-mae-filtro"
               type="text"
               value={filterTerm}
               onChange={(e) => setFilterTerm(e.target.value)}
@@ -348,23 +378,23 @@ export const ContasMaePage = () => {
 
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}>📊</div>
+          <div style={styles.statIcon}>ðŸ“Š</div>
           <div>
             <p style={styles.statLabel}>Contas (Filtro)</p>
             <h3 style={styles.statValue}>{filteredContas.length}</h3>
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={{ ...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46' }}>✅</div>
+          <div style={{ ...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46' }}>âœ…</div>
           <div>
             <p style={styles.statLabel}>Ativas</p>
             <h3 style={styles.statValue}>{filteredContas.filter((c) => c.is_ativo).length}</h3>
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={{ ...styles.statIcon, backgroundColor: '#fee2e2', color: '#991b1b' }}>⏳</div>
+          <div style={{ ...styles.statIcon, backgroundColor: '#fee2e2', color: '#991b1b' }}>â³</div>
           <div>
-            <p style={styles.statLabel}>Próximas de Expirar</p>
+            <p style={styles.statLabel}>PrÃ³ximas de Expirar</p>
             <h3 style={styles.statValue}>{filteredContas.filter((c) => (c.dias_restantes ?? 999) <= 7).length}</h3>
           </div>
         </div>
@@ -373,7 +403,7 @@ export const ContasMaePage = () => {
       <div style={styles.estoqueGrid}>
         {filteredContas.length === 0 ? (
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>👩‍💼</span>
+            <span style={styles.emptyIcon}>ðŸ‘©â€ðŸ’¼</span>
             <h3 style={styles.emptyTitle}>Nenhuma conta encontrada</h3>
             <p style={styles.emptyText}>Cadastre novas contas ou ajuste os filtros.</p>
           </div>
@@ -400,7 +430,7 @@ export const ContasMaePage = () => {
                 key={conta.id}
                 style={{
                   ...styles.estoqueCard,
-                  borderColor: conta.is_ativo ? '#e5e7eb' : '#ef4444',
+                  borderColor: conta.is_ativo ? 'var(--border-subtle)' : '#ef4444',
                 }}
               >
                 <div style={styles.cardHeader}>
@@ -412,7 +442,7 @@ export const ContasMaePage = () => {
                       </span>
                     )}
                     <span style={{ ...styles.badge, ...(conta.is_ativo ? styles.badgeActive : styles.badgeInactive) }}>
-                      {conta.is_ativo ? '✓ Ativa' : '✖ Inativa'}
+                      {conta.is_ativo ? 'âœ“ Ativa' : 'âœ– Inativa'}
                     </span>
                   </div>
                 </div>
@@ -438,18 +468,21 @@ export const ContasMaePage = () => {
 
                 <div style={styles.actionButtons}>
                   <button
+                    type="button"
                     onClick={() => handleOpenDetails(conta.id)}
                     style={{ ...styles.actionBtn, ...styles.detailsBtn }}
                   >
                      Detalhes
                   </button>
                   <button
+                    type="button"
                     onClick={() => handleEdit(conta)}
                     style={{ ...styles.actionBtn, ...styles.editBtn }}
                   >
                      Editar
                   </button>
                   <button
+                    type="button"
                     onClick={() => setDeletingConta(conta)}
                     style={{ ...styles.actionBtn, ...styles.deleteBtn }}
                   >
@@ -464,10 +497,23 @@ export const ContasMaePage = () => {
 
       {selectedConta && (
         <div style={styles.modalOverlay} onClick={() => setSelectedConta(null)}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+          <div
+            style={styles.modal}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Detalhes da conta mae"
+          >
             <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>👩‍💼 Conta Mãe</h3>
-              <button onClick={() => setSelectedConta(null)} style={styles.modalClose}></button>
+              <h3 style={styles.modalTitle}>ðŸ‘©â€ðŸ’¼ Conta MÃ£e</h3>
+              <button
+                type="button"
+                onClick={() => setSelectedConta(null)}
+                style={styles.modalClose}
+                aria-label="Fechar detalhes da conta mae"
+              >
+                x
+              </button>
             </div>
 
             {isLoadingDetails ? (
@@ -480,17 +526,27 @@ export const ContasMaePage = () => {
                 <div style={styles.infoGrid}>
                   <div style={styles.infoBox}>
                     <span style={styles.infoLabel}>Login</span>
-                    <div style={styles.copyBox} onClick={() => copyToClipboard(selectedConta.login)}>
+                    <button
+                      type="button"
+                      style={styles.copyBox}
+                      onClick={() => copyToClipboard(selectedConta.login, 'login')}
+                      aria-label="Copiar login"
+                    >
                       <span style={styles.infoValue}>{selectedConta.login}</span>
-                      <button style={styles.copyButton}></button>
-                    </div>
+                      <span style={styles.copyButton}>Copiar</span>
+                    </button>
                   </div>
                   <div style={styles.infoBox}>
                     <span style={styles.infoLabel}>Senha</span>
-                    <div style={styles.copyBox} onClick={() => copyToClipboard(selectedConta.senha || '')}>
+                    <button
+                      type="button"
+                      style={styles.copyBox}
+                      onClick={() => copyToClipboard(selectedConta.senha || '', 'senha')}
+                      aria-label="Copiar senha"
+                    >
                       <span style={styles.infoValue}>{selectedConta.senha || '-'}</span>
-                      <button style={styles.copyButton}></button>
-                    </div>
+                      <span style={styles.copyButton}>Copiar</span>
+                    </button>
                   </div>
                   <div style={styles.infoBox}>
                     <span style={styles.infoLabel}>Expirao</span>
@@ -509,10 +565,14 @@ export const ContasMaePage = () => {
                 <div style={styles.inviteSection}>
                   <h4 style={styles.sectionTitle}>Adicionar Email Convidado</h4>
                   {isSlotsFull && (
-                    <p style={styles.warningText}>Esta conta já atingiu o máximo de slots.</p>
+                    <p style={styles.warningText}>Esta conta jÃ¡ atingiu o mÃ¡ximo de slots.</p>
                   )}
                   <div style={styles.inviteRow}>
+                    <label htmlFor="conta-mae-invite-email" style={styles.srOnly}>
+                      Email do convidado
+                    </label>
                     <input
+                      id="conta-mae-invite-email"
                       type="email"
                       value={inviteEmail}
                       onChange={(e) => setInviteEmail(e.target.value)}
@@ -520,7 +580,7 @@ export const ContasMaePage = () => {
                       style={styles.input}
                       disabled={isSlotsFull}
                     />
-                    <button onClick={handleAddInvite} style={styles.submitButton} disabled={isSlotsFull}>
+                    <button type="button" onClick={handleAddInvite} style={styles.submitButton} disabled={isSlotsFull}>
                       Adicionar
                     </button>
                   </div>
@@ -552,24 +612,31 @@ export const ContasMaePage = () => {
           <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div style={styles.modalHeader}>
               <h3 style={styles.modalTitle}> Confirmar Excluso</h3>
-              <button onClick={() => setDeletingConta(null)} style={styles.modalClose}></button>
+              <button
+                type="button"
+                onClick={() => setDeletingConta(null)}
+                style={styles.modalClose}
+                aria-label="Fechar confirmacao de exclusao"
+              >
+                x
+              </button>
             </div>
             <div style={styles.modalBody}>
               <p style={styles.modalText}>
                 Tem certeza que deseja excluir a conta <strong>{deletingConta.login}</strong>?
               </p>
               <div style={styles.warningBox}>
-                <span style={styles.warningIcon}></span>
+                <span style={styles.warningIcon}>!</span>
                 <p style={styles.warningText}>
                   Esta ao no pode ser desfeita. Os convites vinculados sero removidos.
                 </p>
               </div>
             </div>
             <div style={styles.modalFooter}>
-              <button onClick={() => setDeletingConta(null)} style={styles.modalCancelBtn}>
-               ✖ Cancelar
+              <button type="button" onClick={() => setDeletingConta(null)} style={styles.modalCancelBtn}>
+               âœ– Cancelar
               </button>
-              <button onClick={handleDelete} style={styles.modalDeleteBtn}>
+              <button type="button" onClick={handleDelete} style={styles.modalDeleteBtn}>
                 Sim, Excluir
               </button>
             </div>
@@ -583,83 +650,85 @@ export const ContasMaePage = () => {
 const styles: Record<string, React.CSSProperties> = {
   container: { maxWidth: '1400px', margin: '0 auto' },
   loadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '16px' },
-  spinner: { width: '48px', height: '48px', border: '4px solid #e5e7eb', borderTop: '4px solid #667eea', borderRadius: '50%', animation: 'spin 1s linear infinite' },
-  loadingText: { fontSize: '16px', color: '#6b7280' },
+  spinner: { width: '48px', height: '48px', border: '4px solid var(--border-subtle)', borderTop: '4px solid var(--brand-500)', borderRadius: '50%', animation: 'spin 1s linear infinite' },
+  loadingText: { fontSize: '16px', color: 'var(--text-secondary)' },
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' },
-  title: { margin: '0 0 4px 0', fontSize: '28px', fontWeight: 700, color: '#1a1d29' },
-  subtitle: { margin: 0, fontSize: '15px', color: '#6b7280' },
-  addButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+  title: { margin: '0 0 4px 0', fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)' },
+  subtitle: { margin: 0, fontSize: '15px', color: 'var(--text-secondary)' },
+  addButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   alert: { display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', backgroundColor: '#fee2e2', border: '1px solid #fecaca', borderRadius: '8px', color: '#991b1b', marginBottom: '24px' },
   alertIcon: { fontSize: '18px' },
   formCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '24px', marginBottom: '32px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
-  formTitle: { margin: '0 0 20px 0', fontSize: '18px', fontWeight: 700, color: '#1a1d29' },
+  formTitle: { margin: '0 0 20px 0', fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' },
   form: { display: 'flex', flexDirection: 'column', gap: '20px' },
   inputRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
   label: { fontSize: '14px', fontWeight: 600, color: '#374151' },
-  input: { padding: '12px 16px', fontSize: '15px', border: '2px solid #e5e7eb', borderRadius: '8px', width: '100%', fontFamily: 'inherit' },
-  inputHint: { fontSize: '12px', color: '#6b7280', fontStyle: 'italic' },
+  input: { padding: '12px 16px', fontSize: '15px', border: '2px solid var(--border-subtle)', borderRadius: '8px', width: '100%', fontFamily: 'inherit' },
+  inputHint: { fontSize: '12px', color: 'var(--text-secondary)', fontStyle: 'italic' },
   formActions: { display: 'flex', gap: '12px', justifyContent: 'flex-end' },
-  cancelButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#f5f7fa', color: '#1a1d29', border: 'none', borderRadius: '8px', cursor: 'pointer' },
-  submitButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+  cancelButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: 'var(--surface-muted)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+  submitButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   filterContainer: { backgroundColor: '#fff', borderRadius: '12px', padding: '24px', marginBottom: '32px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
-  filterTitle: { margin: '0 0 20px 0', fontSize: '18px', fontWeight: 700, color: '#1a1d29' },
+  filterTitle: { margin: '0 0 20px 0', fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' },
   filterInputs: { display: 'grid', gridTemplateColumns: '1fr', gap: '16px' },
   statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' },
   statCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
-  statIcon: { width: '48px', height: '48px', borderRadius: '10px', backgroundColor: '#f5f7fa', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' },
-  statLabel: { margin: '0 0 4px 0', fontSize: '13px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' },
-  statValue: { margin: 0, fontSize: '24px', fontWeight: 700, color: '#1a1d29' },
+  statIcon: { width: '48px', height: '48px', borderRadius: '10px', backgroundColor: 'var(--surface-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' },
+  statLabel: { margin: '0 0 4px 0', fontSize: '13px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' },
+  statValue: { margin: 0, fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' },
   estoqueGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' },
   estoqueCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '2px solid', transition: 'all 0.2s ease' },
   cardHeader: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px', gap: '12px' },
-  cardTitle: { margin: 0, fontSize: '16px', fontWeight: 600, color: '#1a1d29', flex: 1 },
+  cardTitle: { margin: 0, fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', flex: 1 },
   badges: { display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end' },
   badge: { padding: '4px 10px', fontSize: '11px', fontWeight: 600, borderRadius: '6px', whiteSpace: 'nowrap' },
   badgeActive: { backgroundColor: '#d1fae5', color: '#065f46' },
   badgeInactive: { backgroundColor: '#fee2e2', color: '#991b1b' },
   badgeWarning: { backgroundColor: '#fef3c7', color: '#92400e' },
   badgeInfo: { backgroundColor: '#dbeafe', color: '#1e40af' },
-  cardInfo: { display: 'flex', justifyContent: 'space-between', marginBottom: '16px', padding: '12px', backgroundColor: '#f9fafb', borderRadius: '8px' },
-  infoLabel: { fontSize: '13px', color: '#6b7280', fontWeight: 500 },
-  infoValue: { fontSize: '13px', color: '#1a1d29', fontWeight: 600 },
-  cardFooter: { paddingTop: '12px', borderTop: '1px solid #e5e7eb', marginBottom: '12px' },
-  cardId: { fontSize: '11px', color: '#9ca3af' },
-  actionButtons: { display: 'flex', gap: '8px', paddingTop: '12px', borderTop: '1px solid #e5e7eb' },
+  cardInfo: { display: 'flex', justifyContent: 'space-between', marginBottom: '16px', padding: '12px', backgroundColor: 'var(--surface-soft)', borderRadius: '8px' },
+  infoLabel: { fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 },
+  infoValue: { fontSize: '13px', color: 'var(--text-primary)', fontWeight: 600 },
+  cardFooter: { paddingTop: '12px', borderTop: '1px solid var(--border-subtle)', marginBottom: '12px' },
+  cardId: { fontSize: '11px', color: 'var(--text-muted)' },
+  actionButtons: { display: 'flex', gap: '8px', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)' },
   actionBtn: { flex: 1, padding: '10px 16px', fontSize: '13px', fontWeight: 600, border: 'none', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s ease' },
   detailsBtn: { backgroundColor: '#e0f2fe', color: '#0369a1' },
   editBtn: { backgroundColor: '#dbeafe', color: '#1e40af' },
   deleteBtn: { backgroundColor: '#fee2e2', color: '#991b1b' },
   emptyState: { gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', gap: '16px' },
   emptyIcon: { fontSize: '64px', opacity: 0.5 },
-  emptyTitle: { margin: 0, fontSize: '20px', color: '#1a1d29' },
-  emptyText: { margin: 0, fontSize: '14px', color: '#6b7280' },
+  emptyTitle: { margin: 0, fontSize: '20px', color: 'var(--text-primary)' },
+  emptyText: { margin: 0, fontSize: '14px', color: 'var(--text-secondary)' },
   modalOverlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' },
   modal: { backgroundColor: '#fff', borderRadius: '16px', maxWidth: '720px', width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' },
-  modalHeader: { padding: '24px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  modalHeader: { padding: '24px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
   modalTitle: { margin: 0, fontSize: '20px', fontWeight: 700 },
-  modalClose: { background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', padding: '4px', color: '#6b7280' },
+  modalClose: { background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', padding: '4px', color: 'var(--text-secondary)' },
   modalBody: { padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' },
   infoGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' },
-  infoBox: { display: 'flex', flexDirection: 'column', gap: '8px', padding: '16px', backgroundColor: '#f9fafb', borderRadius: '10px' },
-  inviteSection: { backgroundColor: '#f9fafb', borderRadius: '12px', padding: '16px' },
-  sectionTitle: { margin: '0 0 12px 0', fontSize: '16px', fontWeight: 700, color: '#1a1d29' },
+  infoBox: { display: 'flex', flexDirection: 'column', gap: '8px', padding: '16px', backgroundColor: 'var(--surface-soft)', borderRadius: '10px' },
+  inviteSection: { backgroundColor: 'var(--surface-soft)', borderRadius: '12px', padding: '16px' },
+  sectionTitle: { margin: '0 0 12px 0', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' },
   inviteRow: { display: 'grid', gridTemplateColumns: '1fr auto', gap: '12px', alignItems: 'center' },
-  inviteList: { backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #e5e7eb', padding: '16px' },
+  inviteList: { backgroundColor: '#fff', borderRadius: '12px', border: '1px solid var(--border-subtle)', padding: '16px' },
   inviteTable: { display: 'flex', flexDirection: 'column', gap: '8px' },
-  inviteItem: { display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '10px 12px', backgroundColor: '#f9fafb', borderRadius: '8px' },
-  inviteEmail: { fontWeight: 600, color: '#1a1d29' },
-  inviteDate: { fontSize: '12px', color: '#6b7280' },
-  copyBox: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '8px 12px', backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer' },
-  copyButton: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' },
-  modalText: { margin: '0 0 16px 0', fontSize: '16px', color: '#1a1d29', lineHeight: 1.5 },
+  inviteItem: { display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '10px 12px', backgroundColor: 'var(--surface-soft)', borderRadius: '8px' },
+  inviteEmail: { fontWeight: 600, color: 'var(--text-primary)' },
+  inviteDate: { fontSize: '12px', color: 'var(--text-secondary)' },
+  copyBox: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '8px 12px', backgroundColor: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '8px', cursor: 'pointer', width: '100%', fontFamily: 'inherit', fontSize: 'inherit', textAlign: 'left' },
+  copyButton: { fontSize: '12px', fontWeight: 700, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.4px' },
+  srOnly: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 },
+  modalText: { margin: '0 0 16px 0', fontSize: '16px', color: 'var(--text-primary)', lineHeight: 1.5 },
   warningBox: { display: 'flex', gap: '12px', padding: '12px', backgroundColor: '#fef3c7', borderRadius: '8px', border: '1px solid #fde68a' },
   warningIcon: { fontSize: '20px' },
   warningText: { margin: 0, fontSize: '14px', color: '#78350f', lineHeight: 1.5 },
-  modalFooter: { padding: '24px', borderTop: '1px solid #e5e7eb', display: 'flex', gap: '12px', justifyContent: 'flex-end' },
-  modalCancelBtn: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#f5f7fa', color: '#1a1d29', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+  modalFooter: { padding: '24px', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: '12px', justifyContent: 'flex-end' },
+  modalCancelBtn: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: 'var(--surface-muted)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   modalDeleteBtn: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
 };
+
 
 
 
