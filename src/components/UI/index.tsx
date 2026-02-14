@@ -1,6 +1,6 @@
 import { useId } from 'react';
 
-// Componentes UI reutilizÃ¡veis para o sistema
+// Componentes UI reutilizáveis para o sistema
 
 // Card Container
 export const Card = ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (

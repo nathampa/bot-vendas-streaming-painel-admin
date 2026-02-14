@@ -59,7 +59,7 @@ export const DashboardPage = () => {
     // ... (bloco isLoading) ...
     return (
       <div style={styles.loadingContainer}>
-        <div style={styles.spinner}>â³</div>
+        <div style={styles.spinner}>⏳</div>
         <p style={styles.loadingText}>Carregando dados...</p>
       </div>
     );
@@ -69,7 +69,7 @@ export const DashboardPage = () => {
     // ... (bloco error) ...
     return (
       <div style={styles.errorContainer}>
-        <span style={styles.errorIcon}>âš ï¸</span>
+        <span style={styles.errorIcon}>⚠️</span>
         <h2 style={styles.errorTitle}>Erro ao Carregar</h2>
         <p style={styles.errorText}>{error}</p>
       </div>
@@ -80,59 +80,59 @@ export const DashboardPage = () => {
     <div style={styles.container}>
       {/* Welcome Section */}
       <div style={styles.welcomeSection}>
-        {/* ... (cÃ³digo de welcome) ... */}
+        {/* ... (código de welcome) ... */}
         <div>
-          <h1 style={styles.welcomeTitle}>Bem-vindo de volta! ðŸ‘‹</h1>
-          <p style={styles.welcomeText}>Aqui estÃ¡ um resumo das Ãºltimas 24 horas</p>
+          <h1 style={styles.welcomeTitle}>Bem-vindo de volta! 👋</h1>
+          <p style={styles.welcomeText}>Aqui está um resumo das últimas 24 horas</p>
         </div>
       </div>
 
       {/* KPI Cards */}
       <div style={styles.kpiGrid}>
-        {/* ... (cÃ³digo dos kpis) ... */}
+        {/* ... (código dos kpis) ... */}
         <div style={{...styles.kpiCard, ...styles.kpiCard1}}>
-          <div style={styles.kpiIcon}>ðŸ’°</div>
+          <div style={styles.kpiIcon}>💰</div>
           <div style={styles.kpiContent}>
             <p style={styles.kpiLabel}>Faturamento</p>
             <h2 style={styles.kpiValue}>R$ {kpis?.faturamento_24h || '0,00'}</h2>
-            <span style={styles.kpiBadge}>Ãšltimas 24h</span>
+            <span style={styles.kpiBadge}>Últimas 24h</span>
           </div>
         </div>
         <div style={{...styles.kpiCard, ...styles.kpiCard2}}>
-          <div style={styles.kpiIcon}>ðŸ›’</div>
+          <div style={styles.kpiIcon}>🛒</div>
           <div style={styles.kpiContent}>
             <p style={styles.kpiLabel}>Vendas</p>
             <h2 style={styles.kpiValue}>{kpis?.vendas_24h || 0}</h2>
-            <span style={styles.kpiBadge}>Ãšltimas 24h</span>
+            <span style={styles.kpiBadge}>Últimas 24h</span>
           </div>
         </div>
         <div style={{...styles.kpiCard, ...styles.kpiCard3}}>
-          <div style={styles.kpiIcon}>ðŸ‘¥</div>
+          <div style={styles.kpiIcon}>👥</div>
           <div style={styles.kpiContent}>
-            <p style={styles.kpiLabel}>Novos UsuÃ¡rios</p>
+            <p style={styles.kpiLabel}>Novos Usuários</p>
             <h2 style={styles.kpiValue}>{kpis?.novos_usuarios_24h || 0}</h2>
-            <span style={styles.kpiBadge}>Ãšltimas 24h</span>
+            <span style={styles.kpiBadge}>Últimas 24h</span>
           </div>
         </div>
         <div style={{...styles.kpiCard, ...styles.kpiCard4}}>
-          <div style={styles.kpiIcon}>ðŸŽŸï¸</div>
+          <div style={styles.kpiIcon}>🎟️</div>
           <div style={styles.kpiContent}>
             <p style={styles.kpiLabel}>Tickets Abertos</p>
             <h2 style={styles.kpiValue}>{kpis?.tickets_abertos || 0}</h2>
             <span style={{...styles.kpiBadge, ...styles.alertBadge}}>
-              {kpis?.tickets_abertos ? 'Requer atenÃ§Ã£o' : 'Tudo certo'}
+              {kpis?.tickets_abertos ? 'Requer atenção' : 'Tudo certo'}
             </span>
           </div>
         </div>
       </div>
 
-      {/* SEÃ‡ÃƒO DE CONTEÃšDO DUPLO */}
+      {/* SEÇÃO DE CONTEÚDO DUPLO */}
       <div style={styles.dualGrid}>
         {/* Top Products Section */}
         <div style={styles.section}>
-          {/* ... (cÃ³digo /top-produtos) ... */}
+          {/* ... (código /top-produtos) ... */}
           <div style={styles.sectionHeader}>
-            <h2 style={styles.sectionTitle}>ðŸ† Produtos Mais Vendidos</h2>
+            <h2 style={styles.sectionTitle}>🏆 Produtos Mais Vendidos</h2>
             <span style={styles.sectionSubtitle}>Por faturamento total</span>
           </div>
 
@@ -161,16 +161,16 @@ export const DashboardPage = () => {
             </div>
           ) : (
             <div style={styles.emptyState}>
-              <span style={styles.emptyIcon}>ðŸ“¦</span>
+              <span style={styles.emptyIcon}>📦</span>
               <p style={styles.emptyText}>Nenhuma venda registrada ainda</p>
             </div>
           )}
         </div>
 
-        {/* --- SEÃ‡ÃƒO DE ÃšLTIMOS PEDIDOS (MODIFICADA) --- */}
+        {/* --- SEÇÃO DE ÚLTIMOS PEDIDOS (MODIFICADA) --- */}
         <div style={styles.section}>
           <div style={styles.sectionHeader}>
-            <h2 style={styles.sectionTitle}>ðŸ•“ Ãšltimos Pedidos</h2>
+            <h2 style={styles.sectionTitle}>🕓 Últimos Pedidos</h2>
             <span style={styles.sectionSubtitle}>Os 5 pedidos mais recentes</span>
           </div>
 
@@ -179,7 +179,7 @@ export const DashboardPage = () => {
               {recentPedidos.map((pedido) => (
                 <div key={pedido.id} style={styles.productCard}>
                   <div style={{...styles.productRank, backgroundColor: '#10b981'}}>
-                    ðŸ›’
+                    🛒
                   </div>
                   <div style={styles.productInfo}>
                     <h3 style={styles.productName}>{pedido.produto_nome}</h3>
@@ -189,15 +189,15 @@ export const DashboardPage = () => {
                         <span style={styles.productStatValue}>R$ {pedido.valor_pago}</span>
                       </div>
                       <div style={styles.productStat}>
-                        <span style={styles.productStatLabel}>UsuÃ¡rio</span>
-                        {/* --- ALTERAÃ‡ÃƒO AQUI --- */}
+                        <span style={styles.productStatLabel}>Usuário</span>
+                        {/* --- ALTERAÇÃO AQUI --- */}
                         <span 
                           style={styles.productStatValue} 
                           title={`${pedido.nome_completo} (${pedido.usuario_telegram_id})`}
                         >
                           {pedido.nome_completo} ({pedido.usuario_telegram_id})
                         </span>
-                        {/* --- FIM DA ALTERAÃ‡ÃƒO --- */}
+                        {/* --- FIM DA ALTERAÇÃO --- */}
                       </div>
                     </div>
                     <span style={styles.pedidoData}>
@@ -209,7 +209,7 @@ export const DashboardPage = () => {
             </div>
           ) : (
             <div style={styles.emptyState}>
-              <span style={styles.emptyIcon}>ðŸ›’</span>
+              <span style={styles.emptyIcon}>🛒</span>
               <p style={styles.emptyText}>Nenhum pedido recente</p>
             </div>
           )}

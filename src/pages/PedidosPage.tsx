@@ -86,7 +86,7 @@ export const PedidosPage = () => {
     }
   };
 
-  // Novas funÃ§Ãµes para o fluxo de entrega
+  // Novas funções para o fluxo de entrega
   const handleOpenEntregaModal = (pedido: IPedidoAdminList) => {
     setEntregaModalPedido(pedido);
     setEntregaLogin('');
@@ -104,7 +104,7 @@ export const PedidosPage = () => {
 
     setIsEntregaLoading(true);
     try {
-      // Chama a nova funÃ§Ã£o da API
+      // Chama a nova função da API
       await entregarPedidoManual(entregaModalPedido.id, {
         login: entregaLogin,
         senha: entregaSenha,
@@ -123,12 +123,12 @@ export const PedidosPage = () => {
     }
   };
   
-  // Nova funÃ§Ã£o para badge de status
+  // Nova função para badge de status
   const getStatusBadge = (status: 'ENTREGUE' | 'PENDENTE') => {
     if (status === 'PENDENTE') {
-      return <span style={{...styles.badge, ...styles.badgeWarning}}>â³ Pendente</span>;
+      return <span style={{...styles.badge, ...styles.badgeWarning}}>⏳ Pendente</span>;
     }
-    return <span style={{...styles.badge, ...styles.badgeSuccess}}>âœ… Entregue</span>;
+    return <span style={{...styles.badge, ...styles.badgeSuccess}}>✅ Entregue</span>;
   };
 
   if (isLoadingList) {
@@ -145,16 +145,16 @@ export const PedidosPage = () => {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>ðŸ§¾ Pedidos</h1>
-          <p style={styles.subtitle}>HistÃ³rico de todas as vendas realizadas</p>
+          <h1 style={styles.title}>🧾 Pedidos</h1>
+          <p style={styles.subtitle}>Histórico de todas as vendas realizadas</p>
         </div>
       </div>
       
       {/* Error Alert */}
       {error && (
-        // ... (bloco error, sem alteraÃ§Ã£o) ...
+        // ... (bloco error, sem alteração) ...
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>âš ï¸</span>
+          <span style={styles.alertIcon}>⚠️</span>
           <span>{error}</span>
         </div>
       )}
@@ -162,11 +162,11 @@ export const PedidosPage = () => {
       {/* Tabela de Pedidos */}
       <div style={styles.tableContainer}>
         {pedidos.length === 0 ? (
-          // ... (bloco emptyState, sem alteraÃ§Ã£o) ...
+          // ... (bloco emptyState, sem alteração) ...
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>ðŸ§¾</span>
+            <span style={styles.emptyIcon}>🧾</span>
             <h3 style={styles.emptyTitle}>Nenhum pedido encontrado</h3>
-            <p style={styles.emptyText}>Quando as vendas comeÃ§arem, elas aparecerÃ£o aqui.</p>
+            <p style={styles.emptyText}>Quando as vendas começarem, elas aparecerão aqui.</p>
           </div>
         ) : (
           <table style={styles.table}>
@@ -174,11 +174,11 @@ export const PedidosPage = () => {
               <tr>
                 <th style={styles.th}>Data</th>
                 <th style={styles.th}>Produto</th>
-                <th style={styles.th}>UsuÃ¡rio</th>
+                <th style={styles.th}>Usuário</th>
                 <th style={styles.th}>Status</th> 
                 <th style={styles.th}>Entrega Info</th>
                 <th style={styles.th}>Valor</th>
-                <th style={styles.th}>AÃ§Ãµes</th>
+                <th style={styles.th}>Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -214,7 +214,7 @@ export const PedidosPage = () => {
                         onClick={() => handleOpenEntregaModal(pedido)}
                         style={styles.deliverButton}
                       >
-                        ðŸšš Entregar
+                        🚚 Entregar
                       </button>
                     ) : (
                       <button 
@@ -222,7 +222,7 @@ export const PedidosPage = () => {
                         onClick={() => handleVerDetalhes(pedido.id)}
                         style={styles.detailsButton}
                       >
-                        ðŸ‘ï¸ Ver Detalhes
+                        👁️ Ver Detalhes
                       </button>
                     )}
                   </td>
@@ -238,7 +238,7 @@ export const PedidosPage = () => {
         <div style={styles.modalOverlay} onClick={() => !isLoadingDetails && setSelectedPedido(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>ðŸ§¾ Detalhes do Pedido</h3>
+              <h3 style={styles.modalTitle}>🧾 Detalhes do Pedido</h3>
               <button
                 type="button"
                 onClick={() => setSelectedPedido(null)}
@@ -250,7 +250,7 @@ export const PedidosPage = () => {
             </div>
             
             {isLoadingDetails ? (
-              // ... (bloco loading, sem alteraÃ§Ã£o) ...
+              // ... (bloco loading, sem alteração) ...
               <div style={styles.loadingContainer}>
                 <div style={styles.spinner} />
                 <p style={styles.loadingText}>Carregando conta...</p>
@@ -258,9 +258,9 @@ export const PedidosPage = () => {
             ) : selectedPedido ? (
               <>
                 <div style={styles.modalBody}>
-                  {/* InformaÃ§Ãµes do Pedido */}
+                  {/* Informações do Pedido */}
                   <div style={styles.infoGrid}>
-                    {/* ... (info boxes, sem alteraÃ§Ã£o) ... */}
+                    {/* ... (info boxes, sem alteração) ... */}
                     <div style={styles.infoBox}>
                       <span style={styles.infoLabel}>Produto</span>
                       <span style={styles.infoValue}>{selectedPedido.produto_nome}</span>
@@ -270,7 +270,7 @@ export const PedidosPage = () => {
                       <span style={{...styles.infoValue, color: '#10b981'}}>R$ {selectedPedido.valor_pago}</span>
                     </div>
                     <div style={styles.infoBox}>
-                      <span style={styles.infoLabel}>UsuÃ¡rio</span>
+                      <span style={styles.infoLabel}>Usuário</span>
                       <span style={styles.infoValue}>{selectedPedido.usuario_nome_completo}</span>
                     </div>
                     <div style={styles.infoBox}>
@@ -279,12 +279,12 @@ export const PedidosPage = () => {
                     </div>
                   </div>
 
-                  {/* --- LÃ“GICA IF/ELSE ADICIONADA AQUI --- */}
+                  {/* --- LÓGICA IF/ELSE ADICIONADA AQUI --- */}
                   
                   {selectedPedido.conta ? (
-                    // 1. Se HÃ uma conta (entrega automÃ¡tica)
+                    // 1. Se HÁ uma conta (entrega automática)
                     <div style={styles.contaCard}>
-                      <h4 style={styles.contaTitle}>ðŸ” Credenciais Entregues</h4>
+                      <h4 style={styles.contaTitle}>🔐 Credenciais Entregues</h4>
                       <div style={styles.contaRow}>
                         <span style={styles.contaLabel}>Login:</span>
                         <button
@@ -311,9 +311,9 @@ export const PedidosPage = () => {
                       </div>
                     </div>
                   ) : (
-                    // 2. Se NÃƒO HÃ conta (entrega manual)
+                    // 2. Se NÃO HÁ conta (entrega manual)
                     <div style={styles.contaCard}>
-                      <h4 style={styles.contaTitle}>ðŸ“§ Entrega Manual</h4>
+                      <h4 style={styles.contaTitle}>📧 Entrega Manual</h4>
                       <div style={styles.contaRow}>
                         <span style={styles.contaLabel}>Email do Cliente (copie e envie o convite):</span>
                         <button
@@ -329,7 +329,7 @@ export const PedidosPage = () => {
                       {selectedPedido.conta_mae && (
                         <>
                           <div style={styles.contaRow}>
-                            <span style={styles.contaLabel}>Conta mÃ£e atribuÃ­da:</span>
+                            <span style={styles.contaLabel}>Conta mãe atribuída:</span>
                             <button
                               type="button"
                               style={styles.copyBox}
@@ -341,18 +341,18 @@ export const PedidosPage = () => {
                             </button>
                           </div>
                           <div style={styles.contaRow}>
-                            <span style={styles.contaLabel}>ExpiraÃ§Ã£o da conta mÃ£e:</span>
+                            <span style={styles.contaLabel}>Expiração da conta mãe:</span>
                             <span style={styles.contaValue}>{formatarDataCurta(selectedPedido.conta_mae.data_expiracao)}</span>
                           </div>
                         </>
                       )}
                       <div style={styles.manualInfo}>
-                        <span style={styles.manualInfoIcon}>â„¹ï¸</span>
-                        <span>Este pedido Ã© de entrega manual. Use o email acima para enviar o convite da plataforma (ex: Youtube, Canva).</span>
+                        <span style={styles.manualInfoIcon}>ℹ️</span>
+                        <span>Este pedido é de entrega manual. Use o email acima para enviar o convite da plataforma (ex: Youtube, Canva).</span>
                       </div>
                     </div>
                   )}
-                  {/* --- FIM DA LÃ“GICA IF/ELSE --- */}
+                  {/* --- FIM DA LÓGICA IF/ELSE --- */}
                   
                   {/* ID do Pedido */}
                   <div style={styles.idFooter}>
@@ -371,7 +371,7 @@ export const PedidosPage = () => {
           <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <form onSubmit={handleSubmitEntrega}>
               <div style={styles.modalHeader}>
-                <h3 style={styles.modalTitle}>ðŸšš Realizar Entrega Manual</h3>
+                <h3 style={styles.modalTitle}>🚚 Realizar Entrega Manual</h3>
                 <button
                   type="button"
                   onClick={handleCloseEntregaModal}
@@ -384,8 +384,8 @@ export const PedidosPage = () => {
               
               <div style={styles.modalBody}>
                 <p style={styles.modalText}>
-                  VocÃª estÃ¡ entregando o pedido: <strong>{entregaModalPedido.produto_nome}</strong><br/>
-                  Para o usuÃ¡rio: <strong>{entregaModalPedido.usuario_nome_completo}</strong>
+                  Você está entregando o pedido: <strong>{entregaModalPedido.produto_nome}</strong><br/>
+                  Para o usuário: <strong>{entregaModalPedido.usuario_nome_completo}</strong>
                 </p>
                 
                 <div style={styles.inputGroup}>
@@ -421,8 +421,8 @@ export const PedidosPage = () => {
                 </div>
                 
                 <div style={styles.manualInfo}>
-                  <span style={styles.manualInfoIcon}>â„¹ï¸</span>
-                  <span>Ao confirmar, as credenciais acima serÃ£o enviadas para o cliente via bot.</span>
+                  <span style={styles.manualInfoIcon}>ℹ️</span>
+                  <span>Ao confirmar, as credenciais acima serão enviadas para o cliente via bot.</span>
                 </div>
               </div>
 

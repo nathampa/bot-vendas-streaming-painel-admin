@@ -180,7 +180,7 @@ export const EstoquePage = () => {
     return (ocupados / max) * 100;
   };
 
-  // LÃ³gica de Filtro ATUALIZADA
+  // Lógica de Filtro ATUALIZADA
   const filteredEstoque = estoque.filter(item => {
     // 1. Filtro por Termo de Busca (Nome do Produto ou Login)
     const term = filterTerm.toLowerCase().trim();
@@ -223,18 +223,18 @@ export const EstoquePage = () => {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>ðŸ“¦ Estoque</h1>
-          <p style={styles.subtitle}>Gerencie as contas disponÃ­veis para venda</p>
+          <h1 style={styles.title}>📦 Estoque</h1>
+          <p style={styles.subtitle}>Gerencie as contas disponíveis para venda</p>
         </div>
         <button type="button" onClick={() => showForm ? resetForm() : setShowForm(true)} style={styles.addButton}>
-          {showForm ? 'âœ• Cancelar' : 'âž• Abastecer Estoque'}
+          {showForm ? '✕ Cancelar' : '➕ Abastecer Estoque'}
         </button>
       </div>
 
       {/* Error Alert */}
       {error && (
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>âš ï¸</span>
+          <span style={styles.alertIcon}>⚠️</span>
           <span>{error}</span>
         </div>
       )}
@@ -243,7 +243,7 @@ export const EstoquePage = () => {
       {showForm && (
         <div style={styles.formCard}>
           <h3 style={styles.formTitle}>
-            {editingEstoque ? 'âœï¸ Editar Conta' : 'âž• Adicionar Nova Conta ao Estoque'}
+            {editingEstoque ? '✏️ Editar Conta' : '➕ Adicionar Nova Conta ao Estoque'}
           </h3>
           <form onSubmit={handleCreateOrUpdate} style={styles.form}>
             <div style={styles.inputGroup}>
@@ -267,7 +267,7 @@ export const EstoquePage = () => {
               </select>
               {editingEstoque && (
                 <small style={styles.inputHint}>
-                  O produto nÃ£o pode ser alterado apÃ³s criaÃ§Ã£o
+                  O produto não pode ser alterado após criação
                 </small>
               )}
             </div>
@@ -290,7 +290,7 @@ export const EstoquePage = () => {
 
               <div style={styles.inputGroup}>
                 <label htmlFor="estoque-senha" style={styles.label}>
-                  Senha {editingEstoque && '(deixe vazio para nÃ£o alterar)'}
+                  Senha {editingEstoque && '(deixe vazio para não alterar)'}
                 </label>
                 <input
                   id="estoque-senha"
@@ -313,7 +313,7 @@ export const EstoquePage = () => {
             <div style={styles.inputRow}>
               <div style={styles.inputGroup}>
                 <label htmlFor="estoque-max-slots" style={styles.label}>
-                  MÃ¡ximo de Slots (UsuÃ¡rios)
+                  Máximo de Slots (Usuários)
                 </label>
                 <input
                   id="estoque-max-slots"
@@ -329,7 +329,7 @@ export const EstoquePage = () => {
 
               <div style={styles.inputGroup}>
                 <label htmlFor="estoque-data-expiracao" style={styles.label}>
-                  Data de ExpiraÃ§Ã£o (Opcional)
+                  Data de Expiração (Opcional)
                 </label>
                 <input
                   id="estoque-data-expiracao"
@@ -343,17 +343,17 @@ export const EstoquePage = () => {
 
             <div style={styles.inputGroup}>
               <label htmlFor="estoque-instrucoes" style={styles.label}>
-                InstruÃ§Ãµes EspecÃ­ficas desta Conta (Opcional)
+                Instruções Específicas desta Conta (Opcional)
               </label>
               <textarea
                 id="estoque-instrucoes"
                 value={novasInstrucoes}
                 onChange={(e) => setNovasInstrucoes(e.target.value)}
                 style={{...styles.input, minHeight: '60px', resize: 'vertical'} as React.CSSProperties}
-                placeholder="Ex: Use apenas o Perfil 4 com PIN 1234. NÃ£o altere nada."
+                placeholder="Ex: Use apenas o Perfil 4 com PIN 1234. Não altere nada."
               />
               <small style={styles.inputHint}>
-                Isso aparecerÃ¡ para o cliente junto com as instruÃ§Ãµes gerais do produto.
+                Isso aparecerá para o cliente junto com as instruções gerais do produto.
               </small>
             </div>
 
@@ -367,8 +367,8 @@ export const EstoquePage = () => {
                 onChange={(e) => setNovoIsAtivo(e.target.value === 'true')}
                 style={styles.input}
               >
-                <option value="true">âœ“ Ativo</option>
-                <option value="false">âœ• Inativo</option>
+                <option value="true">✓ Ativo</option>
+                <option value="false">✕ Inativo</option>
               </select>
             </div>
 
@@ -377,7 +377,7 @@ export const EstoquePage = () => {
                 Cancelar
               </button>
               <button type="submit" style={styles.submitButton}>
-                {editingEstoque ? 'Salvar AlteraÃ§Ãµes' : 'Adicionar ao Estoque'}
+                {editingEstoque ? 'Salvar Alterações' : 'Adicionar ao Estoque'}
               </button>
             </div>
           </form>
@@ -414,9 +414,9 @@ export const EstoquePage = () => {
               style={styles.input}
             >
               <option value="todos">-- Todos os Status --</option>
-              <option value="ativos">âœ“ Ativos (Prontos p/ Venda)</option>
-              <option value="atencao">âš  Requer AtenÃ§Ã£o</option>
-              <option value="inativos">âœ• Inativos</option>
+              <option value="ativos">✓ Ativos (Prontos p/ Venda)</option>
+              <option value="atencao">⚠ Requer Atenção</option>
+              <option value="inativos">✕ Inativos</option>
             </select>
           </div>
         </div>
@@ -425,23 +425,23 @@ export const EstoquePage = () => {
       {/* Stats Cards */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}>ðŸ“Š</div>
+          <div style={styles.statIcon}>📊</div>
           <div>
             <p style={styles.statLabel}>Contas (Filtro)</p>
             <h3 style={styles.statValue}>{filteredEstoque.length}</h3>
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={{...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46'}}>âœ“</div>
+          <div style={{...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46'}}>✓</div>
           <div>
             <p style={styles.statLabel}>Prontas p/ Venda</p>
             <h3 style={styles.statValue}>{filteredEstoque.filter(e => e.is_ativo && !e.requer_atencao).length}</h3>
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={{...styles.statIcon, backgroundColor: '#fee2e2', color: '#991b1b'}}>âš </div>
+          <div style={{...styles.statIcon, backgroundColor: '#fee2e2', color: '#991b1b'}}>⚠</div>
           <div>
-            <p style={styles.statLabel}>Requer AtenÃ§Ã£o</p>
+            <p style={styles.statLabel}>Requer Atenção</p>
             <h3 style={styles.statValue}>{filteredEstoque.filter(e => e.requer_atencao).length}</h3>
           </div>
         </div>
@@ -451,7 +451,7 @@ export const EstoquePage = () => {
       <div style={styles.estoqueGrid}>
         {filteredEstoque.length === 0 ? (
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>ðŸ“¦</span>
+            <span style={styles.emptyIcon}>📦</span>
             <h3 style={styles.emptyTitle}>Nenhuma conta encontrada</h3>
             <p style={styles.emptyText}>Tente ajustar os filtros ou adicione novas contas.</p>
           </div>
@@ -467,13 +467,13 @@ export const EstoquePage = () => {
 
             if (dias_restantes !== null && dias_restantes !== undefined) {
               if (dias_restantes < 0) {
-                expLabel = `ðŸ—“ï¸ Expirou hÃ¡ ${-dias_restantes} dias`;
+                expLabel = `🗓️ Expirou há ${-dias_restantes} dias`;
                 expStyle = styles.badgeInactive;
               } else if (dias_restantes <= 7) {
-                expLabel = `ðŸ—“ï¸ Expira em ${dias_restantes} dias`;
+                expLabel = `🗓️ Expira em ${dias_restantes} dias`;
                 expStyle = styles.badgeWarning;
               } else {
-                expLabel = `ðŸ—“ï¸ Expira em ${dias_restantes} dias`;
+                expLabel = `🗓️ Expira em ${dias_restantes} dias`;
                 expStyle = styles.badgeInfo;
               }
             }
@@ -492,7 +492,7 @@ export const EstoquePage = () => {
                   <div style={styles.badges}>
                     {item.requer_atencao && (
                       <span style={{...styles.badge, ...styles.badgeWarning}}>
-                        âš  AtenÃ§Ã£o
+                        ⚠ Atenção
                       </span>
                     )}
                     {expLabel && (
@@ -504,7 +504,7 @@ export const EstoquePage = () => {
                       ...styles.badge,
                       ...(item.is_ativo ? styles.badgeActive : styles.badgeInactive)
                     }}>
-                      {item.is_ativo ? 'âœ“ Ativo' : 'âœ• Inativo'}
+                      {item.is_ativo ? '✓ Ativo' : '✕ Inativo'}
                     </span>
                   </div>
                 </div>
@@ -518,7 +518,7 @@ export const EstoquePage = () => {
                 {/* Instructions Indicator (Icon) */}
                 {item.instrucoes_especificas && (
                   <div style={styles.instructionsIndicator}>
-                    <span style={{fontSize: '12px', color: '#1e40af'}}>ðŸ“ Possui instruÃ§Ãµes especÃ­ficas</span>
+                    <span style={{fontSize: '12px', color: '#1e40af'}}>📝 Possui instruções específicas</span>
                   </div>
                 )}
 
@@ -561,7 +561,7 @@ export const EstoquePage = () => {
                       style={{...styles.actionBtn, ...styles.resolveBtn}}
                       title="Marcar como resolvido"
                     >
-                      âœ“ Resolver
+                      ✓ Resolver
                     </button>
                   )}
                   <button
@@ -570,7 +570,7 @@ export const EstoquePage = () => {
                     style={{...styles.actionBtn, ...styles.editBtn}}
                     title="Editar conta"
                   >
-                    âœï¸ Editar
+                    ✏️ Editar
                   </button>
                   <button
                     type="button"
@@ -578,7 +578,7 @@ export const EstoquePage = () => {
                     style={{...styles.actionBtn, ...styles.deleteBtn}}
                     title="Excluir conta"
                   >
-                    ðŸ—‘ï¸ Excluir
+                    🗑️ Excluir
                   </button>
                 </div>
               </div>
@@ -592,7 +592,7 @@ export const EstoquePage = () => {
         <div style={styles.modalOverlay} onClick={() => setDeletingEstoque(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>âš ï¸ Confirmar ExclusÃ£o</h3>
+              <h3 style={styles.modalTitle}>⚠️ Confirmar Exclusão</h3>
               <button
                 type="button"
                 onClick={() => setDeletingEstoque(null)}
@@ -607,14 +607,14 @@ export const EstoquePage = () => {
                 Tem certeza que deseja excluir a conta <strong>"{deletingEstoque.login}"</strong>?
               </p>
               <div style={styles.warningBox}>
-                <span style={styles.warningIcon}>â„¹ï¸</span>
+                <span style={styles.warningIcon}>ℹ️</span>
                 <div>
                   <p style={styles.warningText}>
-                    Esta aÃ§Ã£o nÃ£o pode ser desfeita. A conta serÃ¡ removida permanentemente do estoque.
+                    Esta ação não pode ser desfeita. A conta será removida permanentemente do estoque.
                   </p>
                   {deletingEstoque.slots_ocupados > 0 && (
                     <p style={{...styles.warningText, fontWeight: 600, marginTop: '8px'}}>
-                      âš ï¸ <strong>ATENÃ‡ÃƒO:</strong> Esta conta tem {deletingEstoque.slots_ocupados} slot(s) ocupado(s)!
+                      ⚠️ <strong>ATENÇÃO:</strong> Esta conta tem {deletingEstoque.slots_ocupados} slot(s) ocupado(s)!
                     </p>
                   )}
                 </div>

@@ -86,7 +86,7 @@ export const ProdutosPage = () => {
         showToast('Produto criado com sucesso!', 'success');
       }
       resetForm();
-      carregarProdutos(); // A API jÃ¡ retorna a lista ordenada
+      carregarProdutos(); // A API já retorna a lista ordenada
     } catch (err: unknown) {
       console.error("Erro ao salvar produto:", err);
       const errorMsg = getApiErrorMessage(err, "Falha ao salvar produto.");
@@ -109,7 +109,7 @@ export const ProdutosPage = () => {
     if (!deletingProduct) return;
     try {
       await deleteProduto(deletingProduct.id);
-      showToast('Produto excluÃ­do com sucesso!', 'success');
+      showToast('Produto excluído com sucesso!', 'success');
       setDeletingProduct(null);
       carregarProdutos();
     } catch (err: unknown) {
@@ -149,18 +149,18 @@ export const ProdutosPage = () => {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>ðŸ›ï¸ Produtos</h1>
-          <p style={styles.subtitle}>Gerencie o catÃ¡logo de produtos disponÃ­veis</p>
+          <h1 style={styles.title}>🛍️ Produtos</h1>
+          <p style={styles.subtitle}>Gerencie o catálogo de produtos disponíveis</p>
         </div>
         <button type="button" onClick={() => showForm ? resetForm() : setShowForm(true)} style={styles.addButton}>
-          {showForm ? 'âœ• Cancelar' : 'âž• Novo Produto'}
+          {showForm ? '✕ Cancelar' : '➕ Novo Produto'}
         </button>
       </div>
 
       {/* Error Alert */}
       {error && (
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>âš ï¸</span>
+          <span style={styles.alertIcon}>⚠️</span>
           <span>{error}</span>
         </div>
       )}
@@ -197,7 +197,7 @@ export const ProdutosPage = () => {
       {showForm && (
         <div style={styles.formCard}>
           <h3 style={styles.formTitle}>
-            {editingProduct ? 'âœï¸ Editar Produto' : 'âž• Criar Novo Produto'}
+            {editingProduct ? '✏️ Editar Produto' : '➕ Criar Novo Produto'}
           </h3>
           <form onSubmit={handleCreateOrUpdate} style={styles.form}>
             <div style={styles.inputGroup}>
@@ -214,30 +214,30 @@ export const ProdutosPage = () => {
             </div>
 
             <div style={styles.inputGroup}>
-              <label htmlFor="produto-descricao" style={styles.label}>DescriÃ§Ã£o</label>
+              <label htmlFor="produto-descricao" style={styles.label}>Descrição</label>
               <textarea
                 id="produto-descricao"
                 value={novoDescricao}
                 onChange={(e) => setNovoDescricao(e.target.value)}
                 style={{...styles.input, minHeight: '80px', resize: 'vertical'} as React.CSSProperties}
-                placeholder="DescriÃ§Ã£o do produto..."
+                placeholder="Descrição do produto..."
               />
             </div>
 
             <div style={styles.inputGroup}>
-              <label htmlFor="produto-instrucoes" style={styles.label}>InstruÃ§Ãµes PÃ³s-Compra (aparece apÃ³s o pagamento)</label>
+              <label htmlFor="produto-instrucoes" style={styles.label}>Instruções Pós-Compra (aparece após o pagamento)</label>
               <textarea
                 id="produto-instrucoes"
                 value={novoInstrucoes}
                 onChange={(e) => setNovoInstrucoes(e.target.value)}
                 style={{...styles.input, minHeight: '100px', resize: 'vertical'} as React.CSSProperties}
-                placeholder="Ex: ðŸš« NÃ£o altere o nome dos perfis..."
+                placeholder="Ex: 🚫 Não altere o nome dos perfis..."
               />
             </div>
 
             <div style={styles.inputRow}>
               <div style={styles.inputGroup}>
-                <label htmlFor="produto-preco" style={styles.label}>PreÃ§o (R$)</label>
+                <label htmlFor="produto-preco" style={styles.label}>Preço (R$)</label>
                 <input
                   id="produto-preco"
                   type="number"
@@ -259,8 +259,8 @@ export const ProdutosPage = () => {
                   onChange={(e) => setNovoIsAtivo(e.target.value === 'true')}
                   style={styles.input}
                 >
-                  <option value="true">âœ“ Ativo</option>
-                  <option value="false">âœ• Inativo</option>
+                  <option value="true">✓ Ativo</option>
+                  <option value="false">✕ Inativo</option>
                 </select>
               </div>
             </div>
@@ -273,7 +273,7 @@ export const ProdutosPage = () => {
                 onChange={(e) => setNovoTipoEntrega(e.target.value as 'AUTOMATICA' | 'SOLICITA_EMAIL' | 'MANUAL_ADMIN')}
                 style={styles.input}
               >
-                <option value="AUTOMATICA">Entrega AutomÃ¡tica (PadrÃ£o)</option>
+                <option value="AUTOMATICA">Entrega Automática (Padrão)</option>
                 <option value="SOLICITA_EMAIL">Solicitar E-mail (Entrega Manual Externa)</option>
                 <option value="MANUAL_ADMIN">Entrega Manual (Pelo Painel Admin)</option>
               </select>
@@ -292,7 +292,7 @@ export const ProdutosPage = () => {
                 Cancelar
               </button>
               <button type="submit" style={styles.submitButton}>
-                {editingProduct ? 'Salvar AlteraÃ§Ãµes' : 'Criar Produto'}
+                {editingProduct ? 'Salvar Alterações' : 'Criar Produto'}
               </button>
             </div>
           </form>
@@ -303,12 +303,12 @@ export const ProdutosPage = () => {
       <div style={styles.productsGrid}>
         {filteredProdutos.length === 0 ? (
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>ðŸ“¦</span>
+            <span style={styles.emptyIcon}>📦</span>
             <h3 style={styles.emptyTitle}>
               {produtos.length === 0 ? "Nenhum produto cadastrado" : "Nenhum produto encontrado"}
             </h3>
             <p style={styles.emptyText}>
-              {produtos.length === 0 ? "Comece adicionando seu primeiro produto ao catÃ¡logo" : "Tente ajustar seus filtros."}
+              {produtos.length === 0 ? "Comece adicionando seu primeiro produto ao catálogo" : "Tente ajustar seus filtros."}
             </p>
           </div>
         ) : (
@@ -321,13 +321,13 @@ export const ProdutosPage = () => {
                     ...styles.badge,
                     ...(produto.is_ativo ? styles.badgeActive : styles.badgeInactive)
                   }}>
-                    {produto.is_ativo ? 'âœ“ Ativo' : 'âœ• Inativo'}
+                    {produto.is_ativo ? '✓ Ativo' : '✕ Inativo'}
                   </span>
                   <span style={{...styles.badge, ...styles.badgeEmail}}>
                     {
-                      produto.tipo_entrega === 'AUTOMATICA' ? 'ðŸ¤– AutomÃ¡tico' :
+                      produto.tipo_entrega === 'AUTOMATICA' ? '🤖 Automático' :
                       produto.tipo_entrega === 'SOLICITA_EMAIL' ? '@ Requer Email' :
-                      'ðŸ‘¨â€ðŸ’» Entrega Manual'
+                      '👨‍💻 Entrega Manual'
                     }
                   </span>
                 </div>
@@ -339,14 +339,14 @@ export const ProdutosPage = () => {
 
               {produto.instrucoes_pos_compra && (
                 <div style={styles.instructionsPreview}>
-                  <strong style={styles.instructionsLabel}>InstruÃ§Ãµes PÃ³s-Compra:</strong>
+                  <strong style={styles.instructionsLabel}>Instruções Pós-Compra:</strong>
                   <p style={styles.productDescription}>{produto.instrucoes_pos_compra}</p>
                 </div>
               )}
               
               <div style={styles.productFooter}>
                 <div style={styles.priceTag}>
-                  <span style={styles.priceLabel}>PreÃ§o</span>
+                  <span style={styles.priceLabel}>Preço</span>
                   <span style={styles.priceValue}>R$ {produto.preco}</span>
                 </div>
                 <div style={styles.productMeta}>
@@ -364,7 +364,7 @@ export const ProdutosPage = () => {
                   style={{...styles.actionBtn, ...styles.editBtn}}
                   title="Editar produto"
                 >
-                  âœï¸ Editar
+                  ✏️ Editar
                 </button>
                 <button
                   type="button"
@@ -372,7 +372,7 @@ export const ProdutosPage = () => {
                   style={{...styles.actionBtn, ...styles.deleteBtn}}
                   title="Excluir produto"
                 >
-                  ðŸ—‘ï¸ Excluir
+                  🗑️ Excluir
                 </button>
               </div>
             </div>
@@ -385,12 +385,12 @@ export const ProdutosPage = () => {
         <div style={styles.modalOverlay} onClick={() => setDeletingProduct(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>âš ï¸ Confirmar ExclusÃ£o</h3>
+              <h3 style={styles.modalTitle}>⚠️ Confirmar Exclusão</h3>
               <button
                 type="button"
                 onClick={() => setDeletingProduct(null)}
                 style={styles.modalClose}
-                aria-label="Fechar confirmaÃ§Ã£o de exclusÃ£o"
+                aria-label="Fechar confirmação de exclusão"
               >
                 x
               </button>
@@ -400,9 +400,9 @@ export const ProdutosPage = () => {
                 Tem certeza que deseja excluir o produto <strong>"{deletingProduct.nome}"</strong>?
               </p>
               <div style={styles.warningBox}>
-                <span style={styles.warningIcon}>â„¹ï¸</span>
+                <span style={styles.warningIcon}>ℹ️</span>
                 <p style={styles.warningText}>
-                  Esta aÃ§Ã£o nÃ£o pode ser desfeita. O produto serÃ¡ removido permanentemente do catÃ¡logo.
+                  Esta ação não pode ser desfeita. O produto será removido permanentemente do catálogo.
                 </p>
               </div>
             </div>
@@ -473,7 +473,7 @@ const styles: Record<string, React.CSSProperties> = {
     border: 0,
   },
   
-  // Estilos do FormulÃ¡rio
+  // Estilos do Formulário
   formCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '24px', marginBottom: '32px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
   formTitle: { margin: '0 0 20px 0', fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' },
   form: { display: 'flex', flexDirection: 'column', gap: '20px' },

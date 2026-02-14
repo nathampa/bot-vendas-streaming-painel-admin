@@ -50,7 +50,7 @@ export const ContasMaePage = () => {
       setError(null);
     } catch (err) {
       console.error('Erro ao buscar dados:', err);
-      setError('Falha ao carregar contas mÃ£e.');
+      setError('Falha ao carregar contas mãe.');
     } finally {
       setIsLoading(false);
     }
@@ -120,7 +120,7 @@ export const ContasMaePage = () => {
       resetForm();
       carregarDados();
     } catch (err: unknown) {
-      console.error('Erro ao salvar conta mÃ£e:', err);
+      console.error('Erro ao salvar conta mãe:', err);
       const errorMsg = getApiErrorMessage(err, 'Falha ao salvar conta mae.');
       showToast(errorMsg, 'error');
     }
@@ -145,7 +145,7 @@ export const ContasMaePage = () => {
       setDeletingConta(null);
       carregarDados();
     } catch (err: unknown) {
-      console.error('Erro ao excluir conta mÃ£e:', err);
+      console.error('Erro ao excluir conta mãe:', err);
       const errorMsg = getApiErrorMessage(err, 'Falha ao excluir conta mae.');
       showToast(errorMsg, 'error');
       setDeletingConta(null);
@@ -214,7 +214,7 @@ export const ContasMaePage = () => {
     return (
       <div style={styles.loadingContainer}>
         <div style={styles.spinner} />
-        <p style={styles.loadingText}>Carregando contas mÃ£e...</p>
+        <p style={styles.loadingText}>Carregando contas mãe...</p>
       </div>
     );
   }
@@ -223,17 +223,17 @@ export const ContasMaePage = () => {
     <div style={styles.container}>
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>ðŸ‘©â€ðŸ’¼ Contas MÃ£e</h1>
+          <h1 style={styles.title}>👩‍💼 Contas Mãe</h1>
           <p style={styles.subtitle}>Gerencie as contas que convidam clientes por email</p>
         </div>
         <button type="button" onClick={() => (showForm ? resetForm() : setShowForm(true))} style={styles.addButton}>
-          {showForm ? 'âœ– Cancelar' : 'âž• Nova Conta MÃ£e'}
+          {showForm ? '✖ Cancelar' : '➕ Nova Conta Mãe'}
         </button>
       </div>
 
       {error && (
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>âš ï¸</span>
+          <span style={styles.alertIcon}>⚠️</span>
           <span>{error}</span>
         </div>
       )}
@@ -241,7 +241,7 @@ export const ContasMaePage = () => {
       {showForm && (
         <div style={styles.formCard}>
           <h3 style={styles.formTitle}>
-            {editingConta ? 'âœï¸ Editar Conta MÃ£e' : 'âž• Cadastrar Conta MÃ£e'}
+            {editingConta ? '✏️ Editar Conta Mãe' : '➕ Cadastrar Conta Mãe'}
           </h3>
           <form onSubmit={handleCreateOrUpdate} style={styles.form}>
             <div style={styles.inputGroup}>
@@ -303,7 +303,7 @@ export const ContasMaePage = () => {
             <div style={styles.inputRow}>
               <div style={styles.inputGroup}>
                 <label htmlFor="conta-mae-max-slots" style={styles.label}>
-                  MÃ¡ximo de Slots
+                  Máximo de Slots
                 </label>
                 <input
                   id="conta-mae-max-slots"
@@ -318,7 +318,7 @@ export const ContasMaePage = () => {
               </div>
               <div style={styles.inputGroup}>
                 <label htmlFor="conta-mae-data-expiracao" style={styles.label}>
-                  Data de ExpiraÃ§Ã£o
+                  Data de Expiração
                 </label>
                 <input
                   id="conta-mae-data-expiracao"
@@ -340,17 +340,17 @@ export const ContasMaePage = () => {
                 onChange={(e) => setNovoIsAtivo(e.target.value === 'true')}
                 style={styles.input}
               >
-                <option value="true">âœ“ Ativa</option>
-                <option value="false">âœ– Inativa</option>
+                <option value="true">✓ Ativa</option>
+                <option value="false">✖ Inativa</option>
               </select>
             </div>
 
             <div style={styles.formActions}>
               <button type="button" onClick={resetForm} style={styles.cancelButton}>
-               âœ– Cancelar
+               ✖ Cancelar
               </button>
               <button type="submit" style={styles.submitButton}>
-                {editingConta ? 'Salvar AlteraÃ§Ãµes' : 'Cadastrar Conta'}
+                {editingConta ? 'Salvar Alterações' : 'Cadastrar Conta'}
               </button>
             </div>
           </form>
@@ -378,23 +378,23 @@ export const ContasMaePage = () => {
 
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}>ðŸ“Š</div>
+          <div style={styles.statIcon}>📊</div>
           <div>
             <p style={styles.statLabel}>Contas (Filtro)</p>
             <h3 style={styles.statValue}>{filteredContas.length}</h3>
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={{ ...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46' }}>âœ…</div>
+          <div style={{ ...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46' }}>✅</div>
           <div>
             <p style={styles.statLabel}>Ativas</p>
             <h3 style={styles.statValue}>{filteredContas.filter((c) => c.is_ativo).length}</h3>
           </div>
         </div>
         <div style={styles.statCard}>
-          <div style={{ ...styles.statIcon, backgroundColor: '#fee2e2', color: '#991b1b' }}>â³</div>
+          <div style={{ ...styles.statIcon, backgroundColor: '#fee2e2', color: '#991b1b' }}>⏳</div>
           <div>
-            <p style={styles.statLabel}>PrÃ³ximas de Expirar</p>
+            <p style={styles.statLabel}>Próximas de Expirar</p>
             <h3 style={styles.statValue}>{filteredContas.filter((c) => (c.dias_restantes ?? 999) <= 7).length}</h3>
           </div>
         </div>
@@ -403,7 +403,7 @@ export const ContasMaePage = () => {
       <div style={styles.estoqueGrid}>
         {filteredContas.length === 0 ? (
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>ðŸ‘©â€ðŸ’¼</span>
+            <span style={styles.emptyIcon}>👩‍💼</span>
             <h3 style={styles.emptyTitle}>Nenhuma conta encontrada</h3>
             <p style={styles.emptyText}>Cadastre novas contas ou ajuste os filtros.</p>
           </div>
@@ -442,7 +442,7 @@ export const ContasMaePage = () => {
                       </span>
                     )}
                     <span style={{ ...styles.badge, ...(conta.is_ativo ? styles.badgeActive : styles.badgeInactive) }}>
-                      {conta.is_ativo ? 'âœ“ Ativa' : 'âœ– Inativa'}
+                      {conta.is_ativo ? '✓ Ativa' : '✖ Inativa'}
                     </span>
                   </div>
                 </div>
@@ -505,7 +505,7 @@ export const ContasMaePage = () => {
             aria-label="Detalhes da conta mae"
           >
             <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>ðŸ‘©â€ðŸ’¼ Conta MÃ£e</h3>
+              <h3 style={styles.modalTitle}>👩‍💼 Conta Mãe</h3>
               <button
                 type="button"
                 onClick={() => setSelectedConta(null)}
@@ -565,7 +565,7 @@ export const ContasMaePage = () => {
                 <div style={styles.inviteSection}>
                   <h4 style={styles.sectionTitle}>Adicionar Email Convidado</h4>
                   {isSlotsFull && (
-                    <p style={styles.warningText}>Esta conta jÃ¡ atingiu o mÃ¡ximo de slots.</p>
+                    <p style={styles.warningText}>Esta conta já atingiu o máximo de slots.</p>
                   )}
                   <div style={styles.inviteRow}>
                     <label htmlFor="conta-mae-invite-email" style={styles.srOnly}>
@@ -634,7 +634,7 @@ export const ContasMaePage = () => {
             </div>
             <div style={styles.modalFooter}>
               <button type="button" onClick={() => setDeletingConta(null)} style={styles.modalCancelBtn}>
-               âœ– Cancelar
+               ✖ Cancelar
               </button>
               <button type="button" onClick={handleDelete} style={styles.modalDeleteBtn}>
                 Sim, Excluir

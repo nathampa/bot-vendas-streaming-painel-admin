@@ -14,8 +14,8 @@ export const UsuariosPage = () => {
       setUsuarios(response.data);
       setError(null);
     } catch (err) {
-      console.error("Erro ao buscar usuÃ¡rios:", err);
-      setError("Falha ao carregar usuÃ¡rios.");
+      console.error("Erro ao buscar usuários:", err);
+      setError("Falha ao carregar usuários.");
     } finally {
       setIsLoading(false);
     }
@@ -38,7 +38,7 @@ export const UsuariosPage = () => {
     return (
       <div style={styles.loadingContainer}>
         <div style={styles.spinner} />
-        <p style={styles.loadingText}>Carregando usuÃ¡rios...</p>
+        <p style={styles.loadingText}>Carregando usuários...</p>
       </div>
     );
   }
@@ -48,14 +48,14 @@ export const UsuariosPage = () => {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>ðŸ‘¥ UsuÃ¡rios do Sistema</h1>
+          <h1 style={styles.title}>👥 Usuários do Sistema</h1>
           <p style={styles.subtitle}>Lista de todos os clientes cadastrados</p>
         </div>
       </div>
       
       {error && (
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>âš ï¸</span>
+          <span style={styles.alertIcon}>⚠️</span>
           <span>{error}</span>
         </div>
       )}
@@ -64,15 +64,15 @@ export const UsuariosPage = () => {
       <div style={styles.tableContainer}>
         {usuarios.length === 0 ? (
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>ðŸ‘¥</span>
-            <h3 style={styles.emptyTitle}>Nenhum usuÃ¡rio encontrado</h3>
-            <p style={styles.emptyText}>Quando novos usuÃ¡rios se registrarem, eles aparecerÃ£o aqui.</p>
+            <span style={styles.emptyIcon}>👥</span>
+            <h3 style={styles.emptyTitle}>Nenhum usuário encontrado</h3>
+            <p style={styles.emptyText}>Quando novos usuários se registrarem, eles aparecerão aqui.</p>
           </div>
         ) : (
           <table style={styles.table}>
             <thead>
               <tr>
-                <th style={styles.th}>UsuÃ¡rio</th>
+                <th style={styles.th}>Usuário</th>
                 <th style={styles.th}>ID Telegram</th>
                 <th style={styles.th}>Saldo Atual</th>
                 <th style={styles.th}>Total Compras</th>

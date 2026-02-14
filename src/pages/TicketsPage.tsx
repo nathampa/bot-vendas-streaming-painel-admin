@@ -88,20 +88,20 @@ export const TicketsPage = () => {
   };
   const getStatusBadge = (status: string) => {
     const badges: Record<string, { color: string; bg: string; label: string }> = {
-      ABERTO: { color: '#f59e0b', bg: '#fef3c7', label: 'ðŸ”´ Aberto' },
-      EM_ANALISE: { color: '#3b82f6', bg: '#dbeafe', label: 'ðŸ”µ Em AnÃ¡lise' },
-      RESOLVIDO: { color: '#10b981', bg: '#d1fae5', label: 'âœ… Resolvido' },
-      FECHADO: { color: 'var(--text-secondary)', bg: '#f3f4f6', label: 'âš« Fechado' },
+      ABERTO: { color: '#f59e0b', bg: '#fef3c7', label: '🔴 Aberto' },
+      EM_ANALISE: { color: '#3b82f6', bg: '#dbeafe', label: '🔵 Em Análise' },
+      RESOLVIDO: { color: '#10b981', bg: '#d1fae5', label: '✅ Resolvido' },
+      FECHADO: { color: 'var(--text-secondary)', bg: '#f3f4f6', label: '⚫ Fechado' },
     };
     return badges[status] || badges.ABERTO;
   };
 
   const getMotivoLabel = (motivo: string) => {
     const motivos: Record<string, string> = {
-      LOGIN_INVALIDO: 'ðŸ” Login InvÃ¡lido',
-      SEM_ASSINATURA: 'ðŸ“­ Sem Assinatura',
-      CONTA_CAIU: 'ðŸ’¥ Conta Caiu',
-      OUTRO: 'â“ Outro',
+      LOGIN_INVALIDO: '🔐 Login Inválido',
+      SEM_ASSINATURA: '📭 Sem Assinatura',
+      CONTA_CAIU: '💥 Conta Caiu',
+      OUTRO: '❓ Outro',
     };
     return motivos[motivo] || motivo;
   };
@@ -125,29 +125,29 @@ export const TicketsPage = () => {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>ðŸŽŸï¸ Tickets de Suporte</h1>
-          <p style={styles.subtitle}>Gerencie e resolva os tickets dos usuÃ¡rios</p>
+          <h1 style={styles.title}>🎟️ Tickets de Suporte</h1>
+          <p style={styles.subtitle}>Gerencie e resolva os tickets dos usuários</p>
         </div>
       </div>
 
       {/* Stats */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#fef3c7', color: '#92400e'}}>ðŸ”´</span>
+          <span style={{...styles.statIcon, backgroundColor: '#fef3c7', color: '#92400e'}}>🔴</span>
           <div>
             <p style={styles.statLabel}>Abertos</p>
             <h3 style={styles.statValue}>{tickets.filter(t => t.status === 'ABERTO').length}</h3>
           </div>
         </div>
         <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#dbeafe', color: '#1e40af'}}>ðŸ”µ</span>
+          <span style={{...styles.statIcon, backgroundColor: '#dbeafe', color: '#1e40af'}}>🔵</span>
           <div>
-            <p style={styles.statLabel}>Em AnÃ¡lise</p>
+            <p style={styles.statLabel}>Em Análise</p>
             <h3 style={styles.statValue}>{tickets.filter(t => t.status === 'EM_ANALISE').length}</h3>
           </div>
         </div>
         <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46'}}>âœ…</span>
+          <span style={{...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46'}}>✅</span>
           <div>
             <p style={styles.statLabel}>Resolvidos</p>
             <h3 style={styles.statValue}>{tickets.filter(t => t.status === 'RESOLVIDO').length}</h3>
@@ -170,7 +170,7 @@ export const TicketsPage = () => {
               <button type="button" onClick={() => setFilterStatus('EM_ANALISE')}
                 style={{...styles.filterButton, ...(filterStatus === 'EM_ANALISE' && styles.filterButtonActive)}}
               >
-                Em AnÃ¡lise
+                Em Análise
               </button>
               <button type="button" onClick={() => setFilterStatus('RESOLVIDO')}
                 style={{...styles.filterButton, ...(filterStatus === 'RESOLVIDO' && styles.filterButtonActive)}}
@@ -192,7 +192,7 @@ export const TicketsPage = () => {
               </div>
             ) : tickets.length === 0 ? (
               <div style={styles.emptyList}>
-                <span style={{fontSize: '48px', opacity: 0.5}}>ðŸŽŸï¸</span>
+                <span style={{fontSize: '48px', opacity: 0.5}}>🎟️</span>
                 <p style={{margin: 0, color: 'var(--text-secondary)'}}>Nenhum ticket encontrado</p>
               </div>
             ) : (
@@ -247,7 +247,7 @@ export const TicketsPage = () => {
               </div>
             ) : !selectedTicket ? (
               <div style={styles.emptyDetails}>
-                <span style={{fontSize: '64px', opacity: 0.3}}>ðŸ‘ˆ</span>
+                <span style={{fontSize: '64px', opacity: 0.3}}>👈</span>
                 <h3 style={{margin: '16px 0 8px 0', color: 'var(--text-primary)'}}>Selecione um Ticket</h3>
                 <p style={{margin: 0, color: 'var(--text-secondary)', fontSize: '14px'}}>
                   Clique em um ticket da lista para ver os detalhes
@@ -264,7 +264,7 @@ export const TicketsPage = () => {
                     style={styles.closeButton}
                     aria-label="Fechar painel de detalhes"
                   >
-                    âœ•
+                    ✕
                   </button>
                 </div>
 
@@ -280,7 +280,7 @@ export const TicketsPage = () => {
                     </span>
                   </div>
                   <div style={styles.infoCard}>
-                    <span style={styles.infoLabel}>UsuÃ¡rio</span>
+                    <span style={styles.infoLabel}>Usuário</span>
                     <span style={styles.infoValue}>{selectedTicket.usuario_telegram_id}</span>
                   </div>
                   <div style={styles.infoCard}>
@@ -295,15 +295,15 @@ export const TicketsPage = () => {
 
                 {selectedTicket.descricao_outros && (
                   <div style={styles.descricaoCard}>
-                    <span style={styles.descricaoLabel}>DescriÃ§Ã£o</span>
+                    <span style={styles.descricaoLabel}>Descrição</span>
                     <p style={styles.descricaoText}>{selectedTicket.descricao_outros}</p>
                   </div>
                 )}
 
-                {/* Conta ProblemÃ¡tica */}
+                {/* Conta Problemática */}
                 {contaProblematica ? (
                   <div style={styles.contaCard}>
-                    <h3 style={styles.contaTitle}>ðŸ” Conta ProblemÃ¡tica</h3>
+                    <h3 style={styles.contaTitle}>🔐 Conta Problemática</h3>
                     <div style={styles.contaInfo}>
                       <div style={styles.contaRow}>
                         <span style={styles.contaLabel}>Login:</span>
@@ -325,9 +325,9 @@ export const TicketsPage = () => {
                   </div>
                 ) : (
                   <div style={styles.contaCard}>
-                    <h3 style={styles.contaTitle}>ðŸ§¾ Conta NÃ£o Associada</h3>
+                    <h3 style={styles.contaTitle}>🧾 Conta Não Associada</h3>
                     <p style={styles.contaEmptyText}>
-                      Este pedido Ã© de entrega manual e nÃ£o possui conta vinculada.
+                      Este pedido é de entrega manual e não possui conta vinculada.
                     </p>
                   </div>
                 )}
@@ -335,24 +335,24 @@ export const TicketsPage = () => {
                 {/* Actions */}
                 {selectedTicket.status === 'ABERTO' && (
                   <div style={styles.actionsSection}>
-                    <h3 style={styles.actionsTitle}>AÃ§Ãµes de ResoluÃ§Ã£o</h3>
+                    <h3 style={styles.actionsTitle}>Ações de Resolução</h3>
                     <div style={styles.actionsGrid}>
                       {contaProblematica && (
                         <button type="button" onClick={() => handleOpenResolverDialog('TROCAR_CONTA')}
                           style={{...styles.actionButton, ...styles.actionButtonSwap}}
                         >
-                          ðŸ” Trocar Conta
+                          🔁 Trocar Conta
                         </button>
                       )}
                       <button type="button" onClick={() => handleOpenResolverDialog('REEMBOLSAR_CARTEIRA')}
                         style={{...styles.actionButton, ...styles.actionButtonRefund}}
                       >
-                        ðŸ’° Reembolsar
+                        💰 Reembolsar
                       </button>
                       <button type="button" onClick={() => handleOpenResolverDialog('FECHAR_MANUALMENTE')}
                         style={{...styles.actionButton, ...styles.actionButtonClose}}
                       >
-                        âœ“ Fechar Manual
+                        ✓ Fechar Manual
                       </button>
                     </div>
                   </div>

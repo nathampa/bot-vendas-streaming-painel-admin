@@ -14,8 +14,8 @@ export const SugestoesPage = () => {
       setSugestoes(response.data);
       setError(null);
     } catch (err) {
-      console.error("Erro ao buscar sugestÃµes:", err);
-      setError("Falha ao carregar sugestÃµes.");
+      console.error("Erro ao buscar sugestões:", err);
+      setError("Falha ao carregar sugestões.");
     } finally {
       setIsLoading(false);
     }
@@ -28,15 +28,15 @@ export const SugestoesPage = () => {
   const getPopularityColor = (contagem: number): string => {
     if (contagem >= 20) return '#ef4444'; // Vermelho - Muito popular
     if (contagem >= 10) return '#f59e0b'; // Amarelo - Popular
-    if (contagem >= 5) return '#3b82f6';  // Azul - MÃ©dio
+    if (contagem >= 5) return '#3b82f6';  // Azul - Médio
     return 'var(--text-secondary)'; // Cinza - Baixo
   };
 
   const getPopularityLabel = (contagem: number): string => {
-    if (contagem >= 20) return 'ðŸ”¥ Muito Popular';
-    if (contagem >= 10) return 'â­ Popular';
-    if (contagem >= 5) return 'ðŸ“ˆ Crescendo';
-    return 'ðŸ“Š Novo';
+    if (contagem >= 20) return '🔥 Muito Popular';
+    if (contagem >= 10) return '⭐ Popular';
+    if (contagem >= 5) return '📈 Crescendo';
+    return '📊 Novo';
   };
 
   const maxContagem = Math.max(...sugestoes.map(s => s.contagem), 1);
@@ -45,7 +45,7 @@ export const SugestoesPage = () => {
     return (
       <div style={styles.loadingContainer}>
         <div style={styles.spinner} />
-        <p style={styles.loadingText}>Carregando sugestÃµes...</p>
+        <p style={styles.loadingText}>Carregando sugestões...</p>
       </div>
     );
   }
@@ -55,18 +55,18 @@ export const SugestoesPage = () => {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>ðŸ’¡ SugestÃµes dos UsuÃ¡rios</h1>
-          <p style={styles.subtitle}>Veja o que os usuÃ¡rios mais pedem (ordenado por popularidade)</p>
+          <h1 style={styles.title}>💡 Sugestões dos Usuários</h1>
+          <p style={styles.subtitle}>Veja o que os usuários mais pedem (ordenado por popularidade)</p>
         </div>
       </div>
 
       {/* Info Box */}
       <div style={styles.infoBox}>
-        <span style={styles.infoIcon}>â„¹ï¸</span>
+        <span style={styles.infoIcon}>ℹ️</span>
         <div style={styles.infoContent}>
           <p style={styles.infoText}>
-            <strong>Como funciona:</strong> A API agrupa sugestÃµes idÃªnticas automaticamente. 
-            Por exemplo, "disney plus" e "Disney Plus" sÃ£o contados juntos.
+            <strong>Como funciona:</strong> A API agrupa sugestões idênticas automaticamente. 
+            Por exemplo, "disney plus" e "Disney Plus" são contados juntos.
           </p>
         </div>
       </div>
@@ -74,14 +74,14 @@ export const SugestoesPage = () => {
       {/* Stats */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#dbeafe', color: '#1e40af'}}>ðŸ’¡</span>
+          <span style={{...styles.statIcon, backgroundColor: '#dbeafe', color: '#1e40af'}}>💡</span>
           <div>
-            <p style={styles.statLabel}>Total de SugestÃµes</p>
+            <p style={styles.statLabel}>Total de Sugestões</p>
             <h3 style={styles.statValue}>{sugestoes.length}</h3>
           </div>
         </div>
         <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#fef3c7', color: '#92400e'}}>ðŸ”¥</span>
+          <span style={{...styles.statIcon, backgroundColor: '#fef3c7', color: '#92400e'}}>🔥</span>
           <div>
             <p style={styles.statLabel}>Mais Pedido</p>
             <h3 style={styles.statValue}>
@@ -90,7 +90,7 @@ export const SugestoesPage = () => {
           </div>
         </div>
         <div style={styles.statCard}>
-          <span style={{...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46'}}>ðŸ“Š</span>
+          <span style={{...styles.statIcon, backgroundColor: '#d1fae5', color: '#065f46'}}>📊</span>
           <div>
             <p style={styles.statLabel}>Total de Pedidos</p>
             <h3 style={styles.statValue}>
@@ -103,19 +103,19 @@ export const SugestoesPage = () => {
       {/* Error Alert */}
       {error && (
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>âš ï¸</span>
+          <span style={styles.alertIcon}>⚠️</span>
           <span>{error}</span>
         </div>
       )}
 
-      {/* SugestÃµes Grid */}
+      {/* Sugestões Grid */}
       <div style={styles.sugestoesContainer}>
         {sugestoes.length === 0 ? (
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>ðŸ’¡</span>
-            <h3 style={styles.emptyTitle}>Nenhuma sugestÃ£o ainda</h3>
+            <span style={styles.emptyIcon}>💡</span>
+            <h3 style={styles.emptyTitle}>Nenhuma sugestão ainda</h3>
             <p style={styles.emptyText}>
-              Quando os usuÃ¡rios comeÃ§arem a pedir novos streamings, eles aparecerÃ£o aqui
+              Quando os usuários começarem a pedir novos streamings, eles aparecerão aqui
             </p>
           </div>
         ) : (
@@ -151,7 +151,7 @@ export const SugestoesPage = () => {
                   {/* Contagem */}
                   <div style={styles.contagemSection}>
                     <div style={styles.contagemHeader}>
-                      <span style={styles.contagemLabel}>NÃºmero de Pedidos</span>
+                      <span style={styles.contagemLabel}>Número de Pedidos</span>
                       <span style={{...styles.contagemValue, color: color}}>
                         {sugestao.contagem}
                       </span>
@@ -183,9 +183,9 @@ export const SugestoesPage = () => {
                       color: sugestao.status === 'EM_ANALISE' ? '#92400e' :
                              sugestao.status === 'DISPONIVEL' ? '#065f46' : 'var(--text-secondary)'
                     }}>
-                      {sugestao.status === 'PENDENTE' ? 'â³ Pendente' :
-                       sugestao.status === 'EM_ANALISE' ? 'ðŸ” Em AnÃ¡lise' :
-                       sugestao.status === 'DISPONIVEL' ? 'âœ… DisponÃ­vel' :
+                      {sugestao.status === 'PENDENTE' ? '⏳ Pendente' :
+                       sugestao.status === 'EM_ANALISE' ? '🔍 Em Análise' :
+                       sugestao.status === 'DISPONIVEL' ? '✅ Disponível' :
                        sugestao.status}
                     </span>
                   </div>
@@ -200,7 +200,7 @@ export const SugestoesPage = () => {
       {sugestoes.length > 0 && (
         <div style={styles.bottomInfo}>
           <p style={styles.bottomInfoText}>
-            ðŸ’¡ <strong>Dica:</strong> Priorize os streamings com mais pedidos para maximizar suas vendas!
+            💡 <strong>Dica:</strong> Priorize os streamings com mais pedidos para maximizar suas vendas!
           </p>
         </div>
       )}

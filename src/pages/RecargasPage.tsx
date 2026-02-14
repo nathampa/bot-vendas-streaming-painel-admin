@@ -37,12 +37,12 @@ export const RecargasPage = () => {
 
   const getStatusBadge = (status: string) => {
     if (status === 'PAGO') {
-      return <span style={{...styles.badge, ...styles.badgeSuccess}}>âœ“ Pago</span>;
+      return <span style={{...styles.badge, ...styles.badgeSuccess}}>✓ Pago</span>;
     }
     if (status === 'PENDENTE') {
-      return <span style={{...styles.badge, ...styles.badgeWarning}}>â³ Pendente</span>;
+      return <span style={{...styles.badge, ...styles.badgeWarning}}>⏳ Pendente</span>;
     }
-    return <span style={{...styles.badge, ...styles.badgeError}}>âœ• Falhou</span>;
+    return <span style={{...styles.badge, ...styles.badgeError}}>✕ Falhou</span>;
   };
 
   if (isLoading) {
@@ -59,14 +59,14 @@ export const RecargasPage = () => {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>ðŸ’° Recargas</h1>
-          <p style={styles.subtitle}>HistÃ³rico das Ãºltimas 50 recargas de saldo</p>
+          <h1 style={styles.title}>💰 Recargas</h1>
+          <p style={styles.subtitle}>Histórico das últimas 50 recargas de saldo</p>
         </div>
       </div>
       
       {error && (
         <div style={styles.alert}>
-          <span style={styles.alertIcon}>âš ï¸</span>
+          <span style={styles.alertIcon}>⚠️</span>
           <span>{error}</span>
         </div>
       )}
@@ -75,16 +75,16 @@ export const RecargasPage = () => {
       <div style={styles.tableContainer}>
         {recargas.length === 0 ? (
           <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>ðŸ’°</span>
+            <span style={styles.emptyIcon}>💰</span>
             <h3 style={styles.emptyTitle}>Nenhuma recarga encontrada</h3>
-            <p style={styles.emptyText}>Quando usuÃ¡rios adicionarem saldo, aparecerÃ¡ aqui.</p>
+            <p style={styles.emptyText}>Quando usuários adicionarem saldo, aparecerá aqui.</p>
           </div>
         ) : (
           <table style={styles.table}>
             <thead>
               <tr>
-                <th style={styles.th}>Data CriaÃ§Ã£o</th>
-                <th style={styles.th}>UsuÃ¡rio</th>
+                <th style={styles.th}>Data Criação</th>
+                <th style={styles.th}>Usuário</th>
                 <th style={styles.th}>Valor</th>
                 <th style={styles.th}>Status</th>
                 <th style={styles.th}>Data Pagamento</th>
