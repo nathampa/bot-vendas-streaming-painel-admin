@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
@@ -41,6 +41,27 @@ export const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const currentPageLabel = menuItems.find((item) => item.path === location.pathname)?.label ?? 'Admin';
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!sidebarOpen) return undefined;
+    if (window.innerWidth > 768) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSidebarOpen(false);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [sidebarOpen]);
 
   const handleLogout = () => {
     logout();
@@ -95,7 +116,7 @@ export const AdminLayout = () => {
       )}
 
       <div className="main-wrapper-mobile" style={styles.mainWrapper}>
-        <header style={styles.topBar}>
+        <header className="admin-topbar-mobile" style={styles.topBar}>
           <button
             className="menu-button-mobile"
             style={styles.menuButton}
@@ -106,15 +127,15 @@ export const AdminLayout = () => {
           >
             MENU
           </button>
-          <div style={styles.topBarContent}>
-            <h1 style={styles.pageTitle}>{currentPageLabel}</h1>
-            <div style={styles.userInfo}>
+          <div className="admin-topbar-content-mobile" style={styles.topBarContent}>
+            <h1 className="admin-page-title-mobile" style={styles.pageTitle}>{currentPageLabel}</h1>
+            <div className="admin-user-info-mobile" style={styles.userInfo}>
               <span style={styles.userName}>Administrador</span>
             </div>
           </div>
         </header>
 
-        <main style={styles.content}>
+        <main className="admin-content-mobile" style={styles.content}>
           <Outlet />
         </main>
       </div>
@@ -301,6 +322,7 @@ const styles: Record<string, CSSProperties> = {
 const mobileStyles = `
   @media (max-width: 768px) {
     .sidebar-mobile {
+      width: min(86vw, 320px) !important;
       transform: translateX(-100%) !important;
     }
     .sidebar-mobile.open {
@@ -311,11 +333,30 @@ const mobileStyles = `
     }
     .menu-button-mobile {
       display: block !important;
+      min-height: 40px !important;
+      padding: 8px 10px !important;
     }
     .overlay-mobile {
       display: block !important;
     }
+    .admin-topbar-mobile {
+      padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px !important;
+      gap: 10px !important;
+    }
+    .admin-topbar-content-mobile {
+      align-items: flex-start !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+    }
+    .admin-page-title-mobile {
+      font-size: 18px !important;
+      line-height: 1.2 !important;
+    }
+    .admin-user-info-mobile {
+      padding: 6px 10px !important;
+    }
+    .admin-content-mobile {
+      padding: 14px 12px calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+    }
   }
 `;
-
-

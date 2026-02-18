@@ -22,6 +22,8 @@ interface IProduto {
   nome: string;
 }
 
+type CredentialField = 'login' | 'senha';
+
 export const ContasMaePage = () => {
   const { showToast } = useToast();
   const [contas, setContas] = useState<IContaMae[]>([]);
@@ -42,6 +44,7 @@ export const ContasMaePage = () => {
   const [novoDataExpiracao, setNovoDataExpiracao] = useState('');
   const [novoIsAtivo, setNovoIsAtivo] = useState(true);
   const [filterTerm, setFilterTerm] = useState('');
+  const [copiedField, setCopiedField] = useState<CredentialField | null>(null);
   const isAnyModalOpen = Boolean(selectedConta || deletingConta);
 
   const carregarDados = async () => {
@@ -76,6 +79,12 @@ export const ContasMaePage = () => {
       document.body.style.overflow = previousOverflow;
     };
   }, [isAnyModalOpen]);
+
+  useEffect(() => {
+    if (!selectedConta) {
+      setCopiedField(null);
+    }
+  }, [selectedConta]);
 
   useEffect(() => {
     if (!isAnyModalOpen) return undefined;
@@ -217,16 +226,57 @@ export const ContasMaePage = () => {
     }
   };
 
-  const copyToClipboard = async (text: string, label: string) => {
+  const legacyCopyToClipboard = (text: string) => {
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.setAttribute('readonly', '');
+      textArea.style.position = 'fixed';
+      textArea.style.top = '-9999px';
+      textArea.style.left = '-9999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      textArea.setSelectionRange(0, text.length);
+      const copied = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return copied;
+    } catch {
+      return false;
+    }
+  };
+
+  const copyToClipboard = async (text: string, label: string, field: CredentialField) => {
     if (!text) {
       showToast(`Não há ${label} para copiar.`, 'warning');
       return;
     }
 
     try {
-      await navigator.clipboard.writeText(text);
+      let copied = false;
+
+      if (window.isSecureContext && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        copied = true;
+      } else {
+        copied = legacyCopyToClipboard(text);
+      }
+
+      if (!copied) {
+        throw new Error('copy_failed');
+      }
+
+      setCopiedField(field);
+      window.setTimeout(() => setCopiedField((current) => (current === field ? null : current)), 1800);
       showToast(`${label} copiado com sucesso.`, 'success');
     } catch {
+      const copied = legacyCopyToClipboard(text);
+      if (copied) {
+        setCopiedField(field);
+        window.setTimeout(() => setCopiedField((current) => (current === field ? null : current)), 1800);
+        showToast(`${label} copiado com sucesso.`, 'success');
+        return;
+      }
       showToast(`Falha ao copiar ${label}.`, 'error');
     }
   };
@@ -306,7 +356,7 @@ export const ContasMaePage = () => {
               )}
             </div>
 
-            <div style={styles.inputRow}>
+            <div className="contas-mae-input-row" style={styles.inputRow}>
               <div style={styles.inputGroup}>
                 <label htmlFor="conta-mae-login" style={styles.label}>
                   Login (e-mail)
@@ -338,7 +388,7 @@ export const ContasMaePage = () => {
               </div>
             </div>
 
-            <div style={styles.inputRow}>
+            <div className="contas-mae-input-row" style={styles.inputRow}>
               <div style={styles.inputGroup}>
                 <label htmlFor="conta-mae-max-slots" style={styles.label}>
                   Máximo de Slots
@@ -414,7 +464,7 @@ export const ContasMaePage = () => {
         </div>
       </div>
 
-      <div style={styles.statsGrid}>
+      <div className="contas-mae-stats-grid" style={styles.statsGrid}>
         <MetricCard label="Contas (filtro)" value={filteredContas.length} icon={<GroupOutlinedIcon fontSize="small" />} tone="info" />
         <MetricCard label="Ativas" value={filteredContas.filter((c) => c.is_ativo).length} icon={<TaskAltOutlinedIcon fontSize="small" />} tone="success" />
         <MetricCard
@@ -425,7 +475,7 @@ export const ContasMaePage = () => {
         />
       </div>
 
-      <div style={styles.estoqueGrid}>
+      <div className="contas-mae-grid" style={styles.estoqueGrid}>
         {filteredContas.length === 0 ? (
           <div style={styles.emptyState}>
             <span style={styles.emptyIcon}>👩‍💼</span>
@@ -491,7 +541,7 @@ export const ContasMaePage = () => {
                   <span style={styles.cardId}>ID: {conta.id.substring(0, 8)}...</span>
                 </div>
 
-                <div style={styles.actionButtons}>
+                <div className="contas-mae-card-actions" style={styles.actionButtons}>
                   <button
                     type="button"
                     onClick={() => handleOpenDetails(conta.id)}
@@ -556,11 +606,11 @@ export const ContasMaePage = () => {
                       type="button"
                       className="contas-mae-copy-box"
                       style={styles.copyBox}
-                      onClick={() => copyToClipboard(selectedConta.login, 'login')}
+                      onClick={() => copyToClipboard(selectedConta.login, 'login', 'login')}
                       aria-label="Copiar login"
                     >
                       <span style={styles.credentialValue}>{selectedConta.login}</span>
-                      <span style={styles.copyButton}>Copiar</span>
+                      <span style={styles.copyButton}>{copiedField === 'login' ? 'Copiado' : 'Copiar'}</span>
                     </button>
                   </div>
                   <div style={styles.infoBox}>
@@ -569,11 +619,11 @@ export const ContasMaePage = () => {
                       type="button"
                       className="contas-mae-copy-box"
                       style={styles.copyBox}
-                      onClick={() => copyToClipboard(selectedConta.senha || '', 'senha')}
+                      onClick={() => copyToClipboard(selectedConta.senha || '', 'senha', 'senha')}
                       aria-label="Copiar senha"
                     >
                       <span style={styles.credentialValue}>{selectedConta.senha || '-'}</span>
-                      <span style={styles.copyButton}>Copiar</span>
+                      <span style={styles.copyButton}>{copiedField === 'senha' ? 'Copiado' : 'Copiar'}</span>
                     </button>
                   </div>
                   <div style={styles.infoBox}>
@@ -806,6 +856,23 @@ const mobileStyles = `
     .contas-mae-invite-item {
       flex-direction: column;
       align-items: flex-start;
+    }
+
+    .contas-mae-input-row {
+      grid-template-columns: 1fr !important;
+    }
+
+    .contas-mae-stats-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .contas-mae-grid {
+      grid-template-columns: 1fr !important;
+      gap: 14px !important;
+    }
+
+    .contas-mae-card-actions {
+      flex-direction: column;
     }
   }
 `;
