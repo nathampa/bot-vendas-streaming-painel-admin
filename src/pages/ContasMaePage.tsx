@@ -42,6 +42,7 @@ export const ContasMaePage = () => {
   const [novoDataExpiracao, setNovoDataExpiracao] = useState('');
   const [novoIsAtivo, setNovoIsAtivo] = useState(true);
   const [filterTerm, setFilterTerm] = useState('');
+  const isAnyModalOpen = Boolean(selectedConta || deletingConta);
 
   const carregarDados = async () => {
     setIsLoading(true);
@@ -64,6 +65,30 @@ export const ContasMaePage = () => {
   useEffect(() => {
     carregarDados();
   }, []);
+
+  useEffect(() => {
+    if (!isAnyModalOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isAnyModalOpen]);
+
+  useEffect(() => {
+    if (!isAnyModalOpen) return undefined;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setSelectedConta(null);
+      setDeletingConta(null);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAnyModalOpen]);
 
   const resetForm = () => {
     setSelectedProdutoId('');
@@ -226,6 +251,8 @@ export const ContasMaePage = () => {
 
   return (
     <div style={styles.container}>
+      <style>{mobileStyles}</style>
+
       <PageHeader
         title="Contas Mãe"
         subtitle="Gerencie as contas que convidam clientes por e-mail."
@@ -494,15 +521,16 @@ export const ContasMaePage = () => {
       </div>
 
       {selectedConta && (
-        <div style={styles.modalOverlay} onClick={() => setSelectedConta(null)}>
+        <div className="contas-mae-modal-overlay" style={styles.modalOverlay} onClick={() => setSelectedConta(null)}>
           <div
+            className="contas-mae-modal"
             style={styles.modal}
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
             aria-label="Detalhes da conta mãe"
           >
-            <div style={styles.modalHeader}>
+            <div className="contas-mae-modal-header" style={styles.modalHeader}>
               <h3 style={styles.modalTitle}>👩‍💼 Conta Mãe</h3>
               <button
                 type="button"
@@ -515,22 +543,23 @@ export const ContasMaePage = () => {
             </div>
 
             {isLoadingDetails ? (
-              <div style={styles.loadingContainer}>
+              <div style={styles.modalLoadingContainer}>
                 <div style={styles.spinner} />
                 <p style={styles.loadingText}>Carregando detalhes...</p>
               </div>
             ) : (
-              <div style={styles.modalBody}>
-                <div style={styles.infoGrid}>
+              <div className="contas-mae-modal-body" style={styles.modalBody}>
+                <div className="contas-mae-info-grid" style={styles.infoGrid}>
                   <div style={styles.infoBox}>
                     <span style={styles.infoLabel}>Login</span>
                     <button
                       type="button"
+                      className="contas-mae-copy-box"
                       style={styles.copyBox}
                       onClick={() => copyToClipboard(selectedConta.login, 'login')}
                       aria-label="Copiar login"
                     >
-                      <span style={styles.infoValue}>{selectedConta.login}</span>
+                      <span style={styles.credentialValue}>{selectedConta.login}</span>
                       <span style={styles.copyButton}>Copiar</span>
                     </button>
                   </div>
@@ -538,11 +567,12 @@ export const ContasMaePage = () => {
                     <span style={styles.infoLabel}>Senha</span>
                     <button
                       type="button"
+                      className="contas-mae-copy-box"
                       style={styles.copyBox}
                       onClick={() => copyToClipboard(selectedConta.senha || '', 'senha')}
                       aria-label="Copiar senha"
                     >
-                      <span style={styles.infoValue}>{selectedConta.senha || '-'}</span>
+                      <span style={styles.credentialValue}>{selectedConta.senha || '-'}</span>
                       <span style={styles.copyButton}>Copiar</span>
                     </button>
                   </div>
@@ -565,7 +595,7 @@ export const ContasMaePage = () => {
                   {isSlotsFull && (
                     <p style={styles.warningText}>Esta conta já atingiu o máximo de slots.</p>
                   )}
-                  <div style={styles.inviteRow}>
+                  <div className="contas-mae-invite-row" style={styles.inviteRow}>
                     <label htmlFor="conta-mae-invite-email" style={styles.srOnly}>
                       E-mail do convidado
                     </label>
@@ -591,7 +621,7 @@ export const ContasMaePage = () => {
                   ) : (
                     <div style={styles.inviteTable}>
                       {selectedConta.convites.map((convite) => (
-                        <div key={convite.id} style={styles.inviteItem}>
+                        <div key={convite.id} className="contas-mae-invite-item" style={styles.inviteItem}>
                           <span style={styles.inviteEmail}>{convite.email_cliente}</span>
                           <span style={styles.inviteDate}>{formatDate(convite.criado_em.split('T')[0])}</span>
                         </div>
@@ -606,9 +636,9 @@ export const ContasMaePage = () => {
       )}
 
       {deletingConta && (
-        <div style={styles.modalOverlay} onClick={() => setDeletingConta(null)}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-            <div style={styles.modalHeader}>
+        <div className="contas-mae-modal-overlay" style={styles.modalOverlay} onClick={() => setDeletingConta(null)}>
+          <div className="contas-mae-modal" style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+            <div className="contas-mae-modal-header" style={styles.modalHeader}>
               <h3 style={styles.modalTitle}> Confirmar Excluso</h3>
               <button
                 type="button"
@@ -699,12 +729,13 @@ const styles: Record<string, React.CSSProperties> = {
   emptyIcon: { fontSize: '64px', opacity: 0.5 },
   emptyTitle: { margin: 0, fontSize: '20px', color: 'var(--text-primary)' },
   emptyText: { margin: 0, fontSize: '14px', color: 'var(--text-secondary)' },
-  modalOverlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' },
-  modal: { backgroundColor: '#fff', borderRadius: '16px', maxWidth: '720px', width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' },
-  modalHeader: { padding: '24px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  modalOverlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px', overflowY: 'auto' },
+  modal: { backgroundColor: '#fff', borderRadius: '16px', maxWidth: '720px', width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column', maxHeight: '90vh', overflow: 'hidden' },
+  modalHeader: { padding: '24px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, backgroundColor: '#fff' },
   modalTitle: { margin: 0, fontSize: '20px', fontWeight: 700 },
-  modalClose: { background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', padding: '4px', color: 'var(--text-secondary)' },
-  modalBody: { padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' },
+  modalClose: { background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', padding: '8px', color: 'var(--text-secondary)', minWidth: '40px', minHeight: '40px', borderRadius: '8px' },
+  modalBody: { padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto', minHeight: 0, WebkitOverflowScrolling: 'touch' },
+  modalLoadingContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '220px', gap: '16px', padding: '24px' },
   infoGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' },
   infoBox: { display: 'flex', flexDirection: 'column', gap: '8px', padding: '16px', backgroundColor: 'var(--surface-soft)', borderRadius: '10px' },
   inviteSection: { backgroundColor: 'var(--surface-soft)', borderRadius: '12px', padding: '16px' },
@@ -715,18 +746,66 @@ const styles: Record<string, React.CSSProperties> = {
   inviteItem: { display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '10px 12px', backgroundColor: 'var(--surface-soft)', borderRadius: '8px' },
   inviteEmail: { fontWeight: 600, color: 'var(--text-primary)' },
   inviteDate: { fontSize: '12px', color: 'var(--text-secondary)' },
-  copyBox: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '8px 12px', backgroundColor: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '8px', cursor: 'pointer', width: '100%', fontFamily: 'inherit', fontSize: 'inherit', textAlign: 'left' },
+  copyBox: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '8px 12px', backgroundColor: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '8px', cursor: 'pointer', width: '100%', fontFamily: 'inherit', fontSize: 'inherit', textAlign: 'left', minWidth: 0 },
+  credentialValue: { fontSize: '13px', color: 'var(--text-primary)', fontWeight: 600, overflowWrap: 'anywhere' },
   copyButton: { fontSize: '12px', fontWeight: 700, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.4px' },
   srOnly: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 },
   modalText: { margin: '0 0 16px 0', fontSize: '16px', color: 'var(--text-primary)', lineHeight: 1.5 },
   warningBox: { display: 'flex', gap: '12px', padding: '12px', backgroundColor: '#fef3c7', borderRadius: '8px', border: '1px solid #fde68a' },
   warningIcon: { fontSize: '20px' },
   warningText: { margin: 0, fontSize: '14px', color: '#78350f', lineHeight: 1.5 },
-  modalFooter: { padding: '24px', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: '12px', justifyContent: 'flex-end' },
+  modalFooter: { padding: '24px', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: '12px', justifyContent: 'flex-end', flexShrink: 0, backgroundColor: '#fff' },
   modalCancelBtn: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: 'var(--surface-muted)', color: 'var(--text-primary)', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   modalDeleteBtn: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
 };
 
+const mobileStyles = `
+  @media (max-width: 768px) {
+    .contas-mae-modal-overlay {
+      align-items: flex-start !important;
+      padding: calc(12px + env(safe-area-inset-top, 0px)) 12px calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+    }
 
+    .contas-mae-modal {
+      max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+      border-radius: 14px !important;
+    }
 
+    .contas-mae-modal-header {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      padding: 16px !important;
+    }
 
+    .contas-mae-modal-body {
+      padding: 16px !important;
+      gap: 16px !important;
+    }
+
+    .contas-mae-info-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .contas-mae-copy-box {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      padding: 10px 12px;
+    }
+
+    .contas-mae-invite-row {
+      grid-template-columns: 1fr !important;
+      align-items: stretch !important;
+    }
+
+    .contas-mae-invite-row > button {
+      width: 100%;
+    }
+
+    .contas-mae-invite-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+`;
