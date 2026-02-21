@@ -1,4 +1,4 @@
-import type { IPedidoAdminEntregaRequest } from '../types/api.types';
+import type { IPedidoAdminEntregaRequest, IUsuarioSaldoAjustePayload } from '../types/api.types';
 import { httpClient } from './httpClient';
 
 type UpdatePayload = Record<string, unknown>;
@@ -90,6 +90,8 @@ export const entregarPedidoManual = (pedidoId: string, data: IPedidoAdminEntrega
 // PILAR: Usuarios
 // -----------------------------------------------------------------
 export const getAdminUsuarios = () => httpClient.get('/admin/usuarios/');
+export const ajustarSaldoUsuario = (usuarioId: string, data: IUsuarioSaldoAjustePayload) =>
+  httpClient.post(`/admin/usuarios/${usuarioId}/ajuste-saldo`, data);
 
 // -----------------------------------------------------------------
 // PILAR: Recargas
@@ -120,4 +122,3 @@ export const updateContaMae = (contaMaeId: string, data: UpdatePayload) =>
 export const deleteContaMae = (contaMaeId: string) => httpClient.delete(`/admin/contas-mae/${contaMaeId}`);
 export const addContaMaeConvite = (contaMaeId: string, data: { email_cliente: string }) =>
   httpClient.post(`/admin/contas-mae/${contaMaeId}/convites`, data);
-

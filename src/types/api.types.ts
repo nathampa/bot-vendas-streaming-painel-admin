@@ -102,6 +102,24 @@ export interface IUsuarioAdminList {
   total_pedidos: number;
 }
 
+export type IUsuarioSaldoOperacao = 'ADICIONAR' | 'REMOVER' | 'DEFINIR';
+
+export interface IUsuarioSaldoAjustePayload {
+  operacao: IUsuarioSaldoOperacao;
+  valor: number;
+  motivo?: string | null;
+}
+
+export interface IUsuarioSaldoAjusteResponse {
+  usuario_id: string;
+  operacao: IUsuarioSaldoOperacao;
+  valor: string;
+  saldo_anterior: string;
+  saldo_atual: string;
+  motivo?: string | null;
+  ajustado_em: string;
+}
+
 // Schema 'RecargaAdminRead'
 export interface IRecargaAdminList {
   id: string;
@@ -148,4 +166,3 @@ export interface IContaMaeDetalhes extends IContaMae {
   senha: string | null;
   convites: IContaMaeConvite[];
 }
-
