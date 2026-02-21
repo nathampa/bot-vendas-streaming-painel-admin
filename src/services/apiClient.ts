@@ -92,6 +92,8 @@ export const entregarPedidoManual = (pedidoId: string, data: IPedidoAdminEntrega
 export const getAdminUsuarios = () => httpClient.get('/admin/usuarios/');
 export const ajustarSaldoUsuario = (usuarioId: string, data: IUsuarioSaldoAjustePayload) =>
   httpClient.post(`/admin/usuarios/${usuarioId}/ajuste-saldo`, data);
+export const getHistoricoSaldoUsuario = (usuarioId: string, limite = 20) =>
+  httpClient.get(`/admin/usuarios/${usuarioId}/historico-saldo`, { params: { limite } });
 
 // -----------------------------------------------------------------
 // PILAR: Recargas

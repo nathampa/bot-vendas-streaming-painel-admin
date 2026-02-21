@@ -120,6 +120,19 @@ export interface IUsuarioSaldoAjusteResponse {
   ajustado_em: string;
 }
 
+export interface IUsuarioSaldoHistoricoItem {
+  id: string;
+  operacao: IUsuarioSaldoOperacao;
+  valor: string;
+  saldo_anterior: string;
+  saldo_atual: string;
+  motivo?: string | null;
+  criado_em: string;
+  admin_id: string;
+  admin_nome_completo: string;
+  admin_telegram_id: number;
+}
+
 // Schema 'RecargaAdminRead'
 export interface IRecargaAdminList {
   id: string;

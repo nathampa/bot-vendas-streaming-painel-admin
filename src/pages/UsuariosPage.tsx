@@ -8,10 +8,12 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import {
   ajustarSaldoUsuario,
   getAdminUsuarios,
+  getHistoricoSaldoUsuario,
 } from '../services/apiClient';
 import type {
   IUsuarioAdminList,
   IUsuarioSaldoAjusteResponse,
+  IUsuarioSaldoHistoricoItem,
   IUsuarioSaldoOperacao,
 } from '../types/api.types';
 import { MetricCard, PageHeader } from '../components/UI';
@@ -34,6 +36,8 @@ export const UsuariosPage = () => {
   const [valorAjuste, setValorAjuste] = useState('');
   const [motivoAjuste, setMotivoAjuste] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [historicoSaldo, setHistoricoSaldo] = useState<IUsuarioSaldoHistoricoItem[]>([]);
+  const [isLoadingHistorico, setIsLoadingHistorico] = useState(false);
 
   const carregarUsuarios = async () => {
     setIsLoading(true);
@@ -49,9 +53,33 @@ export const UsuariosPage = () => {
     }
   };
 
+  const carregarHistoricoSaldo = async (usuarioId: string) => {
+    setIsLoadingHistorico(true);
+    try {
+      const response = await getHistoricoSaldoUsuario(usuarioId, 30);
+      setHistoricoSaldo(response.data);
+    } catch (err: unknown) {
+      console.error('Erro ao buscar histórico de saldo:', err);
+      const errorMsg = getApiErrorMessage(err, 'Falha ao carregar histórico de ajustes.');
+      showToast(errorMsg, 'error');
+      setHistoricoSaldo([]);
+    } finally {
+      setIsLoadingHistorico(false);
+    }
+  };
+
   useEffect(() => {
     carregarUsuarios();
   }, []);
+
+  useEffect(() => {
+    if (!selectedUser) {
+      setHistoricoSaldo([]);
+      setIsLoadingHistorico(false);
+      return;
+    }
+    carregarHistoricoSaldo(selectedUser.id);
+  }, [selectedUser]);
 
   useEffect(() => {
     if (!selectedUser) return undefined;
@@ -113,6 +141,12 @@ export const UsuariosPage = () => {
     return 'definido';
   };
 
+  const getOperationBadgeStyle = (op: IUsuarioSaldoOperacao): React.CSSProperties => {
+    if (op === 'ADICIONAR') return styles.badgeAdd;
+    if (op === 'REMOVER') return styles.badgeRemove;
+    return styles.badgeSet;
+  };
+
   const handleAjustarSaldo = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!selectedUser) return;
@@ -144,8 +178,13 @@ export const UsuariosPage = () => {
         `Saldo ${getOperationLabel(data.operacao)} com sucesso. Antes: ${formatCurrency(data.saldo_anterior)} | Agora: ${formatCurrency(data.saldo_atual)}`,
         'success',
       );
-      setSelectedUser(null);
-      await carregarUsuarios();
+      setSelectedUser((current) => (current ? { ...current, saldo_carteira: data.saldo_atual } : current));
+      setValorAjuste('');
+      setMotivoAjuste('');
+      await Promise.all([
+        carregarUsuarios(),
+        carregarHistoricoSaldo(data.usuario_id),
+      ]);
     } catch (err: unknown) {
       console.error('Erro ao ajustar saldo:', err);
       const errorMsg = getApiErrorMessage(err, 'Falha ao ajustar saldo do usuário.');
@@ -300,6 +339,35 @@ export const UsuariosPage = () => {
                 />
               </div>
 
+              <div style={styles.historicoSection}>
+                <h4 style={styles.historicoTitle}>Histórico de ajustes</h4>
+                {isLoadingHistorico ? (
+                  <p style={styles.historicoEmpty}>Carregando histórico...</p>
+                ) : historicoSaldo.length === 0 ? (
+                  <p style={styles.historicoEmpty}>Nenhum ajuste manual registrado para este usuário.</p>
+                ) : (
+                  <div style={styles.historicoList}>
+                    {historicoSaldo.map((item) => (
+                      <div key={item.id} style={styles.historicoItem}>
+                        <div style={styles.historicoTopRow}>
+                          <span style={{ ...styles.historicoBadge, ...getOperationBadgeStyle(item.operacao) }}>
+                            {item.operacao}
+                          </span>
+                          <span style={styles.historicoDate}>{formatarData(item.criado_em)}</span>
+                        </div>
+                        <p style={styles.historicoLine}>
+                          Valor: <strong>{formatCurrency(item.valor)}</strong> | Antes: {formatCurrency(item.saldo_anterior)} | Depois: {formatCurrency(item.saldo_atual)}
+                        </p>
+                        <p style={styles.historicoLine}>
+                          Admin: {item.admin_nome_completo} ({item.admin_telegram_id})
+                        </p>
+                        {item.motivo && <p style={styles.historicoReason}>Motivo: {item.motivo}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div style={styles.modalFooter}>
                 <button type="button" onClick={fecharModalAjuste} style={styles.cancelButton} disabled={isSubmitting}>
                   Cancelar
@@ -361,6 +429,19 @@ const styles: Record<string, React.CSSProperties> = {
   previewBox: { padding: '12px', borderRadius: '8px', backgroundColor: '#f8fafc', border: '1px solid var(--border-subtle)' },
   previewText: { margin: 0, fontSize: '14px', color: 'var(--text-primary)' },
   previewWarning: { margin: '8px 0 0 0', fontSize: '12px', color: '#b91c1c', fontWeight: 600 },
+  historicoSection: { borderTop: '1px solid var(--border-subtle)', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '10px' },
+  historicoTitle: { margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' },
+  historicoEmpty: { margin: 0, fontSize: '13px', color: 'var(--text-secondary)' },
+  historicoList: { display: 'flex', flexDirection: 'column', gap: '10px' },
+  historicoItem: { border: '1px solid var(--border-subtle)', borderRadius: '8px', backgroundColor: '#fafcff', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '6px' },
+  historicoTopRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' },
+  historicoBadge: { fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.4px', borderRadius: '999px', padding: '3px 8px' },
+  badgeAdd: { backgroundColor: '#dcfce7', color: '#166534' },
+  badgeRemove: { backgroundColor: '#fee2e2', color: '#991b1b' },
+  badgeSet: { backgroundColor: '#dbeafe', color: '#1e3a8a' },
+  historicoDate: { fontSize: '11px', color: 'var(--text-secondary)' },
+  historicoLine: { margin: 0, fontSize: '12px', color: 'var(--text-primary)', lineHeight: 1.4 },
+  historicoReason: { margin: 0, fontSize: '12px', color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.4 },
   modalFooter: { display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '4px' },
   cancelButton: { padding: '10px 14px', fontSize: '13px', fontWeight: 700, border: 'none', borderRadius: '8px', cursor: 'pointer', backgroundColor: 'var(--surface-muted)', color: 'var(--text-primary)' },
   confirmButton: { padding: '10px 14px', fontSize: '13px', fontWeight: 700, border: 'none', borderRadius: '8px', cursor: 'pointer', background: 'linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%)', color: '#fff' },
