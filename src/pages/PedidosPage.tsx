@@ -8,7 +8,8 @@ import KeyOutlinedIcon from '@mui/icons-material/KeyOutlined';
 import AlternateEmailOutlinedIcon from '@mui/icons-material/AlternateEmailOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
-import { getAdminPedidos, getPedidoDetalhes, entregarPedidoManual } from '../services/apiClient';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import { getAdminPedidos, getPedidoDetalhes, entregarPedidoManual, deleteAdminPedido } from '../services/apiClient';
 import type { IPedidoAdminList, IPedidoAdminDetails } from '../types/api.types';
 import { useToast } from '../contexts/ToastContext';
 import { getApiErrorMessage } from '../utils/errors';
@@ -23,6 +24,8 @@ export const PedidosPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [entregaModalPedido, setEntregaModalPedido] = useState<IPedidoAdminList | null>(null);
   const [isEntregaLoading, setIsEntregaLoading] = useState(false);
+  const [deletingPedido, setDeletingPedido] = useState<IPedidoAdminList | null>(null);
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [entregaLogin, setEntregaLogin] = useState('');
   const [entregaSenha, setEntregaSenha] = useState('');
 
@@ -132,6 +135,31 @@ export const PedidosPage = () => {
       setIsEntregaLoading(false);
     }
   };
+
+  const handleCloseDeleteModal = () => {
+    if (isDeleteLoading) return;
+    setDeletingPedido(null);
+  };
+
+  const handleDeletePedido = async () => {
+    if (!deletingPedido) return;
+    setIsDeleteLoading(true);
+    try {
+      await deleteAdminPedido(deletingPedido.id);
+      if (selectedPedido?.id === deletingPedido.id) {
+        setSelectedPedido(null);
+      }
+      showToast('Pedido excluido com sucesso.', 'success');
+      setDeletingPedido(null);
+      await carregarPedidos();
+    } catch (err: unknown) {
+      console.error("Erro ao excluir pedido:", err);
+      const errorMsg = getApiErrorMessage(err, "Falha ao excluir pedido.");
+      showToast(errorMsg, 'error');
+    } finally {
+      setIsDeleteLoading(false);
+    }
+  };
   
   // Nova função para badge de status
   const getStatusBadge = (status: 'ENTREGUE' | 'PENDENTE') => {
@@ -225,23 +253,32 @@ export const PedidosPage = () => {
                     <span style={styles.price}>R$ {pedido.valor_pago}</span>
                   </td>
                   <td style={styles.td}>
-                    {pedido.status_entrega === 'PENDENTE' ? (
-                      <button 
+                    <div style={styles.actionsCell}>
+                      {pedido.status_entrega === 'PENDENTE' ? (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEntregaModal(pedido)}
+                          style={styles.deliverButton}
+                        >
+                          <LocalShippingOutlinedIcon sx={{ fontSize: 16 }} /> Entregar
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleVerDetalhes(pedido.id)}
+                          style={styles.detailsButton}
+                        >
+                          <VisibilityOutlinedIcon sx={{ fontSize: 16 }} /> Ver detalhes
+                        </button>
+                      )}
+                      <button
                         type="button"
-                        onClick={() => handleOpenEntregaModal(pedido)}
-                        style={styles.deliverButton}
+                        onClick={() => setDeletingPedido(pedido)}
+                        style={styles.deleteButton}
                       >
-                        <LocalShippingOutlinedIcon sx={{ fontSize: 16 }} /> Entregar
+                        <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} /> Excluir
                       </button>
-                    ) : (
-                      <button 
-                        type="button"
-                        onClick={() => handleVerDetalhes(pedido.id)}
-                        style={styles.detailsButton}
-                      >
-                        <VisibilityOutlinedIcon sx={{ fontSize: 16 }} /> Ver detalhes
-                      </button>
-                    )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -455,6 +492,54 @@ export const PedidosPage = () => {
           </div>
         </div>
       )}
+
+      {deletingPedido && (
+        <div style={styles.modalOverlay} onClick={handleCloseDeleteModal}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+            <div style={styles.modalHeader}>
+              <h3 style={styles.modalTitle}>Confirmar exclusao</h3>
+              <button
+                type="button"
+                onClick={handleCloseDeleteModal}
+                style={styles.modalClose}
+                aria-label="Fechar confirmação de exclusão"
+              >
+                x
+              </button>
+            </div>
+
+            <div style={styles.modalBody}>
+              <p style={styles.modalText}>
+                Deseja excluir o pedido do produto <strong>{deletingPedido.produto_nome}</strong>?
+              </p>
+
+              <div style={styles.manualInfo}>
+                <span style={styles.manualInfoIcon}><InfoOutlinedIcon sx={{ fontSize: 18 }} /></span>
+                <span>Essa acao remove o pedido da listagem administrativa e nao pode ser desfeita.</span>
+              </div>
+            </div>
+
+            <div style={styles.modalFooter}>
+              <button
+                type="button"
+                onClick={handleCloseDeleteModal}
+                style={styles.modalCancelBtn}
+                disabled={isDeleteLoading}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleDeletePedido}
+                style={styles.modalDeleteBtn}
+                disabled={isDeleteLoading}
+              >
+                {isDeleteLoading ? 'Excluindo...' : 'Sim, excluir pedido'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -479,6 +564,20 @@ const styles: Record<string, React.CSSProperties> = {
   userId: { fontSize: '12px', color: 'var(--text-secondary)' },
   price: { fontSize: '14px', fontWeight: 600, color: '#10b981' },
   detailsButton: { padding: '8px 16px', fontSize: '13px', fontWeight: 600, backgroundColor: 'var(--surface-muted)', color: '#374151', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' },
+  actionsCell: { display: 'flex', alignItems: 'center', gap: '8px' },
+  deleteButton: {
+    padding: '8px 14px',
+    fontSize: '13px',
+    fontWeight: 600,
+    backgroundColor: '#fee2e2',
+    color: '#991b1b',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+  },
   emptyState: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', gap: '16px' },
   emptyIcon: { fontSize: '64px', opacity: 0.5 },
   emptyTitle: { margin: 0, fontSize: '20px', color: 'var(--text-primary)' },
@@ -584,6 +683,16 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: '8px', 
     cursor: 'pointer' 
   },
+  modalDeleteBtn: {
+    padding: '12px 24px',
+    fontSize: '14px',
+    fontWeight: 600,
+    backgroundColor: '#ef4444',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+  },
   // --- FIM DOS NOVOS ESTILOS ---
 
   // Estilos do Modal
@@ -606,6 +715,3 @@ const styles: Record<string, React.CSSProperties> = {
   copyButton: { fontSize: '12px', fontWeight: 700, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.4px' },
   idFooter: { marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)', fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center' },
 };
-
-
-

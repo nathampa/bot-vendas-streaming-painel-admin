@@ -83,6 +83,7 @@ export const getAdminSugestoes = () => httpClient.get('/admin/sugestoes/');
 
 export const getAdminPedidos = () => httpClient.get('/admin/pedidos/');
 export const getPedidoDetalhes = (pedidoId: string) => httpClient.get(`/admin/pedidos/${pedidoId}/detalhes`);
+export const deleteAdminPedido = (pedidoId: string) => httpClient.delete(`/admin/pedidos/${pedidoId}`);
 export const entregarPedidoManual = (pedidoId: string, data: IPedidoAdminEntregaRequest) =>
   httpClient.post(`/admin/pedidos/${pedidoId}/entregar`, data);
 

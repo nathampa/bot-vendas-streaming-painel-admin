@@ -166,6 +166,7 @@ export interface IContaMae {
   data_expiracao: string | null;
   dias_restantes: number | null;
   total_convites: number | null;
+  emails_vinculados: string[];
 }
 
 export interface IContaMaeConvite {

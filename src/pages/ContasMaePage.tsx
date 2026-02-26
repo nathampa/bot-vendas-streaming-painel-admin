@@ -23,6 +23,7 @@ interface IProduto {
 }
 
 type CredentialField = 'login' | 'senha';
+type ContaMaeStatusFilter = 'TODAS' | 'ATIVAS' | 'INATIVAS';
 
 export const ContasMaePage = () => {
   const { showToast } = useToast();
@@ -44,6 +45,8 @@ export const ContasMaePage = () => {
   const [novoDataExpiracao, setNovoDataExpiracao] = useState('');
   const [novoIsAtivo, setNovoIsAtivo] = useState(true);
   const [filterTerm, setFilterTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState<ContaMaeStatusFilter>('TODAS');
+  const [filterEmail, setFilterEmail] = useState('');
   const [copiedField, setCopiedField] = useState<CredentialField | null>(null);
   const isAnyModalOpen = Boolean(selectedConta || deletingConta);
 
@@ -281,13 +284,31 @@ export const ContasMaePage = () => {
     }
   };
 
-  const filteredContas = contas.filter((conta) => {
-    const term = filterTerm.toLowerCase().trim();
-    if (!term) return true;
-    const produtoNome = getProdutoNome(conta.produto_id).toLowerCase();
-    const login = conta.login.toLowerCase();
-    return produtoNome.includes(term) || login.includes(term);
-  });
+  const filteredContas = contas
+    .filter((conta) => {
+      const term = filterTerm.toLowerCase().trim();
+      if (!term) return true;
+      const produtoNome = getProdutoNome(conta.produto_id).toLowerCase();
+      const login = conta.login.toLowerCase();
+      return produtoNome.includes(term) || login.includes(term);
+    })
+    .filter((conta) => {
+      if (filterStatus === 'ATIVAS') return conta.is_ativo;
+      if (filterStatus === 'INATIVAS') return !conta.is_ativo;
+      return true;
+    })
+    .filter((conta) => {
+      const emailTerm = filterEmail.toLowerCase().trim();
+      if (!emailTerm) return true;
+      return (conta.emails_vinculados ?? []).some((email) => email.toLowerCase().includes(emailTerm));
+    })
+    .sort((a, b) => {
+      if (a.is_ativo !== b.is_ativo) return a.is_ativo ? -1 : 1;
+      const aDias = a.dias_restantes ?? Number.NEGATIVE_INFINITY;
+      const bDias = b.dias_restantes ?? Number.NEGATIVE_INFINITY;
+      if (aDias !== bDias) return bDias - aDias;
+      return a.login.localeCompare(b.login, 'pt-BR');
+    });
   const isSlotsFull = selectedConta ? selectedConta.slots_ocupados >= selectedConta.max_slots : false;
 
   if (isLoading) {
@@ -459,6 +480,34 @@ export const ContasMaePage = () => {
               onChange={(e) => setFilterTerm(e.target.value)}
               style={styles.input}
               placeholder="Ex: Canva ou conta@email.com"
+            />
+          </div>
+          <div style={styles.inputGroup}>
+            <label htmlFor="conta-mae-filtro-status" style={styles.label}>
+              Status
+            </label>
+            <select
+              id="conta-mae-filtro-status"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value as ContaMaeStatusFilter)}
+              style={styles.input}
+            >
+              <option value="TODAS">Todas</option>
+              <option value="ATIVAS">Apenas ativas</option>
+              <option value="INATIVAS">Apenas inativas</option>
+            </select>
+          </div>
+          <div style={styles.inputGroup}>
+            <label htmlFor="conta-mae-filtro-email" style={styles.label}>
+              E-mail vinculado
+            </label>
+            <input
+              id="conta-mae-filtro-email"
+              type="text"
+              value={filterEmail}
+              onChange={(e) => setFilterEmail(e.target.value)}
+              style={styles.input}
+              placeholder="Ex: cliente@email.com"
             />
           </div>
         </div>
@@ -749,7 +798,7 @@ const styles: Record<string, React.CSSProperties> = {
   submitButton: { padding: '12px 24px', fontSize: '14px', fontWeight: 600, background: 'linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   filterContainer: { backgroundColor: '#fff', borderRadius: '12px', padding: '24px', marginBottom: '32px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
   filterTitle: { margin: '0 0 20px 0', fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' },
-  filterInputs: { display: 'grid', gridTemplateColumns: '1fr', gap: '16px' },
+  filterInputs: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' },
   statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' },
   statCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
   statIcon: { width: '48px', height: '48px', borderRadius: '10px', backgroundColor: 'var(--surface-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' },
