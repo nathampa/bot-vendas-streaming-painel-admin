@@ -66,6 +66,7 @@ export const AdminLayout = () => {
 
   useEffect(() => {
     if (!sidebarOpen) return undefined;
+    if (window.innerWidth > 960) return undefined;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
@@ -165,6 +166,8 @@ const styles: Record<string, CSSProperties> = {
     color: 'var(--text-inverse)',
     display: 'flex',
     flexDirection: 'column',
+    overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch',
     boxShadow: 'var(--shadow-lg)',
     zIndex: 1000,
     transition: 'transform 0.25s ease',
@@ -205,7 +208,6 @@ const styles: Record<string, CSSProperties> = {
     gap: '4px',
     padding: '20px 12px',
     flex: 1,
-    overflowY: 'auto',
   },
   navLink: {
     display: 'flex',
