@@ -24,6 +24,7 @@ import {
   acknowledgeEmailMonitorAlert,
   createEmailMonitorAccount,
   createEmailMonitorRule,
+  deleteEmailMonitorAccount,
   getEmailMonitorAccounts,
   getEmailMonitorAlerts,
   getEmailMonitorAudit,
@@ -483,6 +484,29 @@ export const EmailMonitorPage = () => {
     }
   };
 
+  const removeAccount = async (account: IEmailMonitorAccount) => {
+    const confirmed = window.confirm(
+      `Excluir permanentemente a conta "${account.display_name}"?\n\nEssa ação remove a conta do banco e apaga mensagens, regras por conta, alertas e histórico de sync relacionados.`,
+    );
+    if (!confirmed) return;
+
+    try {
+      await deleteEmailMonitorAccount(account.id);
+      if (accountForm.id === account.id) {
+        resetAccountForm();
+      }
+      if (selectedMessage?.account_id === account.id) {
+        setSelectedMessage(null);
+      }
+      showToast('Conta IMAP excluída permanentemente.', 'success');
+      await loadModuleData();
+      await refreshOverviewOnly();
+      await loadMessages(1);
+    } catch (err: unknown) {
+      showToast(getApiErrorMessage(err, 'Falha ao excluir a conta IMAP.'), 'error');
+    }
+  };
+
   const openMessage = async (messageId: string) => {
     try {
       const response = await getEmailMonitorMessage(messageId);
@@ -751,6 +775,7 @@ export const EmailMonitorPage = () => {
                               <Button variant={account.is_active ? 'warning' : 'success'} onClick={() => toggleAccountStatus(account)} style={styles.smallButton}>
                                 {account.is_active ? 'Desativar' : 'Ativar'}
                               </Button>
+                              <Button variant="danger" onClick={() => removeAccount(account)} style={styles.smallButton}>Excluir</Button>
                             </div>
                           </td>
                         </tr>

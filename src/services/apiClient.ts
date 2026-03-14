@@ -156,6 +156,8 @@ export const createEmailMonitorAccount = (data: {
 }) => httpClient.post('/admin/email-monitor/accounts', data);
 export const updateEmailMonitorAccount = (accountId: string, data: Record<string, unknown>) =>
   httpClient.put(`/admin/email-monitor/accounts/${accountId}`, data);
+export const deleteEmailMonitorAccount = (accountId: string) =>
+  httpClient.delete(`/admin/email-monitor/accounts/${accountId}`);
 export const syncEmailMonitorAccount = (accountId: string, force = false) =>
   httpClient.post(`/admin/email-monitor/accounts/${accountId}/sync`, null, { params: { force } });
 export const syncAllEmailMonitorAccounts = (force = false) =>
