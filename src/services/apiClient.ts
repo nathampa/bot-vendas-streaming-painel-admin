@@ -125,3 +125,55 @@ export const updateContaMae = (contaMaeId: string, data: UpdatePayload) =>
 export const deleteContaMae = (contaMaeId: string) => httpClient.delete(`/admin/contas-mae/${contaMaeId}`);
 export const addContaMaeConvite = (contaMaeId: string, data: { email_cliente: string }) =>
   httpClient.post(`/admin/contas-mae/${contaMaeId}/convites`, data);
+
+// -----------------------------------------------------------------
+// PILAR: Email Monitor
+// -----------------------------------------------------------------
+export const getEmailMonitorOverview = () => httpClient.get('/admin/email-monitor/overview');
+export const getEmailMonitorAccounts = () => httpClient.get('/admin/email-monitor/accounts');
+export const getEmailMonitorAccount = (accountId: string) => httpClient.get(`/admin/email-monitor/accounts/${accountId}`);
+export const testEmailMonitorConnection = (data: {
+  email: string;
+  imap_host: string;
+  imap_port: number;
+  imap_username: string;
+  password: string;
+  use_ssl: boolean;
+  display_name?: string;
+}) => httpClient.post('/admin/email-monitor/accounts/test', data);
+export const createEmailMonitorAccount = (data: {
+  display_name: string;
+  email: string;
+  imap_host: string;
+  imap_port: number;
+  imap_username: string;
+  password: string;
+  use_ssl: boolean;
+  is_active: boolean;
+  selected_folders: string[];
+  sync_interval_minutes: number;
+  retain_irrelevant_days: number;
+}) => httpClient.post('/admin/email-monitor/accounts', data);
+export const updateEmailMonitorAccount = (accountId: string, data: Record<string, unknown>) =>
+  httpClient.put(`/admin/email-monitor/accounts/${accountId}`, data);
+export const syncEmailMonitorAccount = (accountId: string, force = false) =>
+  httpClient.post(`/admin/email-monitor/accounts/${accountId}/sync`, null, { params: { force } });
+export const syncAllEmailMonitorAccounts = (force = false) =>
+  httpClient.post('/admin/email-monitor/sync', null, { params: { force } });
+export const getEmailMonitorRules = () => httpClient.get('/admin/email-monitor/rules');
+export const createEmailMonitorRule = (data: Record<string, unknown>) =>
+  httpClient.post('/admin/email-monitor/rules', data);
+export const updateEmailMonitorRule = (ruleId: string, data: Record<string, unknown>) =>
+  httpClient.put(`/admin/email-monitor/rules/${ruleId}`, data);
+export const getEmailMonitorMessages = (params: Record<string, unknown>) =>
+  httpClient.get('/admin/email-monitor/messages', { params });
+export const getEmailMonitorMessage = (messageId: string) =>
+  httpClient.get(`/admin/email-monitor/messages/${messageId}`);
+export const updateEmailMonitorMessage = (messageId: string, data: Record<string, unknown>) =>
+  httpClient.patch(`/admin/email-monitor/messages/${messageId}`, data);
+export const getEmailMonitorAlerts = (unreadOnly = false) =>
+  httpClient.get('/admin/email-monitor/alerts', { params: { unread_only: unreadOnly } });
+export const acknowledgeEmailMonitorAlert = (alertId: string) =>
+  httpClient.post(`/admin/email-monitor/alerts/${alertId}/ack`);
+export const getEmailMonitorAudit = (limit = 50) =>
+  httpClient.get('/admin/email-monitor/audit', { params: { limit } });

@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
@@ -12,7 +12,12 @@ import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalance
 import CardGiftcardOutlinedIcon from '@mui/icons-material/CardGiftcardOutlined';
 import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
+import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
+
+const THEME_KEY = 'adminThemePreference';
 
 type MenuItem = {
   path: string;
@@ -22,6 +27,7 @@ type MenuItem = {
 
 const menuItems: MenuItem[] = [
   { path: '/dashboard', icon: <DashboardOutlinedIcon sx={{ fontSize: 17 }} />, label: 'Dashboard' },
+  { path: '/email-monitor', icon: <MailOutlineOutlinedIcon sx={{ fontSize: 17 }} />, label: 'Email Monitor' },
   { path: '/produtos', icon: <StorefrontOutlinedIcon sx={{ fontSize: 17 }} />, label: 'Produtos' },
   { path: '/estoque', icon: <Inventory2OutlinedIcon sx={{ fontSize: 17 }} />, label: 'Estoque' },
   { path: '/contas-mae', icon: <GroupsOutlinedIcon sx={{ fontSize: 17 }} />, label: 'Contas Mãe' },
@@ -39,27 +45,31 @@ export const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const stored = localStorage.getItem(THEME_KEY);
+    return stored === 'dark' ? 'dark' : 'light';
+  });
 
-  const currentPageLabel = menuItems.find((item) => item.path === location.pathname)?.label ?? 'Admin';
+  const currentPageLabel = useMemo(
+    () => menuItems.find((item) => item.path === location.pathname)?.label ?? 'Admin',
+    [location.pathname],
+  );
 
   useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
-    if (!sidebarOpen) return undefined;
-    if (window.innerWidth > 768) return undefined;
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem(THEME_KEY, theme);
+  }, [theme]);
 
+  useEffect(() => {
+    if (!sidebarOpen) return undefined;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setSidebarOpen(false);
-    };
-    window.addEventListener('keydown', closeOnEscape);
-
     return () => {
       document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', closeOnEscape);
     };
   }, [sidebarOpen]);
 
@@ -76,7 +86,7 @@ export const AdminLayout = () => {
         <div style={styles.sidebarHeader}>
           <div style={styles.logo}>
             <span style={styles.logoIcon}>FS</span>
-            <div style={styles.logoText}>
+            <div>
               <h2 style={styles.logoTitle}>Ferreira Streamings</h2>
               <p style={styles.logoSubtitle}>Painel Admin</p>
             </div>
@@ -92,7 +102,6 @@ export const AdminLayout = () => {
                 to={item.path}
                 aria-current={active ? 'page' : undefined}
                 style={{ ...styles.navLink, ...(active ? styles.navLinkActive : {}) }}
-                onClick={() => setSidebarOpen(false)}
               >
                 <span style={styles.navIcon}>{item.icon}</span>
                 <span>{item.label}</span>
@@ -102,35 +111,34 @@ export const AdminLayout = () => {
         </nav>
 
         <div style={styles.sidebarFooter}>
+          <button type="button" onClick={() => setTheme((current) => (current === 'light' ? 'dark' : 'light'))} style={styles.utilityButton}>
+            <span style={styles.navIcon}>{theme === 'light' ? <DarkModeOutlinedIcon sx={{ fontSize: 17 }} /> : <LightModeOutlinedIcon sx={{ fontSize: 17 }} />}</span>
+            <span>{theme === 'light' ? 'Modo escuro' : 'Modo claro'}</span>
+          </button>
           <button type="button" onClick={handleLogout} style={styles.logoutButton} aria-label="Sair da conta">
-            <span style={styles.navIcon}>
-              <LogoutOutlinedIcon sx={{ fontSize: 17 }} />
-            </span>
+            <span style={styles.navIcon}><LogoutOutlinedIcon sx={{ fontSize: 17 }} /></span>
             <span>Sair</span>
           </button>
         </div>
       </aside>
 
-      {sidebarOpen && (
-        <div className="overlay-mobile" style={styles.overlay} onClick={() => setSidebarOpen(false)} aria-hidden="true" />
-      )}
+      {sidebarOpen && <div className="overlay-mobile" style={styles.overlay} onClick={() => setSidebarOpen(false)} aria-hidden="true" />}
 
       <div className="main-wrapper-mobile" style={styles.mainWrapper}>
         <header className="admin-topbar-mobile" style={styles.topBar}>
-          <button
-            className="menu-button-mobile"
-            style={styles.menuButton}
-            onClick={() => setSidebarOpen((current) => !current)}
-            aria-label="Abrir menu lateral"
-            aria-expanded={sidebarOpen}
-            aria-controls="admin-sidebar"
-          >
+          <button type="button" className="menu-button-mobile" style={styles.menuButton} onClick={() => setSidebarOpen((current) => !current)}>
             MENU
           </button>
-          <div className="admin-topbar-content-mobile" style={styles.topBarContent}>
-            <h1 className="admin-page-title-mobile" style={styles.pageTitle}>{currentPageLabel}</h1>
-            <div className="admin-user-info-mobile" style={styles.userInfo}>
-              <span style={styles.userName}>Administrador</span>
+          <div style={styles.topBarContent}>
+            <div>
+              <h1 style={styles.pageTitle}>{currentPageLabel}</h1>
+              <p style={styles.pageSubtitle}>{theme === 'light' ? 'Tema claro ativo' : 'Tema escuro ativo'}</p>
+            </div>
+            <div style={styles.topBarActions}>
+              <button type="button" onClick={() => setTheme((current) => (current === 'light' ? 'dark' : 'light'))} style={styles.themeButton}>
+                {theme === 'light' ? <DarkModeOutlinedIcon sx={{ fontSize: 18 }} /> : <LightModeOutlinedIcon sx={{ fontSize: 18 }} />}
+              </button>
+              <div style={styles.userBadge}>Administrador</div>
             </div>
           </div>
         </header>
@@ -151,19 +159,15 @@ const styles: Record<string, CSSProperties> = {
   },
   sidebar: {
     position: 'fixed',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: '260px',
-    backgroundColor: 'var(--surface-dark)',
+    inset: '0 auto 0 0',
+    width: '270px',
+    background: 'linear-gradient(180deg, var(--surface-dark) 0%, color-mix(in srgb, var(--surface-dark) 88%, black) 100%)',
     color: 'var(--text-inverse)',
     display: 'flex',
     flexDirection: 'column',
-    overflowY: 'auto',
-    WebkitOverflowScrolling: 'touch',
     boxShadow: 'var(--shadow-lg)',
     zIndex: 1000,
-    transition: 'transform 0.3s ease',
+    transition: 'transform 0.25s ease',
   },
   sidebarHeader: {
     padding: '24px 20px',
@@ -175,188 +179,181 @@ const styles: Record<string, CSSProperties> = {
     gap: '12px',
   },
   logoIcon: {
-    width: '42px',
-    height: '42px',
-    borderRadius: '10px',
-    background: 'var(--brand-gradient)',
+    width: '44px',
+    height: '44px',
+    borderRadius: '14px',
     display: 'grid',
     placeItems: 'center',
+    background: 'var(--brand-gradient)',
     fontSize: '12px',
-    fontWeight: 700,
+    fontWeight: 800,
     letterSpacing: 1,
-  },
-  logoText: {
-    flex: 1,
   },
   logoTitle: {
     margin: 0,
     fontSize: '16px',
-    fontWeight: 600,
     color: 'var(--text-inverse)',
   },
   logoSubtitle: {
     margin: '2px 0 0 0',
     fontSize: '12px',
-    color: 'rgba(248,250,252,0.65)',
+    color: 'rgba(248,250,252,0.66)',
   },
   nav: {
-    flex: 1,
-    padding: '20px 12px',
     display: 'flex',
     flexDirection: 'column',
     gap: '4px',
+    padding: '20px 12px',
+    flex: 1,
+    overflowY: 'auto',
   },
   navLink: {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    padding: '12px 16px',
+    padding: '12px 14px',
+    borderRadius: '12px',
+    color: 'rgba(248,250,252,0.72)',
     textDecoration: 'none',
-    color: 'rgba(248,250,252,0.68)',
-    borderRadius: '8px',
-    transition: 'background-color 0.2s ease, color 0.2s ease',
     fontSize: '14px',
-    fontWeight: 500,
+    fontWeight: 600,
   },
   navLinkActive: {
-    backgroundColor: 'rgba(45,127,224,0.24)',
     color: 'var(--text-inverse)',
+    backgroundColor: 'rgba(45,127,224,0.24)',
+    boxShadow: 'inset 0 0 0 1px rgba(191,219,254,0.18)',
   },
   navIcon: {
+    width: '24px',
+    height: '24px',
+    borderRadius: '8px',
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '24px',
-    height: '24px',
-    borderRadius: '7px',
-    backgroundColor: 'rgba(148, 163, 184, 0.15)',
-    color: 'inherit',
+    backgroundColor: 'rgba(255,255,255,0.08)',
     flexShrink: 0,
   },
   sidebarFooter: {
-    padding: '20px 12px',
+    padding: '18px 12px',
     borderTop: '1px solid rgba(248,250,252,0.12)',
+    display: 'grid',
+    gap: '10px',
+  },
+  utilityButton: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    backgroundColor: 'transparent',
+    border: '1px solid rgba(248,250,252,0.14)',
+    color: 'rgba(248,250,252,0.78)',
   },
   logoutButton: {
     width: '100%',
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    padding: '12px 16px',
     backgroundColor: 'transparent',
-    border: '1px solid rgba(248,250,252,0.16)',
-    color: 'rgba(248,250,252,0.72)',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: 500,
-    transition: 'background-color 0.2s ease, color 0.2s ease',
+    border: '1px solid rgba(248,250,252,0.14)',
+    color: 'rgba(248,250,252,0.78)',
+  },
+  overlay: {
+    position: 'fixed',
+    inset: 0,
+    backgroundColor: 'rgba(15,23,42,0.48)',
+    zIndex: 900,
   },
   mainWrapper: {
     flex: 1,
-    marginLeft: '260px',
+    marginLeft: '270px',
     display: 'flex',
     flexDirection: 'column',
     minHeight: '100vh',
   },
   topBar: {
-    backgroundColor: 'rgba(255,255,255,0.88)',
-    backdropFilter: 'blur(8px)',
-    borderBottom: '1px solid var(--border-subtle)',
-    padding: '16px 24px',
+    position: 'sticky',
+    top: 0,
+    zIndex: 800,
     display: 'flex',
     alignItems: 'center',
     gap: '16px',
-    position: 'sticky',
-    top: 0,
-    zIndex: 100,
+    padding: '18px 24px',
+    backgroundColor: 'color-mix(in srgb, var(--surface-base) 88%, transparent)',
+    backdropFilter: 'blur(16px)',
+    borderBottom: '1px solid var(--border-subtle)',
   },
   menuButton: {
     display: 'none',
-    backgroundColor: 'transparent',
-    border: '1px solid var(--border-default)',
-    fontSize: '12px',
-    fontWeight: 700,
-    cursor: 'pointer',
-    padding: '8px',
+    backgroundColor: 'var(--surface-base)',
     color: 'var(--text-primary)',
+    border: '1px solid var(--border-subtle)',
+    padding: '10px 12px',
   },
   topBarContent: {
-    flex: 1,
     display: 'flex',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '16px',
+    flex: 1,
+    flexWrap: 'wrap',
   },
   pageTitle: {
     margin: 0,
-    fontSize: '20px',
-    fontWeight: 600,
+    fontSize: '24px',
     color: 'var(--text-primary)',
   },
-  userInfo: {
+  pageSubtitle: {
+    margin: '4px 0 0 0',
+    fontSize: '13px',
+    color: 'var(--text-secondary)',
+  },
+  topBarActions: {
     display: 'flex',
     alignItems: 'center',
-    padding: '8px 12px',
-    backgroundColor: 'var(--surface-soft)',
-    border: '1px solid var(--border-subtle)',
-    borderRadius: '8px',
+    gap: '12px',
   },
-  userName: {
-    fontSize: '14px',
-    fontWeight: 500,
+  themeButton: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '12px',
+    display: 'grid',
+    placeItems: 'center',
+    backgroundColor: 'var(--surface-base)',
+    color: 'var(--text-primary)',
+    border: '1px solid var(--border-subtle)',
+    padding: 0,
+  },
+  userBadge: {
+    padding: '10px 14px',
+    borderRadius: '999px',
+    backgroundColor: 'var(--surface-base)',
+    border: '1px solid var(--border-subtle)',
+    fontSize: '13px',
+    fontWeight: 700,
     color: 'var(--text-primary)',
   },
   content: {
-    flex: 1,
     padding: '24px',
-  },
-  overlay: {
-    position: 'fixed',
-    inset: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    zIndex: 999,
-    display: 'none',
+    flex: 1,
   },
 };
 
 const mobileStyles = `
-  @media (max-width: 768px) {
+  @media (max-width: 960px) {
     .sidebar-mobile {
-      width: min(86vw, 320px) !important;
-      transform: translateX(-100%) !important;
+      transform: translateX(-100%);
     }
     .sidebar-mobile.open {
-      transform: translateX(0) !important;
+      transform: translateX(0);
     }
     .main-wrapper-mobile {
-      margin-left: 0 !important;
+      margin-left: 0;
     }
     .menu-button-mobile {
-      display: block !important;
-      min-height: 40px !important;
-      padding: 8px 10px !important;
-    }
-    .overlay-mobile {
-      display: block !important;
-    }
-    .admin-topbar-mobile {
-      padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px !important;
-      gap: 10px !important;
-    }
-    .admin-topbar-content-mobile {
-      align-items: flex-start !important;
-      flex-direction: column !important;
-      gap: 8px !important;
-    }
-    .admin-page-title-mobile {
-      font-size: 18px !important;
-      line-height: 1.2 !important;
-    }
-    .admin-user-info-mobile {
-      padding: 6px 10px !important;
+      display: inline-flex;
     }
     .admin-content-mobile {
-      padding: 14px 12px calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+      padding: 18px;
     }
   }
 `;

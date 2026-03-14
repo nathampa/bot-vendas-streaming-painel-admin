@@ -4,27 +4,18 @@ import { AdminLayout } from './components/AdminLayout';
 import { useAuth } from './contexts/AuthContext';
 
 const LoginPage = lazy(() => import('./pages/LoginPage').then((m) => ({ default: m.LoginPage })));
-const DashboardPage = lazy(() =>
-  import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })),
-);
+const DashboardPage = lazy(() => import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
 const ProdutosPage = lazy(() => import('./pages/ProdutosPage').then((m) => ({ default: m.ProdutosPage })));
 const EstoquePage = lazy(() => import('./pages/EstoquePage').then((m) => ({ default: m.EstoquePage })));
-const ContasMaePage = lazy(() =>
-  import('./pages/ContasMaePage').then((m) => ({ default: m.ContasMaePage })),
-);
+const ContasMaePage = lazy(() => import('./pages/ContasMaePage').then((m) => ({ default: m.ContasMaePage })));
 const TicketsPage = lazy(() => import('./pages/TicketsPage').then((m) => ({ default: m.TicketsPage })));
 const PedidosPage = lazy(() => import('./pages/PedidosPage').then((m) => ({ default: m.PedidosPage })));
-const GiftCardsPage = lazy(() =>
-  import('./pages/GiftCardsPage').then((m) => ({ default: m.GiftCardsPage })),
-);
-const SugestoesPage = lazy(() =>
-  import('./pages/SugestoesPage').then((m) => ({ default: m.SugestoesPage })),
-);
+const GiftCardsPage = lazy(() => import('./pages/GiftCardsPage').then((m) => ({ default: m.GiftCardsPage })));
+const SugestoesPage = lazy(() => import('./pages/SugestoesPage').then((m) => ({ default: m.SugestoesPage })));
 const UsuariosPage = lazy(() => import('./pages/UsuariosPage').then((m) => ({ default: m.UsuariosPage })));
 const RecargasPage = lazy(() => import('./pages/RecargasPage').then((m) => ({ default: m.RecargasPage })));
-const ConfiguracoesPage = lazy(() =>
-  import('./pages/ConfiguracoesPage').then((m) => ({ default: m.ConfiguracoesPage })),
-);
+const ConfiguracoesPage = lazy(() => import('./pages/ConfiguracoesPage').then((m) => ({ default: m.ConfiguracoesPage })));
+const EmailMonitorPage = lazy(() => import('./pages/EmailMonitorPage').then((m) => ({ default: m.EmailMonitorPage })));
 
 const ProtectedRoute = () => {
   const { isAdmin, token } = useAuth();
@@ -59,6 +50,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AdminLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/email-monitor" element={<EmailMonitorPage />} />
             <Route path="/produtos" element={<ProdutosPage />} />
             <Route path="/estoque" element={<EstoquePage />} />
             <Route path="/contas-mae" element={<ContasMaePage />} />
@@ -80,5 +72,3 @@ function App() {
 }
 
 export default App;
-
-
