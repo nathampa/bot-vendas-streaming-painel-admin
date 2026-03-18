@@ -343,19 +343,19 @@ const styles: Record<string, CSSProperties> = {
 const mobileStyles = `
   @media (max-width: 960px) {
     .sidebar-mobile {
-      transform: translateX(-100%);
+      transform: translateX(-100%) !important;
     }
     .sidebar-mobile.open {
-      transform: translateX(0);
+      transform: translateX(0) !important;
     }
     .main-wrapper-mobile {
-      margin-left: 0;
+      margin-left: 0 !important;
     }
     .menu-button-mobile {
-      display: inline-flex;
+      display: inline-flex !important;
     }
     .admin-content-mobile {
-      padding: 18px;
+      padding: 18px !important;
     }
   }
 `;
